@@ -186,6 +186,14 @@ case object DoubleBackSlashToken extends Token
 //other operators symbols?
 
 //numerical literals
+case class BinaryLiteral(value: String) extends Token
+case class OctalLiteral(value: String) extends Token
+case class IntegerLiteral(value: Int) extends Token
+case class HexLiteral(value: String) extends Token
+case class FloatLiteral(value: String) extends Token
 
 //string literals
+case class StringLiteral(value: String) extends Token	//possibly interpolated?
+
+//comments??
 
