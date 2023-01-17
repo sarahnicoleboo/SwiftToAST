@@ -116,7 +116,7 @@ case object Arm64Token extends Token
 case object SimulatorToken extends Token
 case object MacCatalystToken extends Token
 
-case object IOSApplicationExtension extends Token
+case object IOSApplicationExtensionToken extends Token
 case object MacCatalystApplicationExtensionToken extends Token
 case object MacOSApplicationExtensionToken extends Token
 case object SourceLocationToken extends Token
@@ -158,7 +158,7 @@ case object LeftParenToken extends Token
 case object LeftBracketToken extends Token
 case object RightCurlyToken extends Token
 case object RightParenToken extends Token
-case object RightBraketToken extends Token
+case object RightBracketToken extends Token
 case object CommaToken extends Token
 case object ColonToken extends Token
 case object SemicolonToken extends Token
