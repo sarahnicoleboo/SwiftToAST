@@ -203,6 +203,11 @@ class Tokenizer(val input: String) {
 		position + getCharacters(position, Character.isWhitespace _).size
 	}
 	
+	def tokenizeSymbol(position: Int): Option[(Token, Int)] = {
+		Tokenizer.symbols.find(pair => input.startsWith(pair._1, position)).map(pair =>
+		(pair._2, position + pair._1.length))
+	}
+	
 	def tokenizeSingle(position: Int): (Token, Int) = {
 		//here is where i'll call my individual tokenizeBLAH methods and then throw an exception
 		???
