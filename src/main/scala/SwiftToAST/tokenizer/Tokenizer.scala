@@ -38,7 +38,7 @@ object Tokenizer {
 	
 	val reservedWords: Seq[(String, Token)] =
 		Seq(
-			("as", AsToken),
+			("as ", AsToken),
 			("alpha", AlphaToken),
 			("break", BreakToken),
 			("case", CaseToken),
@@ -215,9 +215,17 @@ class Tokenizer(val input: String) {
 			(pair._2, position + pair._1.length))
 	}
 	
+	//still need: tokenizeVariable, tokenizeNumber?, tokenizeString?
+	
 	def tokenizeSingle(position: Int): (Token, Int) = {
 		//here is where i'll call my individual tokenizeBLAH methods and then throw an exception
-		???
+		//reservedWords exact match (detecting white space after)
+		//numbers (look for either starting with num or starting with 0b, 0x, 0o prefixes
+		//variables starts with _, $, or A-Za-z
+		//comments exact match on // blahblahblah \n or /* blah blah blah */
+		//exact match "blah" or """blah blah""" or #"blah\nblah" or #"""blah blah"""
+		//symbols starts with any reserved symbols
+		tokenizeReservedWord(position).getOrElse(throw new TokenizerException("Cannot tokenize at this positon: " + position))
 	}
 
 	def tokenize(position: Int): Seq[Token] = {
