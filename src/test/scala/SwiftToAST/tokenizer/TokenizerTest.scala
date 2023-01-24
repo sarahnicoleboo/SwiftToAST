@@ -13,4 +13,8 @@ class TokenizerTest extends FlatSpec {
 	"tokenizeReservedWord" should "handle as followed by a white space" in {
 		assertResult(Some(AsToken, 3)) { theTokenizer.tokenizeReservedWord(0) }
 	}
+	
+	"TokenizerPC" should "handle an as token" in {
+		assertResult(List(AsToken)) { TokenizerPC("as") }
+	}
 }

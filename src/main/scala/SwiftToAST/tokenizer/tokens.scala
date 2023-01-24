@@ -183,7 +183,6 @@ case object BackTickToken extends Token
 case object DollarToken extends Token
 case object DoubleBackSlashToken extends Token
 
-//other operators symbols?
 
 //numerical literals
 case class BinaryLiteral(value: String) extends Token
