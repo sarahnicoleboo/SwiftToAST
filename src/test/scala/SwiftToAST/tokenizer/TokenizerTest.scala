@@ -321,6 +321,248 @@ class TokenizerTest extends FlatSpec {
 		assertResult(List(UnsafeToken)) { TokenizerPC("unsafe") }
 	}
 	
+	"TokenizerPC" should "handle a mutating token" in {
+		assertResult(List(MutatingToken)) { TokenizerPC("mutating") }
+	}
+	
+	"TokenizerPC" should "handle a nonmutating token" in {
+		assertResult(List(NonmutatingToken)) { TokenizerPC("nonmutating") }
+	}
+	
+	"TokenizerPC" should "handle a fileprivate token" in {
+		assertResult(List(FilePrivateToken)) { TokenizerPC("fileprivate") }
+	}
+	
+	"TokenizerPC" should "handle a is token" in {
+		assertResult(List(IsToken)) { TokenizerPC("is") }
+	}
+	
+	"TokenizerPC" should "handle a try token" in {
+		assertResult(List(TryToken)) { TokenizerPC("try") }
+	}
+	
+	"TokenizerPC" should "handle a super token" in {
+		assertResult(List(SuperToken)) { TokenizerPC("super") }
+	}
+	
+	"TokenizerPC" should "handle an Any token" in {
+		assertResult(List(AnyToken)) { TokenizerPC("Any") }
+	}
+	
+	"TokenizerPC" should "handle a false token" in {
+		assertResult(List(FalseToken)) { TokenizerPC("false") }
+	}
+	
+	"TokenizerPC" should "handle a red token" in {
+		assertResult(List(RedToken)) { TokenizerPC("red") }
+	}
+	
+	"TokenizerPC" should "handle a blue token" in {
+		assertResult(List(BlueToken)) { TokenizerPC("blue") }
+	}
+	
+	"TokenizerPC" should "handle a green token" in {
+		assertResult(List(GreenToken)) { TokenizerPC("green") }
+	}
+	
+	"TokenizerPC" should "handle a resourceName token" in {
+		assertResult(List(ResourceNameToken)) { TokenizerPC("resourceName") }
+	}
+	
+	"TokenizerPC" should "handle a true token" in {
+		assertResult(List(TrueToken)) { TokenizerPC("true") }
+	}
+	
+	"TokenizerPC" should "handle a nil token" in {
+		assertResult(List(NilToken)) { TokenizerPC("nil") }
+	}
+	
+	"TokenizerPC" should "handle a inout token" in {
+		assertResult(List(InOutToken)) { TokenizerPC("inout") }
+	}
+	
+	"TokenizerPC" should "handle a some token" in {
+		assertResult(List(SomeToken)) { TokenizerPC("some") }
+	}
+	
+	"TokenizerPC" should "handle a Type token" in {
+		assertResult(List(TypeToken)) { TokenizerPC("Type") }
+	}
+	
+	"TokenizerPC" should "handle a precedence token" in {
+		assertResult(List(PrecedenceToken)) { TokenizerPC("precedence") }
+	}
+	
+	"TokenizerPC" should "handle a self token" in {
+		assertResult(List(SelfToken)) { TokenizerPC("self") }
+	}
+	
+	"TokenizerPC" should "handle a Self token" in {
+		assertResult(List(SelfBigToken)) { TokenizerPC("Self") }
+	}
+	
+	"TokenizerPC" should "handle a macOS token" in {
+		assertResult(List(MacOSToken)) { TokenizerPC("macOS") }
+	}
+	
+	"TokenizerPC" should "handle an iOS token" in {
+		assertResult(List(IOSToken)) { TokenizerPC("iOS") }
+	}
+	
+	"TokenizerPC" should "handle an OSX token" in {
+		assertResult(List(OSXToken)) { TokenizerPC("OSX") }
+	}
+	
+	"TokenizerPC" should "handle a watchOS token" in {
+		assertResult(List(WatchOSToken)) { TokenizerPC("watchOS") }
+	}
+	
+	"TokenizerPC" should "handle a tvOS token" in {
+		assertResult(List(TVOSToken)) { TokenizerPC("tvOS") }
+	}
+	
+	"TokenizerPC" should "handle a Linux token" in {
+		assertResult(List(LinuxToken)) { TokenizerPC("Linux") }
+	}
+	
+	"TokenizerPC" should "handle a Windows token" in {
+		assertResult(List(WindowsToken)) { TokenizerPC("Windows") }
+	}
+	
+	"TokenizerPC" should "handle an i386 token" in {
+		assertResult(List(I386Token)) { TokenizerPC("i386") }
+	}
+	
+	"TokenizerPC" should "handle an x86_64 token" in {
+		assertResult(List(X86_64Token)) { TokenizerPC("x86_64") }
+	}
+	
+	"TokenizerPC" should "handle an arm token" in {
+		assertResult(List(ArmToken)) { TokenizerPC("arm") }
+	}
+	
+	"TokenizerPC" should "handle an arm64 token" in {
+		assertResult(List(Arm64Token)) { TokenizerPC("arm64") }
+	}
+	
+	"TokenizerPC" should "handle a simulator token" in {
+		assertResult(List(SimulatorToken)) { TokenizerPC("simulator") }
+	}
+	
+	"TokenizerPC" should "handle a macCatalyst token" in {
+		assertResult(List(MacCatalystToken)) { TokenizerPC("macCatalyst") }
+	}
+
+	"TokenizerPC" should "handle an iOSApplicationExtension token" in {
+		assertResult(List(IOSApplicationExtensionToken)) { TokenizerPC("iOSApplicationExtension") }
+	}
+	
+	"TokenizerPC" should "handle a macCatalystApplicationExtension token" in {
+		assertResult(List(MacCatalystApplicationExtensionToken)) { TokenizerPC("macCatalystApplicationExtension") }
+	}
+	
+	"TokenizerPC" should "handle a macOSApplicationExtension token" in {
+		assertResult(List(MacOSApplicationExtensionToken)) { TokenizerPC("macOSApplicationExtension") }
+	}
+	
+	"TokenizerPC" should "handle a #sourceLocation token" in {
+		assertResult(List(SourceLocationToken)) { TokenizerPC("#sourceLocation") }
+	}
+	
+	"TokenizerPC" should "handle a file token" in {
+		assertResult(List(FileToken)) { TokenizerPC("file") }
+	}
+	
+	"TokenizerPC" should "handle a line token" in {
+		assertResult(List(LineToken)) { TokenizerPC("line") }
+	}
+	
+	"TokenizerPC" should "handle a #error token" in {
+		assertResult(List(ErrorToken)) { TokenizerPC("#error") }
+	}
+	
+	"TokenizerPC" should "handle a #warning token" in {
+		assertResult(List(WarningToken)) { TokenizerPC("#warning") }
+	}
+	
+	"TokenizerPC" should "handle a #available token" in {
+		assertResult(List(AvailableToken)) { TokenizerPC("#available") }
+	}
+	
+	"TokenizerPC" should "handle a #if token" in {
+		assertResult(List(HashIfToken)) { TokenizerPC("#if") }
+	}
+	
+	"TokenizerPC" should "handle a #elseif token" in {
+		assertResult(List(HashElseIfToken)) { TokenizerPC("#elseif") }
+	}
+	
+	"TokenizerPC" should "handle a #else token" in {
+		assertResult(List(HashElseToken)) { TokenizerPC("#else") }
+	}
+	
+	"TokenizerPC" should "handle a #endif token" in {
+		assertResult(List(HashEndIfToken)) { TokenizerPC("#endif") }
+	}
+	
+	"TokenizerPC" should "handle a #file token" in {
+		assertResult(List(HashFileToken)) { TokenizerPC("#file") }
+	}
+	
+	"TokenizerPC" should "handle a #fileID token" in {
+		assertResult(List(HashFileIDToken)) { TokenizerPC("#fileID") }
+	}
+	
+	"TokenizerPC" should "handle a #filePath token" in {
+		assertResult(List(HashFilePathToken)) { TokenizerPC("#filePath") }
+	}
+	
+	"TokenizerPC" should "handle a #line token" in {
+		assertResult(List(HashLineToken)) { TokenizerPC("#line") }
+	}
+	
+	"TokenizerPC" should "handle a #column token" in {
+		assertResult(List(HashColumnToken)) { TokenizerPC("#column") }
+	}
+	
+	"TokenizerPC" should "handle a #function token" in {
+		assertResult(List(HashFunctionToken)) { TokenizerPC("#function") }
+	}
+	
+	"TokenizerPC" should "handle a #dsohandle token" in {
+		assertResult(List(HashDSOHandleToken)) { TokenizerPC("#dsohandle") }
+	}
+	
+	"TokenizerPC" should "handle a #selector token" in {
+		assertResult(List(HashSelectorToken)) { TokenizerPC("#selector") }
+	}
+	
+	"TokenizerPC" should "handle a #keyPath token" in {
+		assertResult(List(HashKeyPathToken)) { TokenizerPC("#keyPath") }
+	}
+	
+	"TokenizerPC" should "handle a #colorLiteral token" in {
+		assertResult(List(HashColorLiteralToken)) { TokenizerPC("#colorLiteral") }
+	}
+	
+	"TokenizerPC" should "handle a #fileLiteral token" in {
+		assertResult(List(HashFileLiteralToken)) { TokenizerPC("#fileLiteral") }
+	}
+	
+	"TokenizerPC" should "handle a #imageLiteral token" in {
+		assertResult(List(HashImageLiteralToken)) { TokenizerPC("#imageLiteral") }
+	}
+	
+	"TokenizerPC" should "handle a getter token" in {
+		assertResult(List(GetterToken)) { TokenizerPC("getter") }
+	}
+	
+	"TokenizerPC" should "handle a setter token" in {
+		assertResult(List(SetterToken)) { TokenizerPC("setter") }
+	}
+	
+	
+	
 	//variable testing
 	
 	"TokenizerPC" should "handle a variable literal with all lowercase letters" in {

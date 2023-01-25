@@ -27,8 +27,8 @@ object TokenizerPC extends RegexParsers {
 		"private" ^^ (_ => PrivateToken) | "public" ^^ (_ => PublicToken) |
 		"where" ^^ (_ => WhereToken) | "while" ^^ (_ => WhileToken) |
 		"let" ^^ (_ => LetToken) | "var" ^^ (_ => VarToken) |
-		"protocol" ^^ (_ => ProtocolToken) | "get" ^^ (_ => GetToken) |
-		"set" ^^ (_ => SetToken) | "willSet" ^^ (_ => WillSetToken) |
+		"protocol" ^^ (_ => ProtocolToken) | "getter" ^^ (_ => GetterToken) |
+		"setter" ^^ (_ => SetterToken) | "willSet" ^^ (_ => WillSetToken) |
 		"didSet" ^^ (_ => DidSetToken) | "repeat" ^^ (_ => RepeatToken) |
 		"switch" ^^ (_ => SwitchToken) | "struct" ^^ (_ => StructToken) |
 		"return" ^^ (_ => ReturnToken) | "throws" ^^ (_ => ThrowsToken) | 
@@ -36,7 +36,7 @@ object TokenizerPC extends RegexParsers {
 		"init" ^^ (_ => InitToken) | "infix" ^^ (_ => InfixToken) |
 		"deinit" ^^ (_ => DeinitToken) | "assignment" ^^ (_ => AssignmentToken) |
 		"extension" ^^ (_ => ExtensionToken) | "subscript" ^^ (_ => SubscriptToken) |
-		"prefix" ^^ (_ => PrefixToken) | "in" ^^ (_ => InToken) |
+		"prefix" ^^ (_ => PrefixToken) | "inout" ^^ (_ => InOutToken) |
 		"left" ^^ (_ => LeftToken) | "right" ^^ (_ => RightToken) |
 		"none" ^^ (_ => NoneToken) | "precedencegroup" ^^ (_ => PrecedenceGroupToken) |
 		"higherThan" ^^ (_ => HigherThanToken) | "lowerThan" ^^ (_ => LowerThanToken) |
@@ -58,29 +58,29 @@ object TokenizerPC extends RegexParsers {
 		"red" ^^ (_ => RedToken) | "blue" ^^ (_ => BlueToken) |
 		"green" ^^ (_ => GreenToken) | "resourceName" ^^ (_ => ResourceNameToken) |
 		"true" ^^ (_ => TrueToken) | "nil" ^^ (_ => NilToken) |
-		"inout" ^^ (_ => InOutToken) | "some" ^^ (_ => SomeToken) |
+		"in" ^^ (_ => InToken) | "some" ^^ (_ => SomeToken) |
 		"Type" ^^ (_ => TypeToken) | "precedence" ^^ (_ => PrecedenceToken) |
 		"self" ^^ (_ => SelfToken) | "Self" ^^ (_ => SelfBigToken) |
-		"macOS" ^^ (_ => MacOSToken) | "iOS" ^^ (_ => IOSToken) |
+		"macOSApplicationExtension" ^^ (_ => MacOSApplicationExtensionToken) | "iOSApplicationExtension" ^^ (_ => IOSApplicationExtensionToken) |
 		"OSX" ^^ (_ => OSXToken) | "watchOS" ^^ (_ => WatchOSToken) |
 		"tvOS" ^^ (_ => TVOSToken) | "Linux" ^^ (_ => LinuxToken) |
 		"Windows" ^^ (_ => WindowsToken) | "i386" ^^ (_ => I386Token) |
-		"x86_64" ^^ (_ => X86_64Token) | "arm" ^^ (_ => ArmToken) |
-		"arm64" ^^ (_ => Arm64Token) | "simulator" ^^ (_ => SimulatorToken) |
-		"macCatalyst" ^^ (_ => MacCatalystToken) | "iOSApplicationExtension" ^^ (_ => IOSApplicationExtensionToken) |
-		"macCatalystApplicationExtension" ^^ (_ => MacCatalystApplicationExtensionToken) | "macOSApplicationExtension" ^^ (_ => MacOSApplicationExtensionToken) |
+		"x86_64" ^^ (_ => X86_64Token) | "arm64" ^^ (_ => Arm64Token) |
+		"arm" ^^ (_ => ArmToken) | "simulator" ^^ (_ => SimulatorToken) |
+		"macCatalystApplicationExtension" ^^ (_ => MacCatalystApplicationExtensionToken) | "iOS" ^^ (_ => IOSToken) |
+		"macCatalyst" ^^ (_ => MacCatalystToken) | "macOS" ^^ (_ => MacOSToken) |
 		"#sourceLocation" ^^ (_ => SourceLocationToken) | "file" ^^ (_ => FileToken) |
 		"line" ^^ (_ => LineToken) | "#error" ^^ (_ => ErrorToken) |
 		"#warning" ^^ (_ => WarningToken) | "#available" ^^ (_ => AvailableToken) |
 		"#if" ^^ (_ => HashIfToken) | "#elseif" ^^ (_ => HashElseIfToken) |
 		"#else" ^^ (_ => HashElseToken) | "#endif" ^^ (_ => HashEndIfToken) |
-		"#file" ^^ (_ => HashFileToken) | "#fileID" ^^ (_ => HashFileIDToken) |
-		"#filePath" ^^ (_ => HashFilePathToken) | "#line" ^^ (_ => HashLineToken) |
+		"#fileID" ^^ (_ => HashFileIDToken) | "#filePath" ^^ (_ => HashFilePathToken) |
+		"#fileLiteral" ^^ (_ => HashFileLiteralToken) | "#line" ^^ (_ => HashLineToken) |
 		"#column" ^^ (_ => HashColumnToken) | "#function" ^^ (_ => HashFunctionToken) |
 		"#dsohandle" ^^ (_ => HashDSOHandleToken) | "#selector" ^^ (_ => HashSelectorToken) |
 		"#keyPath" ^^ (_ => HashKeyPathToken) | "#colorLiteral" ^^ (_ => HashColorLiteralToken) |
-		"#fileLiteral" ^^ (_ => HashFileLiteralToken) | "#imageLiteral" ^^ (_ => HashImageLiteralToken) |
-		"getter" ^^ (_ => GetterToken) | "setter" ^^ (_ => SetterToken)
+		"#file" ^^ (_ => HashFileToken) | "#imageLiteral" ^^ (_ => HashImageLiteralToken) |
+		"get" ^^ (_ => GetToken) | "set" ^^ (_ => SetToken)
 		}
 	
 	def variable: Parser[VariableToken] = {
