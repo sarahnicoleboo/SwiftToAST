@@ -13,7 +13,7 @@ object TokenizerPC extends RegexParsers {
 	def alpha = "alpha" ^^ (_ => AlphaToken) */
 	
 	def reservedWords: Parser[Token] = {
-		"as" ^^ (_ => AsToken) | "alpha" ^^ (_ => AlphaToken) |
+		"associatedtype" ^^ (_ => AssociatedTypeToken) | "alpha" ^^ (_ => AlphaToken) |
 		"break" ^^ (_ => BreakToken) | "case" ^^ (_ => CaseToken) |
 		"catch" ^^ (_ => CatchToken) | "class" ^^ (_ => ClassToken) |
 		"continue" ^^ (_ => ContinueToken) | "default" ^^ (_ => DefaultToken) |
@@ -21,8 +21,8 @@ object TokenizerPC extends RegexParsers {
 		"guard" ^^ (_ => GuardToken) | "else" ^^ (_ => ElseToken) |
 		"enum" ^^ (_ => EnumToken) | "for" ^^ (_ => ForToken) |
 		"fallthrough" ^^ (_ => FallthroughToken) | "func" ^^ (_ => FuncToken) |
-		"in" ^^ (_ => InToken) | "if" ^^ (_ => IfToken) |
-		"import" ^^ (_ => ImportToken) | "internal" ^^ (_ => InternalToken) |
+		"internal" ^^ (_ => InternalToken) | "if" ^^ (_ => IfToken) |
+		"import" ^^ (_ => ImportToken) | "indirect" ^^ (_ => IndirectToken) |
 		"final" ^^ (_ => FinalToken) | "open" ^^ (_ => OpenToken) |
 		"private" ^^ (_ => PrivateToken) | "public" ^^ (_ => PublicToken) |
 		"where" ^^ (_ => WhereToken) | "while" ^^ (_ => WhileToken) |
@@ -31,16 +31,16 @@ object TokenizerPC extends RegexParsers {
 		"set" ^^ (_ => SetToken) | "willSet" ^^ (_ => WillSetToken) |
 		"didSet" ^^ (_ => DidSetToken) | "repeat" ^^ (_ => RepeatToken) |
 		"switch" ^^ (_ => SwitchToken) | "struct" ^^ (_ => StructToken) |
-		"return" ^^ (_ => ReturnToken) | "throw" ^^ (_ => ThrowToken) | 
-		"throws" ^^ (_ => ThrowsToken) | "rethrows" ^^ (_ => RethrowsToken) |
-		"indirect" ^^ (_ => IndirectToken) | "init" ^^ (_ => InitToken) |
-		"deinint" ^^ (_ => DeinitToken) | "associatedtype" ^^ (_ => AssociatedTypeToken) |
+		"return" ^^ (_ => ReturnToken) | "throws" ^^ (_ => ThrowsToken) | 
+		"throw" ^^ (_ => ThrowToken) | "rethrows" ^^ (_ => RethrowsToken) |
+		"init" ^^ (_ => InitToken) | "infix" ^^ (_ => InfixToken) |
+		"deinit" ^^ (_ => DeinitToken) | "assignment" ^^ (_ => AssignmentToken) |
 		"extension" ^^ (_ => ExtensionToken) | "subscript" ^^ (_ => SubscriptToken) |
-		"prefix" ^^ (_ => PrefixToken) | "infix" ^^ (_ => InfixToken) |
+		"prefix" ^^ (_ => PrefixToken) | "in" ^^ (_ => InToken) |
 		"left" ^^ (_ => LeftToken) | "right" ^^ (_ => RightToken) |
 		"none" ^^ (_ => NoneToken) | "precedencegroup" ^^ (_ => PrecedenceGroupToken) |
 		"higherThan" ^^ (_ => HigherThanToken) | "lowerThan" ^^ (_ => LowerThanToken) |
-		"assignment" ^^ (_ => AssignmentToken) | "associativity" ^^ (_ => AssociativityToken) |
+		"associativity" ^^ (_ => AssociativityToken) | "as" ^^ (_ => AsToken) |
 		"postfix" ^^ (_ => PostFixToken) | "operator" ^^ (_ => OperatorToken) |
 		"typealias" ^^ (_ => TypeAliasToken) | "os" ^^ (_ => OSToken) |
 		"arch" ^^ (_ => ArchToken) | "swift" ^^ (_ => SwiftToken) |
