@@ -2,24 +2,26 @@ package SwiftToAST.tokenizer
 
 import scala.util.parsing.combinator._
 
-//trait WorkflowCompilationError
-//case class TokenizerError(message: String) extends WorkflowCompilationError
-
-class TokenizerError(message: String) extends Exception(message)
+class TokenizerException(message: String) extends Exception(message)
 
 object TokenizerPC extends RegexParsers {
 	
 	override def skipWhitespace = true
 	override val whiteSpace = "[ \t\r\f]+".r	//not including \n on purpose
 	
-	def as = "as" ^^ (_ => AsToken)
+/* 	def as = "as" ^^ (_ => AsToken)
+	def alpha = "alpha" ^^ (_ => AlphaToken) */
+	
+	def words: Parser[Token] = {
+		"as" ^^ (_ => AsToken) | "alpha" ^^ (_ => AlphaToken)
+	}
 	
 	def variable: Parser[VariableToken] = {
 		"[a-zA-Z][a-zA-Z0-9_]*".r ^^ { str => VariableToken(str) }
 	}
 	
 	def tokens: Parser[List[Token]] = {
-		phrase(rep1(as | variable)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
+		phrase(rep1(words | variable)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
 	}
 	
 	def tokenize(tokens: List[Token]): List[Token] = tokens
@@ -27,7 +29,7 @@ object TokenizerPC extends RegexParsers {
 	
 	def apply(code: String): List[Token] = {
 		parse(tokens, code) match {
-			case NoSuccess(message, next) => throw new TokenizerError(message)
+			case NoSuccess(message, next) => throw new TokenizerException(message)
 			case Success(result, next) => result
 		}
 	} 

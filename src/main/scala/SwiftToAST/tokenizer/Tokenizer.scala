@@ -1,4 +1,4 @@
-package SwiftToAST.tokenizer
+/* package SwiftToAST.tokenizer
 
 class TokenizerException(message: String) extends Exception(message)
 
@@ -222,13 +222,13 @@ class Tokenizer(val input: String) {
 		//reservedWords exact match (detecting white space after)
 		//numbers (look for either starting with num or starting with 0b, 0x, 0o prefixes
 		//variables starts with _, $, or A-Za-z
-		//comments exact match on // blahblahblah \n or /* blah blah blah */
+		//comments exact match on // blahblahblah \n or blah blah blah
 		//exact match "blah" or """blah blah""" or #"blah\nblah" or #"""blah blah"""
 		//symbols starts with any reserved symbols
 		tokenizeReservedWord(position).getOrElse(throw new TokenizerException("Cannot tokenize at this positon: " + position))
-	}
+	} */
 
-	def tokenize(position: Int): Seq[Token] = {
+/* 	def tokenize(position: Int): Seq[Token] = {
 		def loop(currentPosition: Int, accum: List[Token]): List[Token] = {
 			val afterWS = skipWhitespace(currentPosition)
 			if (afterWS >= input.length) {
@@ -242,4 +242,4 @@ class Tokenizer(val input: String) {
 	}
 
 	def tokenize: Seq[Token] = tokenize(0)
-}
+} */
