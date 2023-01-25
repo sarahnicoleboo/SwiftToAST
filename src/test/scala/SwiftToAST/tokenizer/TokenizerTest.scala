@@ -614,4 +614,59 @@ class TokenizerTest extends FlatSpec {
 	"TokenizerPC" should "handle property wrapper projection that starts with a number and has multiple letters" in {
 		assertResult(List(ImplicitParameterOrPropertyWrapperProjectionToken("$2abc"))) { TokenizerPC("$2abc") }
 	}
+	
+	
+	//number testing
+	
+	//decimal integers
+	"TokenizerPC" should "handle a decimal integer literal with one digit" in {
+		assertResult(List(DecimalIntegerLiteralToken("2"))) { TokenizerPC("2") }
+	}
+	
+	"TokenizerPC" should "handle a decimal integer literal with multiple digits" in {
+		assertResult(List(DecimalIntegerLiteralToken("463456"))) { TokenizerPC("463456") }
+	}
+	
+	"TokenizerPC" should "handle a decimal integer literal with multiple digits and delimeters" in {
+		assertResult(List(DecimalIntegerLiteralToken("123_345"))) { TokenizerPC("123_345") }
+	}
+	
+	//binary integers
+	"TokenizerPC" should "handle a binary integer literal with one digit" in {
+		assertResult(List(BinaryIntegerLiteralToken("0b1"))) { TokenizerPC("0b1") }
+	}
+	
+	"TokenizerPC" should "handle a binary integer literal with multiple digits" in {
+		assertResult(List(BinaryIntegerLiteralToken("0b1011"))) { TokenizerPC("0b1011") }
+	}
+	
+	"TokenizerPC" should "handle a binary integer literal with multiple digits and delimeters" in {
+		assertResult(List(BinaryIntegerLiteralToken("0b1_011"))) { TokenizerPC("0b1_011") }
+	}
+	
+	//octal integers
+	"TokenizerPC" should "handle an octal integer literal with one digit" in {
+		assertResult(List(OctalIntegerLiteralToken("0o5"))) { TokenizerPC("0o5") }
+	}
+	
+	"TokenizerPC" should "handle an octal integer literal with multiple digits" in {
+		assertResult(List(OctalIntegerLiteralToken("0o347"))) { TokenizerPC("0o347") }
+	}
+	
+	"TokenizerPC" should "handle an octal integer literal with multiple digits and delimeters" in {
+		assertResult(List(OctalIntegerLiteralToken("0o34_7"))) { TokenizerPC("0o34_7") }
+	}
+	
+	//hex integers
+	"TokenizerPC" should "handle a hex integer literal with one digit" in {
+		assertResult(List(HexIntegerLiteralToken("0x8"))) { TokenizerPC("0x8") }
+	}
+	
+	"TokenizerPC" should "handle a hex integer literal with multiple digits" in {
+		assertResult(List(HexIntegerLiteralToken("0xA4b3"))) { TokenizerPC("0xA4b3") }
+	}
+	
+	"TokenizerPC" should "handle a hex integer literal with multiple digits and delimeters" in {
+		assertResult(List(HexIntegerLiteralToken("0xF_A4b3"))) { TokenizerPC("0xF_A4b3") }
+	}
 }

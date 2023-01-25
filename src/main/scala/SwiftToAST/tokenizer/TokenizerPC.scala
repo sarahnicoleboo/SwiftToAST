@@ -83,6 +83,7 @@ object TokenizerPC extends RegexParsers {
 		"get" ^^ (_ => GetToken) | "set" ^^ (_ => SetToken)
 		}
 	
+	//tokenize a variable
 	def variable: Parser[VariableToken] = {
 		"[a-zA-Z_][a-zA-Z0-9_]*".r ^^ { str => VariableToken(str) }
 	}
@@ -95,12 +96,20 @@ object TokenizerPC extends RegexParsers {
 		"[$][a-zA-Z0-9_]+".r ^^ { str => PropertyWrapperProjectionToken(str) }
 	} */
 	
+	//tokenize either an implicit parameter or a property wrapper projection
 	def implicit_parameter_OR_property_wrapper_projection: Parser[ImplicitParameterOrPropertyWrapperProjectionToken] = {
 		"[$][a-zA-Z0-9_]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
 	}
 	
+	def integer_literal: Parser[Token] = {
+		"[0][b][01_]*".r ^^ { str => BinaryIntegerLiteralToken(str) } |
+		"[0][o][0-7_]*".r ^^ { str => OctalIntegerLiteralToken(str) } |
+		"[0][x][0-9a-fA-F_]*".r ^^ { str => HexIntegerLiteralToken(str) } |
+		"[0-9][0-9_]*".r ^^ { str => DecimalIntegerLiteralToken(str) }
+	}
+	
 	def tokens: Parser[List[Token]] = {
-		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
+		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection | integer_literal)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
 	}
 	
 	def tokenize(tokens: List[Token]): List[Token] = tokens

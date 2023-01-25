@@ -188,11 +188,14 @@ case object DoubleBackSlashToken extends Token
 
 
 //numerical literals
-case class BinaryLiteral(value: String) extends Token
-case class OctalLiteral(value: String) extends Token
-case class IntegerLiteral(value: Int) extends Token
-case class HexLiteral(value: String) extends Token
-case class FloatLiteral(value: String) extends Token
+//ints
+case class BinaryIntegerLiteralToken(value: String) extends Token
+case class OctalIntegerLiteralToken(value: String) extends Token
+case class DecimalIntegerLiteralToken(value: String) extends Token
+case class HexIntegerLiteralToken(value: String) extends Token
+
+//floats
+case class FloatDecimalLiteralToken(value: String) extends Token
 
 //string literals
 case class StringLiteral(value: String) extends Token	//possibly interpolated?
