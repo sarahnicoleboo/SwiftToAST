@@ -12,16 +12,28 @@ object TokenizerPC extends RegexParsers {
 /* 	def as = "as" ^^ (_ => AsToken)
 	def alpha = "alpha" ^^ (_ => AlphaToken) */
 	
-	def words: Parser[Token] = {
+	def reservedWords: Parser[Token] = {
 		"as" ^^ (_ => AsToken) | "alpha" ^^ (_ => AlphaToken)
 	}
 	
 	def variable: Parser[VariableToken] = {
-		"[a-zA-Z][a-zA-Z0-9_]*".r ^^ { str => VariableToken(str) }
+		"[a-zA-Z_][a-zA-Z0-9_]*".r ^^ { str => VariableToken(str) }
+	}
+	
+/* 	def implicit_parameter: Parser[ImplicitParameterToken] = {
+		"[$][0-9]+".r ^^ { str => ImplicitParameterToken(str) }
+	}
+	
+	def property_wrapper_projection: Parser[PropertyWrapperProjectionToken] = {
+		"[$][a-zA-Z0-9_]+".r ^^ { str => PropertyWrapperProjectionToken(str) }
+	} */
+	
+	def implicit_parameter_OR_property_wrapper_projection: Parser[ImplicitParameterOrPropertyWrapperProjectionToken] = {
+		"[$][a-zA-Z0-9_]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
 	}
 	
 	def tokens: Parser[List[Token]] = {
-		phrase(rep1(words | variable)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
+		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
 	}
 	
 	def tokenize(tokens: List[Token]): List[Token] = tokens
