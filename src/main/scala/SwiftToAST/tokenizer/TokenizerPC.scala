@@ -108,9 +108,9 @@ object TokenizerPC extends RegexParsers {
 	}
 	
 	def integer_literal: Parser[Token] = {
-		"[0][b][01_]*".r ^^ { str => BinaryIntegerLiteralToken(str) } |
-		"[0][o][0-7_]*".r ^^ { str => OctalIntegerLiteralToken(str) } |
-		"[0][x][0-9a-fA-F_]*".r ^^ { str => HexIntegerLiteralToken(str) } |
+		"[0][b][01]+[01_]*".r ^^ { str => BinaryIntegerLiteralToken(str) } |
+		"[0][o][0-7]+[0-7_]*".r ^^ { str => OctalIntegerLiteralToken(str) } |
+		"[0][x][0-9a-fA-F]+[0-9a-fA-F_]*".r ^^ { str => HexIntegerLiteralToken(str) } |
 		"[0-9][0-9_]*".r ^^ { str => DecimalIntegerLiteralToken(str) }
 	}
 	
