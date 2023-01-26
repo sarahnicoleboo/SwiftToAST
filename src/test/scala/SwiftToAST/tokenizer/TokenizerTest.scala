@@ -11,9 +11,9 @@ class TokenizerTest extends FlatSpec {
 		assertResult(List(VariableToken("abc"), VariableToken("bcd"))) { TokenizerPC("abc bcd") }
 	}
 	
-	"TokenizerPC" should "fail" in {
+/* 	"TokenizerPC" should "fail" in {
 		assertThrows[TokenizerException] { TokenizerPC("!") }		//THIS WILL FAIL ONCE I ADD SYMBOLS LATER
-	}
+	} */
 	
 	//reserved words testing
 	
@@ -755,5 +755,123 @@ class TokenizerTest extends FlatSpec {
 	
 	"TokenizerPC" should "handle a regular multi line string" in {
 		assertResult(List(StringLiteralToken("\"\"\"hello\niamstring\"\"\""))) { TokenizerPC("\"\"\"hello\niamstring\"\"\"") }
+	}
+	
+	
+	//reserved symbol testing
+	"TokenizerPC" should "handle a dot token" in {
+		assertResult(List(DotToken)) { TokenizerPC(".") }
+	}
+	
+	"TokenizerPC" should "handle a left curly token" in {
+		assertResult(List(LeftCurlyToken)) { TokenizerPC("{") }
+	}
+	
+	"TokenizerPC" should "handle a left paren token" in {
+		assertResult(List(LeftParenToken)) { TokenizerPC("(") }
+	}
+	
+	"TokenizerPC" should "handle a left bracket token" in {
+		assertResult(List(LeftBracketToken)) { TokenizerPC("[") }
+	}
+	
+	"TokenizerPC" should "handle a right curly token" in {
+		assertResult(List(RightCurlyToken)) { TokenizerPC("}") }
+	}
+	
+	"TokenizerPC" should "handle a right paren token" in {
+		assertResult(List(RightParenToken)) { TokenizerPC(")") }
+	}
+	
+	"TokenizerPC" should "handle a right bracket token" in {
+		assertResult(List(RightBracketToken)) { TokenizerPC("]") }
+	}
+	
+	"TokenizerPC" should "handle a comma token" in {
+		assertResult(List(CommaToken)) { TokenizerPC(",") }
+	}
+	
+	"TokenizerPC" should "handle a colon token" in {
+		assertResult(List(ColonToken)) { TokenizerPC(":") }
+	}
+	
+	"TokenizerPC" should "handle a semicolon token" in {
+		assertResult(List(SemicolonToken)) { TokenizerPC(";") }
+	}
+	
+	"TokenizerPC" should "handle a less than token" in {
+		assertResult(List(LessThanToken)) { TokenizerPC("<") }
+	}
+	
+	"TokenizerPC" should "handle a greater than token" in {
+		assertResult(List(GreaterThanToken)) { TokenizerPC(">") }
+	}
+	
+	"TokenizerPC" should "handle an underscore token" in {
+		assertResult(List(UnderscoreToken)) { TokenizerPC("_") }
+	}
+	
+	"TokenizerPC" should "handle an exclamation token" in {
+		assertResult(List(ExclamationToken)) { TokenizerPC("!") }
+	}
+	
+	"TokenizerPC" should "handle a question token" in {
+		assertResult(List(QuestionToken)) { TokenizerPC("?") }
+	}
+	
+	"TokenizerPC" should "handle an at token" in {
+		assertResult(List(AtToken)) { TokenizerPC("@") }
+	}
+	
+	"TokenizerPC" should "handle an and token" in {
+		assertResult(List(AndToken)) { TokenizerPC("&") }
+	}
+	
+	"TokenizerPC" should "handle a minus token" in {
+		assertResult(List(MinusToken)) { TokenizerPC("-") }
+	}
+
+	"TokenizerPC" should "handle an equal token" in {
+		assertResult(List(EqualToken)) { TokenizerPC("=") }
+	}
+	
+	"TokenizerPC" should "handle an or token" in {
+		assertResult(List(OrToken)) { TokenizerPC("|") }
+	}
+	
+	"TokenizerPC" should "handle a division token" in {
+		assertResult(List(DivisionToken)) { TokenizerPC("/") }
+	}
+	
+	"TokenizerPC" should "handle an addition token" in {
+		assertResult(List(AdditionToken)) { TokenizerPC("+") }
+	}
+	
+	"TokenizerPC" should "handle a multiplication token" in {
+		assertResult(List(MultiplicationToken)) { TokenizerPC("*") }
+	}
+	
+	"TokenizerPC" should "handle a mod token" in {
+		assertResult(List(ModToken)) { TokenizerPC("%") }
+	}
+	
+	"TokenizerPC" should "handle a caret token" in {
+		assertResult(List(CaretToken)) { TokenizerPC("^") }
+	}
+	
+	"TokenizerPC" should "handle a tilde token" in {
+		assertResult(List(TildeToken)) { TokenizerPC("~") }
+	}
+	
+	"TokenizerPC" should "handle a hash token" in {
+		assertResult(List(HashToken)) { TokenizerPC("#") }
+	}
+	
+	"TokenizerPC" should "handle a backtick token" in {
+		assertResult(List(BackTickToken)) { TokenizerPC("`") }
+	}
+	
+	"TokenizerPC" should "handle a double backslash token" in {
+		assertResult(List(DoubleBackSlashToken)) { TokenizerPC("\\") }
 	}
 }
