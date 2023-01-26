@@ -103,7 +103,8 @@ object TokenizerPC extends RegexParsers {
 	
 	//not finished, went on side quest
 	def float_literal: Parser[Token] = {
-		"[0-9][[.][0-9]]*[[eE][0-9]]*".r ^^ { str => FloatDecimalLiteralToken(str) }
+		"[0-9][0-9_]*[.][0-9][0-9_]*".r ^^ { str => FloatDecimalLiteralToken(str) } |
+		"[0-9][0-9_]*[Ee][0-9][0-9_]*".r ^^ { str => FloatDecimalLiteralToken(str) }
 	}
 	
 	def integer_literal: Parser[Token] = {
@@ -118,8 +119,8 @@ object TokenizerPC extends RegexParsers {
 	}
 	
 	def tokens: Parser[List[Token]] = {
-		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection | integer_literal
-				| test_thing)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
+		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection
+				| float_literal | integer_literal | test_thing)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
 	}
 	
 	def tokenize(tokens: List[Token]): List[Token] = tokens

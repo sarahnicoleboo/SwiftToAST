@@ -7,6 +7,10 @@ import org.scalatest.FlatSpec
 class TokenizerTest extends FlatSpec {
 	import SwiftToAST.tokenizer._
 	
+	"TokenizerPC" should "handle whitespace" in {
+		assertResult(List(VariableToken("abc"), VariableToken("bcd"))) { TokenizerPC("abc bcd") }
+	}
+	
 	"TokenizerPC" should "fail" in {
 		assertThrows[TokenizerException] { TokenizerPC("!") }		//THIS WILL FAIL ONCE I ADD SYMBOLS LATER
 	}
@@ -676,5 +680,22 @@ class TokenizerTest extends FlatSpec {
 	
 	"TokenizerPC" should "handle a hex integer literal with multiple digits and delimeters" in {
 		assertResult(List(HexIntegerLiteralToken("0xF_A4b3"))) { TokenizerPC("0xF_A4b3") }
+	}
+	
+	//decimal floats
+	"TokenizerPC" should "handle a decimal float literal with a decimal point" in {
+		assertResult(List(FloatDecimalLiteralToken("12.3"))) { TokenizerPC("12.3") }
+	}
+	
+	"TokenizerPC" should "handle a decimal float literal with a decimal point and delimeters" in {
+		assertResult(List(FloatDecimalLiteralToken("12.3_5"))) { TokenizerPC("12.3_5") }
+	}
+	
+	"TokenizerPC" should "handle a decimal float literal with a floating point e" in {
+		assertResult(List(FloatDecimalLiteralToken("12e3"))) { TokenizerPC("12e3") }
+	}
+	
+	"TokenizerPC" should "handle a decimal float literal with a floating point e and delimeters" in {
+		assertResult(List(FloatDecimalLiteralToken("12e3_5"))) { TokenizerPC("12e3_5") }
 	}
 }
