@@ -719,4 +719,26 @@ class TokenizerTest extends FlatSpec {
 	"TokenizerPC" should "handle a hex float literal with a floating point p, delimeters and sign" in {
 		assertResult(List(FloatHexLiteralToken("0x12p+3_4"))) { TokenizerPC("0x12p+3_4") }
 	}
+	
+	
+	//comment testing
+	
+	//single line comments
+	"TokenizerPC" should "handle a single line comment" in {
+		assertResult(List(SingleLineCommentToken("//iamacomment\n"))) { TokenizerPC("//iamacomment\n") }
+	}
+	
+	//multi line comments
+	"TokenizerPC" should "handle a multi line comment" in {
+		assertResult(List(MultiLineCommentToken("/*iamacomment*/"))) { TokenizerPC("/*iamacomment*/") }
+	}
+	
+	"TokenizerPC" should "handle a multi line comment with a new line" in {
+		assertResult(List(MultiLineCommentToken("/*iam\nacomment*/"))) { TokenizerPC("/*iam\nacomment*/") }
+	}
+	
+	"TokenizerPC" should "handle a multi line comment with multiple new lines" in {
+		assertResult(List(MultiLineCommentToken("/*iam\nacomment\n*/"))) { TokenizerPC("/*iam\nacomment\n*/") }
+	}
+	
 }

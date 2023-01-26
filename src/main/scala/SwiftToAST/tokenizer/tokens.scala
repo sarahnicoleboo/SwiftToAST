@@ -199,7 +199,9 @@ case class FloatDecimalLiteralToken(value: String) extends Token
 case class FloatHexLiteralToken(value: String) extends Token
 
 //string literals
-case class StringLiteral(value: String) extends Token	//possibly interpolated?
+case class StringLiteralToken(value: String) extends Token	//possibly interpolated?
 
-//comments??
+//comments
+case class SingleLineCommentToken(comment: String) extends Token
+case class MultiLineCommentToken(comment: String) extends Token
 

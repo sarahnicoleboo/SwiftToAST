@@ -116,13 +116,18 @@ object TokenizerPC extends RegexParsers {
 		"[0-9][0-9_]*".r ^^ { str => DecimalIntegerLiteralToken(str) }
 	}
 	
+	def comments: Parser[Token] = {
+		"[/][/].*[\n]".r ^^ { str => SingleLineCommentToken(str) } |
+		"[/][*](.|\n)*?[*][/]".r ^^ { str => MultiLineCommentToken(str) }
+	}
+	
 	def test_thing: Parser[Token] = {
 		"-" ^^ (_ => MinusToken)
 	}
 	
 	def tokens: Parser[List[Token]] = {
 		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection
-				| float_literal | integer_literal | test_thing )) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
+				| float_literal | integer_literal | test_thing | comments)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
 	}
 	
 	def tokenize(tokens: List[Token]): List[Token] = tokens
