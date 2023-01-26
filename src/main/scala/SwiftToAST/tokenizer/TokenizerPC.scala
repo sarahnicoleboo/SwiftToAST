@@ -97,6 +97,7 @@ object TokenizerPC extends RegexParsers {
 	} */
 	
 	//tokenize either an implicit parameter or a property wrapper projection
+	//gonna come back and change this later
 	def implicit_parameter_OR_property_wrapper_projection: Parser[ImplicitParameterOrPropertyWrapperProjectionToken] = {
 		"[$][a-zA-Z0-9_]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
 	}
@@ -121,13 +122,19 @@ object TokenizerPC extends RegexParsers {
 		"[/][*](.|\n)*?[*][/]".r ^^ { str => MultiLineCommentToken(str) }
 	}
 	
+	def strings: Parser[StringLiteralToken] = {
+		"""["\\]["\\]["\\].*[\\"]["\\]["\\]""".r ^^ { str => StringLiteralToken(str) } |
+		"""["\\](.|\n)*[\\"]""".r ^^ { str => StringLiteralToken(str) }
+		//""""((?:[^"\\]|\\[\\"ntbrf])+)"""".r ^^ { str => StringLiteralToken(str) }
+	}
+	
 	def test_thing: Parser[Token] = {
 		"-" ^^ (_ => MinusToken)
 	}
 	
 	def tokens: Parser[List[Token]] = {
 		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection
-				| float_literal | integer_literal | test_thing | comments)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
+				| float_literal | integer_literal | test_thing | comments | strings)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
 	}
 	
 	def tokenize(tokens: List[Token]): List[Token] = tokens

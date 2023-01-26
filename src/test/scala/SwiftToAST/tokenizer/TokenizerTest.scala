@@ -741,4 +741,19 @@ class TokenizerTest extends FlatSpec {
 		assertResult(List(MultiLineCommentToken("/*iam\nacomment\n*/"))) { TokenizerPC("/*iam\nacomment\n*/") }
 	}
 	
+	//string testing
+	
+	//single line string
+	"TokenizerPC" should "handle a regular single line string" in {
+		assertResult(List(StringLiteralToken("\"helloiamstring\""))) { TokenizerPC("\"helloiamstring\"") }
+	}
+	
+	//multi line string
+	"TokenizerPC" should "handle a regular multi line (actually single line) string" in {
+		assertResult(List(StringLiteralToken("\"\"\"helloiamstring\"\"\""))) { TokenizerPC("\"\"\"helloiamstring\"\"\"") }
+	}
+	
+	"TokenizerPC" should "handle a regular multi line string" in {
+		assertResult(List(StringLiteralToken("\"\"\"hello\niamstring\"\"\""))) { TokenizerPC("\"\"\"hello\niamstring\"\"\"") }
+	}
 }
