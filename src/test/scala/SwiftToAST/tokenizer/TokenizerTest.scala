@@ -698,4 +698,25 @@ class TokenizerTest extends FlatSpec {
 	"TokenizerPC" should "handle a decimal float literal with a floating point e and delimeters" in {
 		assertResult(List(FloatDecimalLiteralToken("12e3_5"))) { TokenizerPC("12e3_5") }
 	}
+	
+	//hex floats
+	"TokenizerPC" should "handle a hex float literal with a decimal point" in {
+		assertResult(List(FloatHexLiteralToken("0x1.2"))) { TokenizerPC("0x1.2") }
+	}
+	
+	"TokenizerPC" should "handle a hex float literal with a decimal point and delimeters" in {
+		assertResult(List(FloatHexLiteralToken("0x1A.3_D"))) { TokenizerPC("0x1A.3_D") }
+	}
+	
+	"TokenizerPC" should "handle a hex float literal with a floating point p" in {
+		assertResult(List(FloatHexLiteralToken("0x12p3"))) { TokenizerPC("0x12p3") }
+	}
+	
+	"TokenizerPC" should "handle a hex float literal with a floating point p and sign" in {
+		assertResult(List(FloatHexLiteralToken("0x12p+3"))) { TokenizerPC("0x12p+3") }
+	}
+	
+	"TokenizerPC" should "handle a hex float literal with a floating point p, delimeters and sign" in {
+		assertResult(List(FloatHexLiteralToken("0x12p+3_4"))) { TokenizerPC("0x12p+3_4") }
+	}
 }

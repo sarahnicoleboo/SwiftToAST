@@ -196,6 +196,7 @@ case class HexIntegerLiteralToken(value: String) extends Token
 
 //floats
 case class FloatDecimalLiteralToken(value: String) extends Token
+case class FloatHexLiteralToken(value: String) extends Token
 
 //string literals
 case class StringLiteral(value: String) extends Token	//possibly interpolated?
