@@ -6,8 +6,8 @@ class TokenizerException(message: String) extends Exception(message)
 
 object TokenizerPC extends RegexParsers {
 	
-	override def skipWhitespace = true
-	override val whiteSpace = "[ \t\r\f]+".r	//not including \n on purpose
+	//override def skipWhitespace = true
+	//override val whiteSpace = "[ \t\r\f]+".r	//not including \n on purpose
 	
 /* 	def as = "as" ^^ (_ => AsToken)
 	def alpha = "alpha" ^^ (_ => AlphaToken) */
@@ -26,7 +26,7 @@ object TokenizerPC extends RegexParsers {
 		"final" ^^ (_ => FinalToken) | "open" ^^ (_ => OpenToken) |
 		"private" ^^ (_ => PrivateToken) | "public" ^^ (_ => PublicToken) |
 		"where" ^^ (_ => WhereToken) | "while" ^^ (_ => WhileToken) |
-		"let" ^^ (_ => LetToken) | "var" ^^ (_ => VarToken) |
+		"let" ^^ (_ => LetToken) | "var(?=[\\s\\W]+)".r ^^ (_ => VarToken) |
 		"protocol" ^^ (_ => ProtocolToken) | "getter" ^^ (_ => GetterToken) |
 		"setter" ^^ (_ => SetterToken) | "willSet" ^^ (_ => WillSetToken) |
 		"didSet" ^^ (_ => DidSetToken) | "repeat" ^^ (_ => RepeatToken) |
@@ -101,6 +101,11 @@ object TokenizerPC extends RegexParsers {
 		"[$][a-zA-Z0-9_]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
 	}
 	
+	//not finished, went on side quest
+	def float_literal: Parser[Token] = {
+		"[0-9][[.][0-9]]*[[eE][0-9]]*".r ^^ { str => FloatDecimalLiteralToken(str) }
+	}
+	
 	def integer_literal: Parser[Token] = {
 		"[0][b][01_]*".r ^^ { str => BinaryIntegerLiteralToken(str) } |
 		"[0][o][0-7_]*".r ^^ { str => OctalIntegerLiteralToken(str) } |
@@ -108,8 +113,13 @@ object TokenizerPC extends RegexParsers {
 		"[0-9][0-9_]*".r ^^ { str => DecimalIntegerLiteralToken(str) }
 	}
 	
+	def test_thing: Parser[Token] = {
+		"-" ^^ (_ => MinusToken)
+	}
+	
 	def tokens: Parser[List[Token]] = {
-		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection | integer_literal)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
+		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection | integer_literal
+				| test_thing)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
 	}
 	
 	def tokenize(tokens: List[Token]): List[Token] = tokens

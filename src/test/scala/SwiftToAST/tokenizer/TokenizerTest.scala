@@ -126,7 +126,7 @@ class TokenizerTest extends FlatSpec {
 	}
 	
 	"TokenizerPC" should "handle a var token" in {
-		assertResult(List(VarToken)) { TokenizerPC("var") }
+		assertResult(List(VarToken)) { TokenizerPC("var ") }
 	}
 	
 	"TokenizerPC" should "handle a protocol token" in {
@@ -575,6 +575,14 @@ class TokenizerTest extends FlatSpec {
 	
 	"TokenizerPC" should "handle a variable literal that starts with an underscore" in {
 		assertResult(List(VariableToken("_h3ll0"))) { TokenizerPC("_h3ll0") }
+	}
+	
+	"TokenizerPC" should "handle this problem" in {
+		assertResult(List(VariableToken("var_thing")))  { TokenizerPC("var_thing") }
+	}
+	
+	"TokenizerPC" should "handle this other problem" in {
+		assertResult(List(VarToken, MinusToken, VarToken))  { TokenizerPC("var-var ") }
 	}
 	
 /* 	//implicit parameter testing
