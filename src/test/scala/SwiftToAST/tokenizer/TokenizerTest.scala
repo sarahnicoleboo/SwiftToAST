@@ -620,11 +620,15 @@ class TokenizerTest extends FlatSpec {
 	}
 	
 	"TokenizerPC" should "handle property wrapper projection with one letter" in {
-		assertResult(List(ImplicitParameterOrPropertyWrapperProjectionToken("$a"))) { TokenizerPC("$a") }
+		assertResult(List(PropertyWrapperProjectionToken("$a"))) { TokenizerPC("$a") }
 	}
 	
 	"TokenizerPC" should "handle property wrapper projection that starts with a number and has multiple letters" in {
-		assertResult(List(ImplicitParameterOrPropertyWrapperProjectionToken("$2abc"))) { TokenizerPC("$2abc") }
+		assertResult(List(PropertyWrapperProjectionToken("$2abc"))) { TokenizerPC("$2abc") }
+	}
+	
+	"TokenizerPC" should "handle property wrapper projection that has multiple letter letters" in {
+		assertResult(List(PropertyWrapperProjectionToken("$hello"))) { TokenizerPC("$hello") }
 	}
 	
 	

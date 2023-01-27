@@ -148,8 +148,8 @@ case object SetterToken extends Token
 
 //identifiers (variables)
 case class VariableToken(name: String) extends Token
-/* case class ImplicitParameterToken(name: String) extends Token
-case class PropertyWrapperProjectionToken(name: String) extends Token */
+case class ImplicitParameterToken(name: String) extends Token
+case class PropertyWrapperProjectionToken(name: String) extends Token
 //there's an ambiguity here in the grammar where we would need further information to disambiguate something like:
 // $0 as an implicit param or a property wrapper projection. This would be handled later in the compiler.
 case class ImplicitParameterOrPropertyWrapperProjectionToken(name: String) extends Token

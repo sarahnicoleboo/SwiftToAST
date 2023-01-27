@@ -92,18 +92,12 @@ object TokenizerPC extends RegexParsers {
 		"[a-zA-Z_][a-zA-Z0-9_]*".r ^^ { str => VariableToken(str) }
 	}
 	
-/* 	def implicit_parameter: Parser[ImplicitParameterToken] = {
-		"[$][0-9]+".r ^^ { str => ImplicitParameterToken(str) }
-	}
-	
-	def property_wrapper_projection: Parser[PropertyWrapperProjectionToken] = {
-		"[$][a-zA-Z0-9_]+".r ^^ { str => PropertyWrapperProjectionToken(str) }
-	} */
-	
 	//tokenize either an implicit parameter or a property wrapper projection
-	//gonna come back and change this later
-	def implicit_parameter_OR_property_wrapper_projection: Parser[ImplicitParameterOrPropertyWrapperProjectionToken] = {
-		"[$][a-zA-Z0-9_]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
+	def implicit_parameter_OR_property_wrapper_projection = {
+		"[$][a-zA-Z_][a-zA-Z0-9_]*".r ^^ { str => PropertyWrapperProjectionToken(str) } |
+		"[$][0-9]+[a-zA-Z_][a-zA-Z0-9_]*".r ^^ { str => PropertyWrapperProjectionToken(str) } |
+		"[$][0-9]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
+		//"[$][a-zA-Z0-9_]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
 	}
 	
 	//not finished, went on side quest
