@@ -83,8 +83,11 @@ object TokenizerPC extends RegexParsers {
 		"get(?=[\\s\\W]+)".r ^^ (_ => GetToken) | "set(?=[\\s\\W]+)".r ^^ (_ => SetToken)
 	}
 	
-	//need to tokenize underscore first before variable to disambiguate for wildcard.
-	//i'm sure there's a better way of doing this but this will work for now
+	//need to tokenize underscore first before variable to disambiguate
+	//this still technically doesn't work ugh
+	//example:
+	//	as a variable			: var _ = "hi"
+	//	as an underscore token	: case(_ , 1) 
 	def underscore = { "_(?=[\\s\\W]+)".r ^^ (_ => UnderscoreToken) }
 	
 	//tokenize a variable
@@ -140,7 +143,8 @@ object TokenizerPC extends RegexParsers {
 		"+" ^^ (_ => AdditionToken) | "*" ^^ (_ => MultiplicationToken) |
 		"%" ^^ (_ => ModToken) | "^" ^^ (_ => CaretToken) |
 		"~" ^^ (_ => TildeToken) | "#" ^^ (_ => HashToken) |
-		"`" ^^ (_ => BackTickToken) | "\\" ^^ (_ => DoubleBackSlashToken)
+		"`" ^^ (_ => BackTickToken) | "\\" ^^ (_ => DoubleBackSlashToken) //|
+		//"_" ^^ (_ => UnderscoreToken)
 	}
 	
 	def tokens: Parser[List[Token]] = {
