@@ -808,7 +808,7 @@ class TokenizerTest extends FlatSpec {
 	}
 	
 	"TokenizerPC" should "handle an underscore token" in {
-		assertResult(List(UnderscoreToken)) { TokenizerPC("_") }
+		assertResult(List(UnderscoreToken)) { TokenizerPC("_ ") }
 	}
 	
 	"TokenizerPC" should "handle an exclamation token" in {

@@ -81,7 +81,11 @@ object TokenizerPC extends RegexParsers {
 		"#keyPath(?=[\\s\\W]+)".r ^^ (_ => HashKeyPathToken) | "#colorLiteral(?=[\\s\\W]+)".r ^^ (_ => HashColorLiteralToken) |
 		"#file(?=[\\s\\W]+)".r ^^ (_ => HashFileToken) | "#imageLiteral(?=[\\s\\W]+)".r ^^ (_ => HashImageLiteralToken) |
 		"get(?=[\\s\\W]+)".r ^^ (_ => GetToken) | "set(?=[\\s\\W]+)".r ^^ (_ => SetToken)
-		}
+	}
+	
+	//need to tokenize underscore first before variable to disambiguate for wildcard.
+	//i'm sure there's a better way of doing this but this will work for now
+	def underscore = { "_(?=[\\s\\W]+)".r ^^ (_ => UnderscoreToken) }
 	
 	//tokenize a variable
 	def variable: Parser[VariableToken] = {
@@ -103,14 +107,14 @@ object TokenizerPC extends RegexParsers {
 	}
 	
 	//not finished, went on side quest
-	def float_literal: Parser[Token] = {
+	def float_literal = {
 		"[0][x][0-9a-fA-F][0-9a-fA-F_]*[.][0-9a-fA-F][0-9a-fA-F_]*".r ^^ { str => FloatHexLiteralToken(str) } |
 		"[0][x][0-9a-fA-F][0-9a-fA-F_]*[Pp][+-]?[0-9a-fA-F][0-9a-fA-F_]*".r ^^ { str => FloatHexLiteralToken(str) } |
 		"[0-9][0-9_]*[.][0-9][0-9_]*".r ^^ { str => FloatDecimalLiteralToken(str) } |
 		"[0-9][0-9_]*[Ee][0-9][0-9_]*".r ^^ { str => FloatDecimalLiteralToken(str) }
 	}
 	
-	def integer_literal: Parser[Token] = {
+	def integer_literal = {
 		"[0][b][01][01_]*".r ^^ { str => BinaryIntegerLiteralToken(str) } |
 		"[0][o][0-7][0-7_]*".r ^^ { str => OctalIntegerLiteralToken(str) } |
 		"[0][x][0-9a-fA-F][0-9a-fA-F_]*".r ^^ { str => HexIntegerLiteralToken(str) } |
@@ -135,7 +139,7 @@ object TokenizerPC extends RegexParsers {
 		"]" ^^ (_ => RightBracketToken) | "," ^^ (_ => CommaToken) |
 		":" ^^ (_ => ColonToken) | ";" ^^ (_ => SemicolonToken) |
 		"<" ^^ (_ => LessThanToken) | ">" ^^ (_ => GreaterThanToken) |
-		"_" ^^ (_ => UnderscoreToken) | "!" ^^ (_ => ExclamationToken) |
+		/*"_" ^^ (_ => UnderscoreToken) |*/ "!" ^^ (_ => ExclamationToken) |
 		"?" ^^ (_ => QuestionToken) | "@" ^^ (_ => AtToken) |
 		"&" ^^ (_ => AndToken) | "-" ^^ (_ => MinusToken) |
 		"=" ^^ (_ => EqualToken) | "|" ^^ (_ => OrToken) |
@@ -147,7 +151,7 @@ object TokenizerPC extends RegexParsers {
 	}
 	
 	def tokens: Parser[List[Token]] = {
-		phrase(rep1(reservedWords | variable | implicit_parameter_OR_property_wrapper_projection
+		phrase(rep1(reservedWords | underscore | variable | implicit_parameter_OR_property_wrapper_projection
 				| float_literal | integer_literal | comments | strings | reservedSymbols)) ^^ { rawTokens => tokenize(rawTokens) }	//questionable
 	}
 	
