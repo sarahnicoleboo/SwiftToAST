@@ -121,7 +121,7 @@ object TokenizerPC extends RegexParsers {
 		"[0-9][0-9_]*".r ^^ { str => DecimalIntegerLiteralToken(str) }
 	}
 	
-	def comments: Parser[Token] = {
+	def comments = {
 		"[/][/].*[\n]".r ^^ { str => SingleLineCommentToken(str) } |
 		"[/][*](.|\n)*?[*][/]".r ^^ { str => MultiLineCommentToken(str) }
 	}
@@ -139,15 +139,14 @@ object TokenizerPC extends RegexParsers {
 		"]" ^^ (_ => RightBracketToken) | "," ^^ (_ => CommaToken) |
 		":" ^^ (_ => ColonToken) | ";" ^^ (_ => SemicolonToken) |
 		"<" ^^ (_ => LessThanToken) | ">" ^^ (_ => GreaterThanToken) |
-		/*"_" ^^ (_ => UnderscoreToken) |*/ "!" ^^ (_ => ExclamationToken) |
-		"?" ^^ (_ => QuestionToken) | "@" ^^ (_ => AtToken) |
-		"&" ^^ (_ => AndToken) | "-" ^^ (_ => MinusToken) |
-		"=" ^^ (_ => EqualToken) | "|" ^^ (_ => OrToken) |
-		"/" ^^ (_ => DivisionToken) | "+" ^^ (_ => AdditionToken) |
-		"*" ^^ (_ => MultiplicationToken) | "%" ^^ (_ => ModToken) |
-		"^" ^^ (_ => CaretToken) | "~" ^^ (_ => TildeToken) |
-		"#" ^^ (_ => HashToken) | "`" ^^ (_ => BackTickToken) |
-		"\\" ^^ (_ => DoubleBackSlashToken)
+		"!" ^^ (_ => ExclamationToken) | "?" ^^ (_ => QuestionToken) |
+		"@" ^^ (_ => AtToken) | "&" ^^ (_ => AndToken) |
+		"-" ^^ (_ => MinusToken) | "=" ^^ (_ => EqualToken) |
+		"|" ^^ (_ => OrToken) | "/" ^^ (_ => DivisionToken) |
+		"+" ^^ (_ => AdditionToken) | "*" ^^ (_ => MultiplicationToken) |
+		"%" ^^ (_ => ModToken) | "^" ^^ (_ => CaretToken) |
+		"~" ^^ (_ => TildeToken) | "#" ^^ (_ => HashToken) |
+		"`" ^^ (_ => BackTickToken) | "\\" ^^ (_ => DoubleBackSlashToken)
 	}
 	
 	def tokens: Parser[List[Token]] = {
