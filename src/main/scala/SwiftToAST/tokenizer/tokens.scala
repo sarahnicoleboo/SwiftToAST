@@ -146,6 +146,14 @@ case object HashImageLiteralToken extends Token
 case object GetterToken extends Token
 case object SetterToken extends Token
 
+//types
+case object IntToken extends Token
+case object StringToken extends Token
+case object FloatToken extends Token
+case object DoubleToken extends Token
+case object BoolToken extends Token
+case object CharacterToken extends Token
+
 //identifiers (variables)
 case class VariableToken(name: String) extends Token
 case class ImplicitParameterToken(name: String) extends Token
