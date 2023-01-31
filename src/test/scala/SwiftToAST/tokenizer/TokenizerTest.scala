@@ -588,26 +588,7 @@ class TokenizerTest extends FlatSpec {
 	"TokenizerPC" should "handle this other problem" in {
 		assertResult(List(VarToken, MinusToken, VarToken))  { TokenizerPC("var-var ") }
 	}
-	
-/* 	//implicit parameter testing
-	
-	"TokenizerPC" should "handle an implicit parameter literal with one digit" in {
-		assertResult(List(ImplicitParameterToken("$0"))) { TokenizerPC("$0") }
-	}
-	
-	"TokenizerPC" should "handle an implicit parameter literal with multiple digits" in {
-		assertResult(List(ImplicitParameterToken("$032"))) { TokenizerPC("$032") }
-	}
-	
-	//property wrapper projection testing
-	
-	"TokenizerPC" should "handle property wrapper projection with one letter" in {
-		assertResult(List(PropertyWrapperProjectionToken("$a"))) { TokenizerPC("$a") }
-	}
-	
-	"TokenizerPC" should "handle property wrapper projection that starts with a number and has multiple letters" in {
-		assertResult(List(PropertyWrapperProjectionToken("$2abc"))) { TokenizerPC("$2abc") }
-	} */
+
 	
 	//implicit param and property wrapper projection testing
 	

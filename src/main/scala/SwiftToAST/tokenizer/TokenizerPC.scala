@@ -5,9 +5,6 @@ import scala.util.parsing.combinator._
 class TokenizerException(message: String) extends Exception(message)
 
 object TokenizerPC extends RegexParsers {
-
-//associatedtypevariable
-// \\w [a-zA-Z_] \\W
 	
 	def reservedWords: Parser[Token] = {
 		"associatedtype(?=[\\s\\W]+)".r ^^ (_ => AssociatedTypeToken) | "alpha(?=[\\s\\W]+)".r ^^ (_ => AlphaToken) |
@@ -79,21 +76,17 @@ object TokenizerPC extends RegexParsers {
 		"#file(?=[\\s\\W]+)".r ^^ (_ => HashFileToken) | "#imageLiteral(?=[\\s\\W]+)".r ^^ (_ => HashImageLiteralToken) |
 		"get(?=[\\s\\W]+)".r ^^ (_ => GetToken) | "set(?=[\\s\\W]+)".r ^^ (_ => SetToken)
 	}
-	
-	//need to tokenize underscore first before variable to disambiguate
-	//this still technically doesn't work ugh
+
 	//example:
 	//	as a variable			: var _ = "hi"
 	//	as an underscore token	: case(_ , 1) 
+	//verdict: going to tokenize all single underscore characters as underscore tokens and disambiguate in the parser.
 	def underscore = { "_(?=[\\s\\W]+)".r ^^ (_ => UnderscoreToken) }
 	
 	//tokenize a variable
 	def variable: Parser[VariableToken] = {
 		"[a-zA-Z_][a-zA-Z0-9_]*".r ^^ { str => VariableToken(str) }
 	}
-	
-	//implicit parameter: $0 $23
-	//property wrapper projection: $0 $a3 $9s4f_
 	
 	//tokenize either an implicit parameter or a property wrapper projection
 	def implicit_parameter_OR_property_wrapper_projection = {
@@ -123,11 +116,9 @@ object TokenizerPC extends RegexParsers {
 		"[/][*](.|\n)*?[*][/]".r ^^ { str => MultiLineCommentToken(str) }
 	}
 	
-	//single line string "hello"
-	//"""hello\nthere"""
 	def strings: Parser[StringLiteralToken] = {
-		"""["\\]["\\]["\\].*[\\"]["\\]["\\]""".r ^^ { str => StringLiteralToken(str) } |
-		"""["\\](.|\n)*[\\"]""".r ^^ { str => StringLiteralToken(str) }
+		"""["\\]["\\]["\\](.|\n)*[\\"]["\\]["\\]""".r ^^ { str => StringLiteralToken(str) } |
+		"""["\\].*[\\"]""".r ^^ { str => StringLiteralToken(str) }
 		//""""((?:[^"\\]|\\[\\"ntbrf])+)"""".r ^^ { str => StringLiteralToken(str) }
 	}
 	
@@ -151,10 +142,8 @@ object TokenizerPC extends RegexParsers {
 	
 	def tokens: Parser[List[Token]] = {
 		phrase(rep(reservedWords | underscore | variable | implicit_parameter_OR_property_wrapper_projection
-				| float_literal | integer_literal | comments | strings | reservedSymbols)) //^^ { rawTokens => tokenize(rawTokens) }	//questionable
+				| float_literal | integer_literal | comments | strings | reservedSymbols))
 	}
-	
-	//def tokenize(tokens: List[Token]): List[Token] = tokens
 	
 	
 	def apply(code: String): List[Token] = {
