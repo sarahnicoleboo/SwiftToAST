@@ -122,9 +122,9 @@ object TokenizerPC extends RegexParsers {
 		"[/][*](.|\n)*?[*][/]".r ^^ { str => MultiLineCommentToken(str) }
 	}
 	
-	def strings: Parser[StringLiteralToken] = {
-		"""["\\]["\\]["\\](.|\n)*[\\"]["\\]["\\]""".r ^^ { str => StringLiteralToken(str) } |
-		"""["\\].*[\\"]""".r ^^ { str => StringLiteralToken(str) }
+	def strings = {
+		"""["\\]["\\]["\\](.|\n)*[\\"]["\\]["\\]""".r ^^ { str => MultiLineStringLiteralToken(str) } |
+		"""["\\].*[\\"]""".r ^^ { str => SingleLineStringLiteralToken(str) }
 		//""""((?:[^"\\]|\\[\\"ntbrf])+)"""".r ^^ { str => StringLiteralToken(str) }
 	}
 	
