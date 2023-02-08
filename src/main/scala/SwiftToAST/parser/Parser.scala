@@ -267,22 +267,35 @@ object Parser extends Parsers {
 	| boolean_literal
 	| nil_literal; */
 	lazy val literal = {
-		numeric_literal //left off here 7
+		numeric_literal | string_literal
 	}
 	
 /* 	numeric_literal:
 	negate_prefix_operator? integer_literal
 	| negate_prefix_operator? Floating_point_literal; */
-	lazy val numeric_literal = {
-		opt(MinusToken) ~ integer_literal // left off here 8
-		???
+	lazy val numeric_literal: Parser[Exp] = {
+		opt(MinusToken) ~ integer_literal ^^ { case optMinus ~ intLiteral => SignedNumericLiteralExp(optMinus, intLiteral) } |
+		opt(MinusToken) ~ float_literal ^^ { case optMinus ~ floatLiteral => SignedNumericLiteralExp(optMinus, floatLiteral) }
 	}
 	
-	lazy val integer_literal: Parser[Exp] = {
+	lazy val integer_literal: Parser[NumericLiteralExp] = {
 		decimal_integer ^^ { case DecimalIntegerLiteralToken(value) => DecimalIntegerLiteralExp(value) } |
 		binary_integer ^^ { case BinaryIntegerLiteralToken(value) => BinaryIntegerLiteralExp(value) } |
 		octal_integer ^^ { case OctalIntegerLiteralToken(value) => OctalIntegerLiteralExp(value) } |
 		hex_integer ^^ { case HexIntegerLiteralToken(value) => HexIntegerLiteralExp(value) }
+	}
+	
+	lazy val float_literal: Parser[NumericLiteralExp] = {
+		decimal_float ^^ { case FloatDecimalLiteralToken(value) => DecimalFloatLiteralExp(value) } |
+		hex_float ^^ { case FloatHexLiteralToken(value) => HexFloatLiteralExp(value) }
+	}
+	
+	lazy val string_literal = {
+		single_line_string ^^ { case SingleLineStringLiteralToken(value) => checkInterpolation(value) }
+	}
+	
+	def checkInterpolation(value: String) = {
+		???
 	}
 	
 	//operators

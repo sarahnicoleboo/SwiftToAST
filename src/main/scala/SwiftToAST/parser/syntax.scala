@@ -27,10 +27,15 @@ case class TryOperator(token: Option[Token])	//change?
 //exps
 sealed trait Exp
 
-case class DecimalIntegerLiteralExp(value: String) extends Exp
-case class BinaryIntegerLiteralExp(value: String) extends Exp
-case class OctalIntegerLiteralExp(value: String) extends Exp
-case class HexIntegerLiteralExp(value: String) extends Exp
+case class SignedNumericLiteralExp(sign: Option[Token], value: NumericLiteralExp) extends Exp
+
+sealed trait NumericLiteralExp
+case class DecimalFloatLiteralExp(value: String) extends NumericLiteralExp
+case class HexFloatLiteralExp(value: String) extends NumericLiteralExp
+case class DecimalIntegerLiteralExp(value: String) extends NumericLiteralExp
+case class BinaryIntegerLiteralExp(value: String) extends NumericLiteralExp
+case class OctalIntegerLiteralExp(value: String) extends NumericLiteralExp
+case class HexIntegerLiteralExp(value: String) extends NumericLiteralExp
 
 case class VariableExp(name: Variable) extends Exp
 
