@@ -123,8 +123,8 @@ object TokenizerPC extends RegexParsers {
 	}
 	
 	def strings = {
-		"""["\\]["\\]["\\](.|\n)*[\\"]["\\]["\\]""".r ^^ { str => MultiLineStringLiteralToken(str) } |
-		"""["\\].*[\\"]""".r ^^ { str => SingleLineStringLiteralToken(str) }
+		"""["\\]["\\]["\\](.|\n)*[\\"]["\\]["\\]""".r ^^ { str => MultiLineStringLiteralToken(str.substring(3, str.length-3)) } |
+		"""["\\].*[\\"]""".r ^^ { str => SingleLineStringLiteralToken(str.substring(1, str.length-1)) }
 		//""""((?:[^"\\]|\\[\\"ntbrf])+)"""".r ^^ { str => StringLiteralToken(str) }
 	}
 	

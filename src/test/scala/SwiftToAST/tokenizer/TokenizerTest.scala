@@ -755,16 +755,16 @@ class TokenizerTest extends FlatSpec {
 	
 	//single line string
 	"TokenizerPC" should "handle a regular single line string" in {
-		assertResult(List(SingleLineStringLiteralToken("\"helloiamstring\""))) { TokenizerPC("\"helloiamstring\"") }
+		assertResult(List(SingleLineStringLiteralToken("helloiamstring"))) { TokenizerPC("\"helloiamstring\"") }
 	}
 	
 	//multi line string
 	"TokenizerPC" should "handle a regular multi line (actually single line) string" in {
-		assertResult(List(MultiLineStringLiteralToken("\"\"\"helloiamstring\"\"\""))) { TokenizerPC("\"\"\"helloiamstring\"\"\"") }
+		assertResult(List(MultiLineStringLiteralToken("helloiamstring"))) { TokenizerPC("\"\"\"helloiamstring\"\"\"") }
 	}
 	
 	"TokenizerPC" should "handle a regular multi line string" in {
-		assertResult(List(MultiLineStringLiteralToken("\"\"\"hello\niamstring\"\"\""))) { TokenizerPC("\"\"\"hello\niamstring\"\"\"") }
+		assertResult(List(MultiLineStringLiteralToken("hello\niamstring"))) { TokenizerPC("\"\"\"hello\niamstring\"\"\"") }
 	}
 	
 	
