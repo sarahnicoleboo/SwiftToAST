@@ -129,24 +129,10 @@ object TokenizerPC extends RegexParsers {
 	}
 	
 	def operators: Parser[OperatorLiteralToken] = {
-		"/" ^^ (str => OperatorLiteralToken(str)) |
-		"=" ^^ (str => OperatorLiteralToken(str)) |
-		"-" ^^ (str => OperatorLiteralToken(str)) |
-		"+" ^^ (str => OperatorLiteralToken(str)) |
-		"!" ^^ (str => OperatorLiteralToken(str)) |
-		"*" ^^ (str => OperatorLiteralToken(str)) |
-		"%" ^^ (str => OperatorLiteralToken(str)) |
-		"<" ^^ (str => OperatorLiteralToken(str)) |
-		">" ^^ (str => OperatorLiteralToken(str)) |
-		"&" ^^ (str => OperatorLiteralToken(str)) |
-		"|" ^^ (str => OperatorLiteralToken(str)) |
-		"^" ^^ (str => OperatorLiteralToken(str)) |
-		"~" ^^ (str => OperatorLiteralToken(str)) |
-		"?" ^^ (str => OperatorLiteralToken(str))
+		"""[/=+!*%<>&|^~?.-][/=+!*%<>&|^~?.-]*""".r ^^ { str => OperatorLiteralToken(str) }
 	}
 	
 	def reservedSymbols: Parser[Token] = {
-		"." ^^ (_ => DotToken) |
 		"{" ^^ (_ => LeftCurlyToken) |
 		"(" ^^ (_ => LeftParenToken) |
 		"[" ^^ (_ => LeftBracketToken) |

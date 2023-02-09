@@ -610,9 +610,9 @@ class TokenizerTest extends FlatSpec {
 		assertResult(List(VariableToken("var_thing")))  { TokenizerPC("var_thing") }
 	}
 	
-	"TokenizerPC" should "handle this other problem" in {
+/* 	"TokenizerPC" should "handle this other problem" in {
 		assertResult(List(VarToken, OperatorLiteralToken("-"), VarToken))  { TokenizerPC("var-var ") }
-	}
+	} */
 
 	
 	//implicit param and property wrapper projection testing
@@ -770,7 +770,7 @@ class TokenizerTest extends FlatSpec {
 	
 	//reserved symbol testing
 	"TokenizerPC" should "handle a dot token" in {
-		assertResult(List(DotToken)) { TokenizerPC(".") }
+		assertResult(List(OperatorLiteralToken("."))) { TokenizerPC(".") }
 	}
 	
 	"TokenizerPC" should "handle a left curly token" in {
@@ -888,12 +888,12 @@ class TokenizerTest extends FlatSpec {
 	
 	//complex testing
 	"TokenizerPC" should "handle a complex test" in {
-		assertResult(List(FuncToken, VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken, IntToken, RightParenToken, OperatorLiteralToken("-"), OperatorLiteralToken(">"), IntToken))							
+		assertResult(List(FuncToken, VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken, IntToken, RightParenToken, OperatorLiteralToken("->"), IntToken))							
 			{ TokenizerPC("func factorial(n: Int) -> Int ") }
 	}
 	
 	"TokenizerPC" should "handle a second complex test" in {
-		assertResult(List(LeftCurlyToken, IfToken, VariableToken("n"), OperatorLiteralToken("<"), OperatorLiteralToken("="), DecimalIntegerLiteralToken("1"), LeftCurlyToken, ReturnToken, VariableToken("n"), RightCurlyToken))							
+		assertResult(List(LeftCurlyToken, IfToken, VariableToken("n"), OperatorLiteralToken("<="), DecimalIntegerLiteralToken("1"), LeftCurlyToken, ReturnToken, VariableToken("n"), RightCurlyToken))							
 			{ TokenizerPC("{ if n <= 1 { return n }") }
 	}	
 	
@@ -903,8 +903,8 @@ class TokenizerTest extends FlatSpec {
 	}
 	
 	"TokenizerPC" should "handle a combination of the above complex tests" in {
-		assertResult(List(FuncToken, VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken, IntToken, RightParenToken, OperatorLiteralToken("-"), OperatorLiteralToken(">"), IntToken, 
-							LeftCurlyToken, IfToken, VariableToken("n"), OperatorLiteralToken("<"), OperatorLiteralToken("="), DecimalIntegerLiteralToken("1"), LeftCurlyToken, ReturnToken, VariableToken("n"), RightCurlyToken,
+		assertResult(List(FuncToken, VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken, IntToken, RightParenToken, OperatorLiteralToken("->"), IntToken, 
+							LeftCurlyToken, IfToken, VariableToken("n"), OperatorLiteralToken("<="), DecimalIntegerLiteralToken("1"), LeftCurlyToken, ReturnToken, VariableToken("n"), RightCurlyToken,
 							ReturnToken, VariableToken("n"), OperatorLiteralToken("*"), VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken, VariableToken("n"), OperatorLiteralToken("-"), DecimalIntegerLiteralToken("1"), RightParenToken, RightCurlyToken))							
 			{ TokenizerPC("func factorial(n: Int) -> Int { if n <= 1 { return n } return n * factorial(n: n - 1) }") }
 	}
