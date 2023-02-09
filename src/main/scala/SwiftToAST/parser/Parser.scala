@@ -56,6 +56,10 @@ object Parser extends Parsers {
 	lazy val multi_line_string: Parser[MultiLineStringLiteralToken] = {
 		accept("multi_line_string", { case id @ MultiLineStringLiteralToken(value) => id })
 	}
+	
+	lazy val operator_thing: Parser[OperatorLiteralToken] = {
+		accept("operator_thing", { case id @ OperatorLiteralToken(value) => id })
+	}
 		
 	class TokenReader(tokens: Seq[Token]) extends Reader[Token] {
 	override def first: Token = tokens.head
@@ -81,9 +85,6 @@ object Parser extends Parsers {
 	//statements
 	lazy val statement: Parser[Stmt] = {
 		test_stmt | expression_stmt
-		//val test = ForToken ~ variable ^^ { case _ ~ VariableToken(name) => VariableExp(Variable(name)) } 
-		//val test2 = ForToken ^^^ TestStmt 
-		//test | test2
 	}
 	
 	lazy val test_stmt: Parser[Stmt] = {
@@ -93,15 +94,24 @@ object Parser extends Parsers {
 	//expressions
 	//expression: try_operator? prefix_expression binary_expressions?;
 	lazy val expression_stmt: Parser[Stmt] = {
-		opt(try_operator) ~ prefix_expression	//left off here 1
+		opt(try_operator) ~ prefix_expression ~ opt(infix_expression) //^^ turn this into a TryExp but we need to combine in the infix things
 		???
 	}
 	
 	//prefix_expression:
 	// prefix_operator? postfix_expression
 	// | in_out_expression;
-	lazy val prefix_expression = {
-		opt(prefix_operator) ~ postfix_expression //left off here 2
+	lazy val prefix_expression: Parser[Exp] = {
+		//opt(prefix_operator) ~ postfix_expression ^^ { case optOperator ~ expression => optOperator.map(_ => PrefixExp(optOperator, expression)).getOrElse(expression) }
+		prefix_operator ~ postfix_expression ^^ { case theOperator ~ expression => PrefixExp(theOperator, expression) } |
+		postfix_expression ^^ { case expression => PostfixExp(expression) }
+	}
+	
+	lazy val in_out_expression: Parser[Exp] = {
+		???
+	}
+	
+	lazy val infix_expression: Parser[InfixExp] = {
 		???
 	}
 	
@@ -115,9 +125,8 @@ object Parser extends Parsers {
 	//	| forced_value_suffix
 	//	| optional_chaining_suffix
 	// )* postfix_operator*?;
-	lazy val postfix_expression = {
-		primary_expression //left off here 3
-		???
+	lazy val postfix_expression: Parser[Exp] = {
+		primary_expression
 	}
 	
 	//primary_expression:
@@ -136,7 +145,7 @@ object Parser extends Parsers {
 	// | key_path_expression
 	// | selector_expression
 	// | key_path_string_expression;
-	lazy val primary_expression = {
+	lazy val primary_expression: Parser[Exp] = {
 		/*unqualified_name ~ opt(generic_argument_clause)*/ //left off here 4
 		// | array_type
 		// | dictionary_type
@@ -258,7 +267,7 @@ object Parser extends Parsers {
 	| HASH_FUNCTION
 	| HASH_DSO_HANDLE; */
 	lazy val literal_expression = {
-		literal //left off here 6
+		literal
 	}
 	
 /* 	literal:
@@ -275,20 +284,20 @@ object Parser extends Parsers {
 	negate_prefix_operator? integer_literal
 	| negate_prefix_operator? Floating_point_literal; */
 	lazy val numeric_literal: Parser[Exp] = {
-		opt(MinusToken) ~ integer_literal ^^ { case optMinus ~ intLiteral => SignedNumericLiteralExp(optMinus, intLiteral) } |
-		opt(MinusToken) ~ float_literal ^^ { case optMinus ~ floatLiteral => SignedNumericLiteralExp(optMinus, floatLiteral) }
+		opt(MinusToken) ~ integer_literal ^^ { case optMinus ~ intLiteral => optMinus.map(_ => PrefixExp(Operator("-"), intLiteral)).getOrElse(intLiteral) } |
+		opt(MinusToken) ~ float_literal ^^ { case optMinus ~ floatLiteral => optMinus.map(_ => PrefixExp(Operator("-"), floatLiteral)).getOrElse(floatLiteral) }
 	}
 	
 	lazy val integer_literal: Parser[NumericLiteralExp] = {
-		decimal_integer ^^ { case DecimalIntegerLiteralToken(value) => DecimalIntegerLiteralExp(value) } |
-		binary_integer ^^ { case BinaryIntegerLiteralToken(value) => BinaryIntegerLiteralExp(value) } |
-		octal_integer ^^ { case OctalIntegerLiteralToken(value) => OctalIntegerLiteralExp(value) } |
-		hex_integer ^^ { case HexIntegerLiteralToken(value) => HexIntegerLiteralExp(value) }
+		decimal_integer ^^ { case DecimalIntegerLiteralToken(value) => NumericLiteralExp(value) } |
+		binary_integer ^^ { case BinaryIntegerLiteralToken(value) => NumericLiteralExp(value) } |
+		octal_integer ^^ { case OctalIntegerLiteralToken(value) => NumericLiteralExp(value) } |
+		hex_integer ^^ { case HexIntegerLiteralToken(value) => NumericLiteralExp(value) }
 	}
 	
 	lazy val float_literal: Parser[NumericLiteralExp] = {
-		decimal_float ^^ { case FloatDecimalLiteralToken(value) => DecimalFloatLiteralExp(value) } |
-		hex_float ^^ { case FloatHexLiteralToken(value) => HexFloatLiteralExp(value) }
+		decimal_float ^^ { case FloatDecimalLiteralToken(value) => NumericLiteralExp(value) } |
+		hex_float ^^ { case FloatHexLiteralToken(value) => NumericLiteralExp(value) }
 	}
 	
 	lazy val string_literal: Parser[Exp] = {
@@ -296,35 +305,26 @@ object Parser extends Parsers {
 		multi_line_string ^^ { case MultiLineStringLiteralToken(value) => MultiLineStringLiteralExp(value) }
 	}
 	
-	lazy val boolean_literal = {
+	lazy val boolean_literal: Parser[Exp] = {
 		TrueToken ^^^ TrueExp | FalseToken ^^^ FalseExp
 	}
 	
-	lazy val nil_literal = {
+	lazy val nil_literal: Parser[Exp] = {
 		NilToken ^^^ NilExp
 	}
 	
 	//operators
-	lazy val try_operator = {
-		TryToken ~ opt(QuestionToken) ^^ { case _ ~ optQuestion => TryOperator(optQuestion) } |
-		TryToken ~ opt(ExclamationToken) ^^ { case _ ~ optExclamation => TryOperator(optExclamation) }
+	lazy val try_operator: Parser[TryModifier] = {
+		TryToken ~ QuestionToken ^^^ QuestionMarkTryModifier |
+		TryToken ~ ExclamationToken ^^^ ExclamationTryModifier |
+		TryToken ^^^ NoTryModifier
 	}
 	
-	lazy val prefix_operator: Parser[List[Op]] = {
+	lazy val prefix_operator: Parser[Operator] = {
 		operator
 	}
 	
-	lazy val operator: Parser[List[Op]] = {
-		rep1(ops)
-	}
-	
-	lazy val ops: Parser[Op] = {
-		DivisionToken ^^^ DivisionOp | EqualToken ^^^ EqualOp |
-		MinusToken ^^^ MinusOp | AdditionToken ^^^ AdditionOp |
-		ExclamationToken ^^^ NotOp | MultiplicationToken ^^^ MultiplicationOp |
-		ModToken ^^^ ModOp | AndToken ^^^ AndOp |
-		OrToken ^^^ OrOp | LessThanToken ^^^ LessThanOp |
-		GreaterThanToken ^^^ GreaterThanOp | CaretToken ^^^ CaretOp |
-		TildeToken ^^^ TildeOp | QuestionToken ^^^ QuestionOp
+	lazy val operator: Parser[Operator] = {
+		operator_thing ^^ { case OperatorLiteralToken(value) => Operator(value) }
 	}
 }

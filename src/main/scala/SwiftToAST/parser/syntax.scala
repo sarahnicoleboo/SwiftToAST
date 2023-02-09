@@ -6,53 +6,46 @@ case class Program(stmts: Seq[Stmt])
 case class Variable(name: String)
 
 sealed trait Op
-case object DivisionOp extends Op
-case object EqualOp extends Op
-case object MinusOp extends Op
-case object AdditionOp extends Op
-case object NotOp extends Op
-case object MultiplicationOp extends Op
-case object ModOp extends Op
-case object AndOp extends Op
-case object OrOp extends Op
-case object LessThanOp extends Op
-case object GreaterThanOp extends Op
-case object CaretOp extends Op
-case object TildeOp extends Op
-case object QuestionOp extends Op
+case class Operator(value: String) extends Op
+
+sealed trait TryModifier
+case object NoTryModifier extends TryModifier
+case object QuestionMarkTryModifier extends TryModifier
+case object ExclamationTryModifier extends TryModifier
 
 
-case class TryOperator(token: Option[Token])	//change?
+sealed trait InfixExp
+case class WithOperatorInfixExpression(op: Operator, exp: Exp) extends InfixExp
+case class TypeCastInfixExpression(op: TypeCastingOp) extends InfixExp
+sealed trait TypeCastingOp
+case class IsType(typ: Type) extends TypeCastingOp
+case class AsType(typ: Type) extends TypeCastingOp
+case class AsQuestionType(typ: Type) extends TypeCastingOp
+case class AsBangType(typ: Type) extends TypeCastingOp
 
 //exps
 sealed trait Exp
 
-case class SignedNumericLiteralExp(sign: Option[Token], value: NumericLiteralExp) extends Exp
-sealed trait NumericLiteralExp
-case class DecimalFloatLiteralExp(value: String) extends NumericLiteralExp
-case class HexFloatLiteralExp(value: String) extends NumericLiteralExp
-case class DecimalIntegerLiteralExp(value: String) extends NumericLiteralExp
-case class BinaryIntegerLiteralExp(value: String) extends NumericLiteralExp
-case class OctalIntegerLiteralExp(value: String) extends NumericLiteralExp
-case class HexIntegerLiteralExp(value: String) extends NumericLiteralExp
+case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
+case class PrefixExp(operator: Op, expression: Exp) extends Exp
 
+case class PostfixExp(expression: Exp) extends Exp
+
+case class NumericLiteralExp(value: String) extends Exp
 case class SingleLineStringLiteralExp(value: String) extends Exp
 case class MultiLineStringLiteralExp(value: String) extends Exp
-
-	//booleans
 case object TrueExp extends Exp
 case object FalseExp extends Exp
-
 case object NilExp extends Exp
+
+
+sealed trait Type
+
 
 
 
 case class VariableExp(name: Variable) extends Exp
 
-//types
-sealed trait Type
-
-case object IntType extends Type
 
 //statements
 sealed trait Stmt

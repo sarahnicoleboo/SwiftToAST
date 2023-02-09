@@ -128,27 +128,44 @@ object TokenizerPC extends RegexParsers {
 		//""""((?:[^"\\]|\\[\\"ntbrf])+)"""".r ^^ { str => StringLiteralToken(str) }
 	}
 	
+	def operators: Parser[OperatorLiteralToken] = {
+		"/" ^^ (str => OperatorLiteralToken(str)) |
+		"=" ^^ (str => OperatorLiteralToken(str)) |
+		"-" ^^ (str => OperatorLiteralToken(str)) |
+		"+" ^^ (str => OperatorLiteralToken(str)) |
+		"!" ^^ (str => OperatorLiteralToken(str)) |
+		"*" ^^ (str => OperatorLiteralToken(str)) |
+		"%" ^^ (str => OperatorLiteralToken(str)) |
+		"<" ^^ (str => OperatorLiteralToken(str)) |
+		">" ^^ (str => OperatorLiteralToken(str)) |
+		"&" ^^ (str => OperatorLiteralToken(str)) |
+		"|" ^^ (str => OperatorLiteralToken(str)) |
+		"^" ^^ (str => OperatorLiteralToken(str)) |
+		"~" ^^ (str => OperatorLiteralToken(str)) |
+		"?" ^^ (str => OperatorLiteralToken(str))
+	}
+	
 	def reservedSymbols: Parser[Token] = {
-		"." ^^ (_ => DotToken) | "{" ^^ (_ => LeftCurlyToken) |
-		"(" ^^ (_ => LeftParenToken) | "[" ^^ (_ => LeftBracketToken) |
-		"}" ^^ (_ => RightCurlyToken) | ")" ^^ (_ => RightParenToken) |
-		"]" ^^ (_ => RightBracketToken) | "," ^^ (_ => CommaToken) |
-		":" ^^ (_ => ColonToken) | ";" ^^ (_ => SemicolonToken) |
-		"<" ^^ (_ => LessThanToken) | ">" ^^ (_ => GreaterThanToken) |
-		"!" ^^ (_ => ExclamationToken) | "?" ^^ (_ => QuestionToken) |
-		"@" ^^ (_ => AtToken) | "&" ^^ (_ => AndToken) |
-		"-" ^^ (_ => MinusToken) | "=" ^^ (_ => EqualToken) |
-		"|" ^^ (_ => OrToken) | "/" ^^ (_ => DivisionToken) |
-		"+" ^^ (_ => AdditionToken) | "*" ^^ (_ => MultiplicationToken) |
-		"%" ^^ (_ => ModToken) | "^" ^^ (_ => CaretToken) |
-		"~" ^^ (_ => TildeToken) | "#" ^^ (_ => HashToken) |
-		"`" ^^ (_ => BackTickToken) | "\\" ^^ (_ => DoubleBackSlashToken) //|
+		"." ^^ (_ => DotToken) |
+		"{" ^^ (_ => LeftCurlyToken) |
+		"(" ^^ (_ => LeftParenToken) |
+		"[" ^^ (_ => LeftBracketToken) |
+		"}" ^^ (_ => RightCurlyToken) |
+		")" ^^ (_ => RightParenToken) |
+		"]" ^^ (_ => RightBracketToken) |
+		"," ^^ (_ => CommaToken) |
+		":" ^^ (_ => ColonToken) |
+		";" ^^ (_ => SemicolonToken) |
+		"@" ^^ (_ => AtToken) |
+		"#" ^^ (_ => HashToken) |
+		"`" ^^ (_ => BackTickToken) |
+		"\\" ^^ (_ => DoubleBackSlashToken) //|
 		//"_" ^^ (_ => UnderscoreToken)
 	}
 	
 	def tokens: Parser[List[Token]] = {
 		phrase(rep(reserved_words | reserved_types | underscore | variable | implicit_parameter_OR_property_wrapper_projection
-				| float_literal | integer_literal | comments | strings | reservedSymbols))
+				| float_literal | integer_literal | comments | strings | operators | reservedSymbols))
 	}
 	
 	

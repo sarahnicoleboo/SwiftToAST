@@ -154,6 +154,10 @@ case object DoubleToken extends Token
 case object BoolToken extends Token
 case object CharacterToken extends Token
 
+//operator
+case class OperatorLiteralToken(operator: String) extends Token
+//this makes a lot of the reserved symbols tokens defunct, leaving this as a comment so i can remember to remove them later.
+
 //identifiers (variables)
 case class VariableToken(name: String) extends Token
 case class ImplicitParameterToken(name: String) extends Token
@@ -214,4 +218,5 @@ case class MultiLineStringLiteralToken(value: String) extends Token
 //comments
 case class SingleLineCommentToken(comment: String) extends Token
 case class MultiLineCommentToken(comment: String) extends Token
+//probably scrapping comment preservation, leaving this so I can delete them later
 
