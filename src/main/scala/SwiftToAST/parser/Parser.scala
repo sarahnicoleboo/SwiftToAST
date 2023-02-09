@@ -266,8 +266,9 @@ object Parser extends Parsers {
 	| string_literal
 	| boolean_literal
 	| nil_literal; */
-	lazy val literal = {
-		numeric_literal | string_literal
+	lazy val literal: Parser[Exp] = {
+		numeric_literal | string_literal |
+		boolean_literal | nil_literal
 	}
 	
 /* 	numeric_literal:
@@ -290,12 +291,17 @@ object Parser extends Parsers {
 		hex_float ^^ { case FloatHexLiteralToken(value) => HexFloatLiteralExp(value) }
 	}
 	
-	lazy val string_literal = {
-		single_line_string ^^ { case SingleLineStringLiteralToken(value) => checkInterpolation(value) }
+	lazy val string_literal: Parser[Exp] = {
+		single_line_string ^^ { case SingleLineStringLiteralToken(value) => SingleLineStringLiteralExp(value) } |	//interpolation(value)*/ }
+		multi_line_string ^^ { case MultiLineStringLiteralToken(value) => MultiLineStringLiteralExp(value) }
 	}
 	
-	def checkInterpolation(value: String) = {
-		???
+	lazy val boolean_literal = {
+		TrueToken ^^^ TrueExp | FalseToken ^^^ FalseExp
+	}
+	
+	lazy val nil_literal = {
+		NilToken ^^^ NilExp
 	}
 	
 	//operators

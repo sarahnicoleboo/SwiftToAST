@@ -28,7 +28,6 @@ case class TryOperator(token: Option[Token])	//change?
 sealed trait Exp
 
 case class SignedNumericLiteralExp(sign: Option[Token], value: NumericLiteralExp) extends Exp
-
 sealed trait NumericLiteralExp
 case class DecimalFloatLiteralExp(value: String) extends NumericLiteralExp
 case class HexFloatLiteralExp(value: String) extends NumericLiteralExp
@@ -36,6 +35,17 @@ case class DecimalIntegerLiteralExp(value: String) extends NumericLiteralExp
 case class BinaryIntegerLiteralExp(value: String) extends NumericLiteralExp
 case class OctalIntegerLiteralExp(value: String) extends NumericLiteralExp
 case class HexIntegerLiteralExp(value: String) extends NumericLiteralExp
+
+case class SingleLineStringLiteralExp(value: String) extends Exp
+case class MultiLineStringLiteralExp(value: String) extends Exp
+
+	//booleans
+case object TrueExp extends Exp
+case object FalseExp extends Exp
+
+case object NilExp extends Exp
+
+
 
 case class VariableExp(name: Variable) extends Exp
 
