@@ -95,9 +95,32 @@ object Parser extends Parsers {
 		expression ^^ { case exp => ExpressionStmt(exp) }
 	}
 	
+/* 	lazy val expression: Parser[Exp] = {
+		opt(try_operator) ~ prefix_expression ~ opt(infix_expression).map({case theTry ~ prefix ~ infix => {
+			val combinedExp = infix match {
+				case None => prefix
+				case Some(WithOperatorInfixExpression(op, exp)) => TrueInfixExp(prefix, op, exp)//1 + 2 as single expression
+				case Some(TypeCastInfixExpression(op)) => CastExp(prefix, op)
+			}
+			theTry match {
+				case None => combinedExp
+				case Some(tryModifier) => TryExp(tryModifier, combinedExp)
+			}
+		}})
+	} */
+	
 	lazy val expression: Parser[Exp] = {
-		opt(try_operator) ~ prefix_expression ~ opt(infix_expression) //^^ turn this into a TryExp but we need to combine in the infix things
-		???
+		opt(try_operator) ~ prefix_expression ~ opt(infix_expression) ^^ {case theTry ~ prefix ~ infix => {
+			val combinedExp = infix match {
+				case None => prefix
+				case Some(WithOperatorInfixExpression(op, exp)) => TrueInfixExp(prefix, op, exp)//1 + 2 as single expression
+				case Some(TypeCastInfixExpression(op)) => CastExp(prefix, op)
+			}
+			theTry match {
+				case None => combinedExp
+				case Some(tryModifier) => TryExp(tryModifier, combinedExp)
+			}
+		}}
 	}
 
 	lazy val prefix_expression: Parser[Exp] = {
@@ -134,8 +157,12 @@ object Parser extends Parsers {
 	
 	//order?
 	lazy val generic_argument_clause: Parser[GenericArgumentClause] = {
-		operator_thing ~ typ ~ operator_thing ^^ { case _ ~ singleType ~ _ => GenericArgumentClause(List(singleType)) } |
-		operator_thing ~ comma_sep_types ~ operator_thing ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
+		//operator("<") ~ typ ~ operator(">") ^^ { case _ ~ singleType ~ _ => GenericArgumentClause(List(singleType)) } |
+		operator("<") ~ comma_sep_types ~ operator(">") ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
+	}
+	
+	def operator(expected: String): Parser[Operator] = {
+		operator_thing.flatMap(actual => if(expected == actual.operator) success(Operator(expected)) else failure("dfsd"))
 	}
 	
 
@@ -163,15 +190,16 @@ object Parser extends Parsers {
 	
 	//what about singular item without commas?
 	//order?
+	/* */
 	lazy val array_literal: Parser[Exp] = {
-		LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
-		LeftBracketToken ~ comma_sep_exps ~ RightBracketToken ^^ { case _ ~ expList ~ _ => ArrayLiteralExp(expList) }
+		//LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
+		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap({ case _ ~ expList ~ maybe ~ _ => if(expList.isEmpty && maybe.nonEmpty) { failure("dfsdf") } else { success(ArrayLiteralExp(expList)) }})
 	}
 	
 	lazy val dictionary_literal: Parser[Exp] = {
-		//LeftBracketToken ~ SemicolonToken ~ RightBracketToken
-		LeftBracketToken ~ expression ~ SemicolonToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { ??? }
-		???
+		LeftBracketToken ~ SemicolonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
+		//LeftBracketToken ~ expression ~ SemicolonToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { ??? }
+		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) }
 	}
 	
 	lazy val playground_literal: Parser[Exp] = {
@@ -183,17 +211,16 @@ object Parser extends Parsers {
 			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ => ImagePlaygroundLiteralExp(exp) }
 	}
 	
-	lazy val comma_sep_dictionary = {
-		???
+	def f(input: ~[~[Exp, Token], Exp]): (Exp, Exp) = (input._1._1, input._2)
+	
+	lazy val comma_sep_dictionary: Parser[List[(Exp, Exp)]] = {
+		rep1sep(expression ~ ColonToken ~ expression, CommaToken).map(_.map(input => (input._1._1, input._2)))
 	}
 	
 	lazy val comma_sep_exps: Parser[List[Exp]] = {
 		repsep(expression, CommaToken)
 	}
 	
-/* 	numeric_literal:
-	negate_prefix_operator? integer_literal
-	| negate_prefix_operator? Floating_point_literal; */
 	lazy val numeric_literal: Parser[Exp] = {
 		opt(MinusToken) ~ integer_literal ^^ { case optMinus ~ intLiteral => optMinus.map(_ => PrefixExp(Operator("-"), intLiteral)).getOrElse(intLiteral) } |
 		opt(MinusToken) ~ float_literal ^^ { case optMinus ~ floatLiteral => optMinus.map(_ => PrefixExp(Operator("-"), floatLiteral)).getOrElse(floatLiteral) }

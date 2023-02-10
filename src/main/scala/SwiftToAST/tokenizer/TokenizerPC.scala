@@ -129,7 +129,7 @@ object TokenizerPC extends RegexParsers {
 	}
 	
 	def operators: Parser[OperatorLiteralToken] = {
-		"""[/=+!*%<>&|^~?.-][/=+!*%<>&|^~?.-]*""".r ^^ { str => OperatorLiteralToken(str) }
+		"""[/=+!*%<>&|^~?.-]+""".r ^^ { str => OperatorLiteralToken(str) }
 	}
 	
 	def reservedSymbols: Parser[Token] = {
