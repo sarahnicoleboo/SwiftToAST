@@ -37,6 +37,19 @@ case class MultiLineStringLiteralExp(value: String) extends Exp
 case object TrueExp extends Exp
 case object FalseExp extends Exp
 case object NilExp extends Exp
+case class ArrayLiteralExp(exps: List[Exp]) extends Exp
+//case class DictionaryLiteralExp(exps: ???[Exp, Exp]) extends Exp
+
+case class ColorPlaygroundLiteralExp(exp1: Exp, exp2: Exp, exp3: Exp, exp4: Exp) extends Exp
+case class FilePlaygroundLiteralExp(exp: Exp) extends Exp
+case class ImagePlaygroundLiteralExp(exp: Exp) extends Exp
+case object HashFileExp extends Exp
+case object HashFileIDExp extends Exp
+case object HashFilePathExp extends Exp
+case object HashLineExp extends Exp
+case object HashColumnExp extends Exp
+case object HashFunctionExp extends Exp
+case object HashDSOHandleExp extends Exp
 
 
 sealed trait Type
@@ -49,5 +62,7 @@ case class VariableExp(name: Variable) extends Exp
 
 //statements
 sealed trait Stmt
+
+case class ExpressionStmt(exp: Exp) extends Stmt
 
 case object TestStmt extends Stmt

@@ -91,20 +91,19 @@ object Parser extends Parsers {
 		ForToken ^^^ TestStmt 
 	}
 	
-	//expressions
-	//expression: try_operator? prefix_expression binary_expressions?;
 	lazy val expression_stmt: Parser[Stmt] = {
+		expression ^^ { case exp => ExpressionStmt(exp) }
+	}
+	
+	lazy val expression: Parser[Exp] = {
 		opt(try_operator) ~ prefix_expression ~ opt(infix_expression) //^^ turn this into a TryExp but we need to combine in the infix things
 		???
 	}
-	
-	//prefix_expression:
-	// prefix_operator? postfix_expression
-	// | in_out_expression;
+
 	lazy val prefix_expression: Parser[Exp] = {
 		//opt(prefix_operator) ~ postfix_expression ^^ { case optOperator ~ expression => optOperator.map(_ => PrefixExp(optOperator, expression)).getOrElse(expression) }
-		prefix_operator ~ postfix_expression ^^ { case theOperator ~ expression => PrefixExp(theOperator, expression) } |
-		postfix_expression ^^ { case expression => PostfixExp(expression) }
+		prefix_operator ~ postfix_expression ^^ { case theOperator ~ exp => PrefixExp(theOperator, exp) } |
+		postfix_expression ^^ { case exp => PostfixExp(exp) }
 	}
 	
 	lazy val in_out_expression: Parser[Exp] = {
@@ -115,169 +114,68 @@ object Parser extends Parsers {
 		???
 	}
 	
-	//postfix_expression:
-	// primary_expression (
-	//	function_call_suffix
-	//	| initializer_suffix
-	//	| explicit_member_suffix
-	//	| postfix_self_suffix
-	//	| subscript_suffix
-	//	| forced_value_suffix
-	//	| optional_chaining_suffix
-	// )* postfix_operator*?;
+
 	lazy val postfix_expression: Parser[Exp] = {
 		primary_expression
 	}
 	
-	//primary_expression:
-	// unqualified_name generic_argument_clause?
-	// | array_type
-	// | dictionary_type
-	// | literal_expression
-	// | self_expression
-	// | superclass_expression
-	// | closure_expression
-	// | parenthesized_operator
-	// | parenthesized_expression
-	// | tuple_expression
-	// | implicit_member_expression
-	// | wildcard_expression
-	// | key_path_expression
-	// | selector_expression
-	// | key_path_string_expression;
+	//see grammar
 	lazy val primary_expression: Parser[Exp] = {
-		/*unqualified_name ~ opt(generic_argument_clause)*/ //left off here 4
-		// | array_type
-		// | dictionary_type
 		literal_expression
-		???
-	}
-	
-	//unqualified_name: identifier (LPAREN argument_names RPAREN)?;
-	lazy val unqualified_name = {
-		identifier //left off here 5
-		???
 	}
 	
 	//identifier:
-/* 	(
-		LINUX
-		| WINDOWS
-		| ALPHA
-		| ARCH
-		| ARM
-		| ARM64
-		| ASSIGNMENT
-		| BLUE
-		| CAN_IMPORT
-		| COMPILER
-		| FILE
-		| GREEN
-		| HIGHER_THAN
-		| I386
-		| I_OS
-		| OSX
-		| I_OS_APPLICATION_EXTENSION
-		| LINE
-		| LOWER_THAN
-		| MAC_CATALYST
-		| MAC_CATALYST_APPLICATION_EXTENSION
-		| MAC_OS
-		| MAC_OS_APPLICATION_EXTENSION
-		| OS
-		| PRECEDENCE_GROUP
-		| RED
-		| RESOURCE_NAME
-		| SAFE
-		| SIMULATOR
-		| SOME
-		| SWIFT
-		| TARGET_ENVIRONMENT
-		| TV_OS
-		| UNSAFE
-		| WATCH_OS
-		| X86_64
-
-		// Keywords reserved in particular contexts
-		| ASSOCIATIVITY
-		| CONVENIENCE
-		| DYNAMIC
-		| DID_SET
-		| FINAL
-		| GET
-		| INFIX
-		| INDIRECT
-		| LAZY
-		| LEFT
-		| MUTATING
-		| NONE
-		| NONMUTATING
-		| OPTIONAL
-		| OVERRIDE
-		| POSTFIX
-		| PRECEDENCE
-		| PREFIX
-		| PROTOCOL
-		| REQUIRED
-		| RIGHT
-		| SET
-		| TYPE
-		| UNOWNED
-		| WEAK
-		| WILL_SET
-		| IN
-		| FOR
-		| GUARD
-		| WHERE
-		| DEFAULT
-		| INTERNAL
-		| PRIVATE
-		| PUBLIC
-		| OPEN
-		| AS
-		| PREFIX
-		| POSTFIX
-		| WHILE
-		| SELF
-		| SELF_BIG
-		| SET
-		| CLASS
-		| GETTER
-		| SETTER
-		| OPERATOR
-		| DO
-		| CATCH
-	)
-	| Identifier
-	| BACKTICK (keyword | Identifier | DOLLAR) BACKTICK; */
+	//see grammar bcuz it's too long to put here
 	lazy val identifier = {
 		???
 	}
 	
-/* 	literal_expression:
-	literal
-	| array_literal
-	| dictionary_literal
-	| playground_literal
-	| HASH_FILE
-	| HASH_FILE_ID
-	| HASH_FILE_PATH
-	| HASH_LINE
-	| HASH_COLUMN
-	| HASH_FUNCTION
-	| HASH_DSO_HANDLE; */
+
 	lazy val literal_expression = {
-		literal
+		literal | array_literal |
+		dictionary_literal | playground_literal |
+		HashFileToken ^^^ HashFileExp |
+		HashFileIDToken ^^^ HashFileIDExp |
+		HashFilePathToken ^^^ HashFilePathExp |
+		HashLineToken ^^^ HashLineExp |
+		HashColumnToken ^^^ HashColumnExp |
+		HashFunctionToken ^^^ HashFunctionExp |
+		HashDSOHandleToken ^^^ HashDSOHandleExp
 	}
 	
-/* 	literal:
-	numeric_literal
-	| string_literal
-	| boolean_literal
-	| nil_literal; */
+
 	lazy val literal: Parser[Exp] = {
 		numeric_literal | string_literal |
 		boolean_literal | nil_literal
+	}
+	
+	//what about singular item without commas?
+	lazy val array_literal: Parser[Exp] = {
+		LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
+		LeftBracketToken ~ comma_sep_exps ~ RightBracketToken ^^ { case _ ~ expList ~ _ => ArrayLiteralExp(expList) }
+	}
+	
+	lazy val dictionary_literal: Parser[Exp] = {
+		//LeftBracketToken ~ SemicolonToken ~ RightBracketToken
+		LeftBracketToken ~ expression ~ SemicolonToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { ??? }
+		???
+	}
+	
+	lazy val playground_literal: Parser[Exp] = {
+		HashColorLiteralToken ~ LeftParenToken ~ RedToken ~ ColonToken ~ expression ~ CommaToken ~ GreenToken ~ ColonToken ~ expression ~ CommaToken ~ BlueToken ~ ColonToken ~ expression ~ CommaToken ~ AlphaToken ~ ColonToken ~ expression ~ RightParenToken ^^ 
+			{ case _ ~ _ ~ _ ~ _ ~ exp1 ~ _ ~ _ ~ _ ~ exp2 ~ _ ~ _ ~ _ ~ exp3 ~ _ ~ _ ~ _ ~ exp4 ~ _ => ColorPlaygroundLiteralExp(exp1, exp2, exp3, exp4) } |
+		HashFileLiteralToken ~ LeftParenToken ~ ResourceNameToken ~ ColonToken ~ expression ~ RightParenToken ^^
+			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ =>  FilePlaygroundLiteralExp(exp) } |
+		HashImageLiteralToken ~ LeftParenToken ~ ResourceNameToken ~ ColonToken ~ expression ~ RightParenToken ^^
+			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ => ImagePlaygroundLiteralExp(exp) }
+	}
+	
+	lazy val comma_sep_dictionary = {
+		???
+	}
+	
+	lazy val comma_sep_exps: Parser[List[Exp]] = {
+		repsep(expression, CommaToken)
 	}
 	
 /* 	numeric_literal:
