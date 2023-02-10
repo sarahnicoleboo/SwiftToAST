@@ -212,8 +212,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val numeric_literal: Parser[Exp] = {
-		opt(MinusToken) ~ integer_literal ^^ { case optMinus ~ intLiteral => optMinus.map(_ => PrefixExp(Operator("-"), intLiteral)).getOrElse(intLiteral) } |
-		opt(MinusToken) ~ float_literal ^^ { case optMinus ~ floatLiteral => optMinus.map(_ => PrefixExp(Operator("-"), floatLiteral)).getOrElse(floatLiteral) }
+		opt(operator("-")) ~ integer_literal ^^ { case optMinus ~ intLiteral => optMinus.map(_ => PrefixExp(Operator("-"), intLiteral)).getOrElse(intLiteral) } |
+		opt(operator("-")) ~ float_literal ^^ { case optMinus ~ floatLiteral => optMinus.map(_ => PrefixExp(Operator("-"), floatLiteral)).getOrElse(floatLiteral) }
 	}
 	
 	lazy val integer_literal: Parser[NumericLiteralExp] = {
@@ -243,8 +243,8 @@ object Parser extends Parsers {
 	
 	//operators
 	lazy val try_operator: Parser[TryModifier] = {
-		TryToken ~ QuestionToken ^^^ QuestionMarkTryModifier |
-		TryToken ~ ExclamationToken ^^^ ExclamationTryModifier |
+		TryToken ~ operator("?") ^^^ QuestionMarkTryModifier |
+		TryToken ~ operator("!") ^^^ ExclamationTryModifier |
 		TryToken ^^^ NoTryModifier
 	}
 	
