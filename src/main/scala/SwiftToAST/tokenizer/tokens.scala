@@ -166,8 +166,8 @@ case class PropertyWrapperProjectionToken(name: String) extends Token
 // $0 as an implicit param or a property wrapper projection. This would be handled later in the compiler.
 case class ImplicitParameterOrPropertyWrapperProjectionToken(name: String) extends Token
 
-// reserved symbols ?
-case object DotToken extends Token
+// reserved symbols
+//case object DotToken extends Token
 case object LeftCurlyToken extends Token
 case object LeftParenToken extends Token
 case object LeftBracketToken extends Token
@@ -177,22 +177,22 @@ case object RightBracketToken extends Token
 case object CommaToken extends Token
 case object ColonToken extends Token
 case object SemicolonToken extends Token
-case object LessThanToken extends Token
-case object GreaterThanToken extends Token
+//case object LessThanToken extends Token
+//case object GreaterThanToken extends Token
 case object UnderscoreToken extends Token
-case object ExclamationToken extends Token
-case object QuestionToken extends Token
+//case object ExclamationToken extends Token
+//case object QuestionToken extends Token
 case object AtToken extends Token
-case object AndToken extends Token
-case object MinusToken extends Token
-case object EqualToken extends Token
-case object OrToken extends Token
-case object DivisionToken extends Token
-case object AdditionToken extends Token
-case object MultiplicationToken extends Token
-case object ModToken extends Token
-case object CaretToken extends Token
-case object TildeToken extends Token
+//case object AndToken extends Token
+//case object MinusToken extends Token
+//case object EqualToken extends Token
+//case object OrToken extends Token
+//case object DivisionToken extends Token
+//case object AdditionToken extends Token
+//case object MultiplicationToken extends Token
+//case object ModToken extends Token
+//case object CaretToken extends Token
+//case object TildeToken extends Token
 case object HashToken extends Token
 case object BackTickToken extends Token
 case object DollarToken extends Token

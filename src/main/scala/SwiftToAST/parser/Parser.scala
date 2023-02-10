@@ -142,7 +142,6 @@ object Parser extends Parsers {
 		primary_expression
 	}
 	
-	//see grammar
 	lazy val primary_expression: Parser[Exp] = {
 		identifier ~ generic_argument_clause ^^ { case varName ~ listOfTypes => GenericVariableExp(varName, listOfTypes) } |
 		identifier |
@@ -155,9 +154,7 @@ object Parser extends Parsers {
 		property_wrapper_projection ^^ { case PropertyWrapperProjectionToken(name) => PropertyWrapperProjectionExp(name) }
 	}
 	
-	//order?
 	lazy val generic_argument_clause: Parser[GenericArgumentClause] = {
-		//operator("<") ~ typ ~ operator(">") ^^ { case _ ~ singleType ~ _ => GenericArgumentClause(List(singleType)) } |
 		operator("<") ~ comma_sep_types ~ operator(">") ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
 	}
 	
@@ -182,15 +179,11 @@ object Parser extends Parsers {
 		rep1sep(typ, CommaToken)
 	}
 	
-
 	lazy val literal: Parser[Exp] = {
 		numeric_literal | string_literal |
 		boolean_literal | nil_literal
 	}
 	
-	//what about singular item without commas?
-	//order?
-	/* */
 	lazy val array_literal: Parser[Exp] = {
 		//LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
 		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap({ case _ ~ expList ~ maybe ~ _ => if(expList.isEmpty && maybe.nonEmpty) { failure("dfsdf") } else { success(ArrayLiteralExp(expList)) }})
@@ -198,7 +191,6 @@ object Parser extends Parsers {
 	
 	lazy val dictionary_literal: Parser[Exp] = {
 		LeftBracketToken ~ SemicolonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
-		//LeftBracketToken ~ expression ~ SemicolonToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { ??? }
 		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) }
 	}
 	
@@ -210,8 +202,6 @@ object Parser extends Parsers {
 		HashImageLiteralToken ~ LeftParenToken ~ ResourceNameToken ~ ColonToken ~ expression ~ RightParenToken ^^
 			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ => ImagePlaygroundLiteralExp(exp) }
 	}
-	
-	def f(input: ~[~[Exp, Token], Exp]): (Exp, Exp) = (input._1._1, input._2)
 	
 	lazy val comma_sep_dictionary: Parser[List[(Exp, Exp)]] = {
 		rep1sep(expression ~ ColonToken ~ expression, CommaToken).map(_.map(input => (input._1._1, input._2)))
