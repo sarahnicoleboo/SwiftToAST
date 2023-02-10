@@ -13,23 +13,29 @@ case object NoTryModifier extends TryModifier
 case object QuestionMarkTryModifier extends TryModifier
 case object ExclamationTryModifier extends TryModifier
 
-
 sealed trait InfixExp
 case class WithOperatorInfixExpression(op: Operator, exp: Exp) extends InfixExp
 case class TypeCastInfixExpression(op: TypeCastingOp) extends InfixExp
+
 sealed trait TypeCastingOp
 case class IsType(typ: Type) extends TypeCastingOp
 case class AsType(typ: Type) extends TypeCastingOp
 case class AsQuestionType(typ: Type) extends TypeCastingOp
 case class AsBangType(typ: Type) extends TypeCastingOp
 
+case class GenericArgumentClause(typs: List[Type])
+
 //exps
 sealed trait Exp
-
 case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
 case class PrefixExp(operator: Op, expression: Exp) extends Exp
 
 case class PostfixExp(expression: Exp) extends Exp
+
+case class GenericVariableExp(exp: Exp, typs: GenericArgumentClause) extends Exp
+case class VariableExp(name: Variable) extends Exp
+case class ImplicitParameterExp(name: String) extends Exp
+case class PropertyWrapperProjectionExp(name: String) extends Exp
 
 case class NumericLiteralExp(value: String) extends Exp
 case class SingleLineStringLiteralExp(value: String) extends Exp
@@ -54,15 +60,8 @@ case object HashDSOHandleExp extends Exp
 
 sealed trait Type
 
-
-
-
-case class VariableExp(name: Variable) extends Exp
-
-
 //statements
 sealed trait Stmt
-
 case class ExpressionStmt(exp: Exp) extends Stmt
 
 case object TestStmt extends Stmt

@@ -18,7 +18,7 @@ object Parser extends Parsers {
 	}
 	
 	lazy val property_wrapper_projection: Parser[PropertyWrapperProjectionToken] = {
-		accept("property_wrapper", { case id @ PropertyWrapperProjectionToken(name) => id })
+		accept("property_wrapper_projection", { case id @ PropertyWrapperProjectionToken(name) => id })
 	}
 	
 	lazy val ip_OR_pw: Parser[ImplicitParameterOrPropertyWrapperProjectionToken] = {
@@ -121,17 +121,25 @@ object Parser extends Parsers {
 	
 	//see grammar
 	lazy val primary_expression: Parser[Exp] = {
+		identifier ~ generic_argument_clause ^^ { case varName ~ listOfTypes => GenericVariableExp(varName, listOfTypes) } |
+		identifier |
 		literal_expression
 	}
 	
-	//identifier:
-	//see grammar bcuz it's too long to put here
-	lazy val identifier = {
-		???
+	lazy val identifier: Parser[Exp] = {
+		variable ^^ { case VariableToken(name) => VariableExp(Variable(name)) } |
+		implicit_parameter ^^ { case ImplicitParameterToken(name) => ImplicitParameterExp(name) } |
+		property_wrapper_projection ^^ { case PropertyWrapperProjectionToken(name) => PropertyWrapperProjectionExp(name) }
+	}
+	
+	//order?
+	lazy val generic_argument_clause: Parser[GenericArgumentClause] = {
+		operator_thing ~ typ ~ operator_thing ^^ { case _ ~ singleType ~ _ => GenericArgumentClause(List(singleType)) } |
+		operator_thing ~ comma_sep_types ~ operator_thing ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
 	}
 	
 
-	lazy val literal_expression = {
+	lazy val literal_expression: Parser[Exp] = {
 		literal | array_literal |
 		dictionary_literal | playground_literal |
 		HashFileToken ^^^ HashFileExp |
@@ -143,6 +151,10 @@ object Parser extends Parsers {
 		HashDSOHandleToken ^^^ HashDSOHandleExp
 	}
 	
+	lazy val comma_sep_types: Parser[List[Type]] = {
+		rep1sep(typ, CommaToken)
+	}
+	
 
 	lazy val literal: Parser[Exp] = {
 		numeric_literal | string_literal |
@@ -150,6 +162,7 @@ object Parser extends Parsers {
 	}
 	
 	//what about singular item without commas?
+	//order?
 	lazy val array_literal: Parser[Exp] = {
 		LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
 		LeftBracketToken ~ comma_sep_exps ~ RightBracketToken ^^ { case _ ~ expList ~ _ => ArrayLiteralExp(expList) }
@@ -224,5 +237,9 @@ object Parser extends Parsers {
 	
 	lazy val operator: Parser[Operator] = {
 		operator_thing ^^ { case OperatorLiteralToken(value) => Operator(value) }
+	}
+	
+	lazy val typ: Parser[Type] = {
+		???
 	}
 }
