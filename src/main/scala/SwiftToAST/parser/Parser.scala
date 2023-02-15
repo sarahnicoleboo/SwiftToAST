@@ -95,20 +95,6 @@ object Parser extends Parsers {
 		expression ^^ { case exp => ExpressionStmt(exp) }
 	}
 	
-/* 	lazy val expression: Parser[Exp] = {
-		opt(try_operator) ~ prefix_expression ~ opt(infix_expression).map({case theTry ~ prefix ~ infix => {
-			val combinedExp = infix match {
-				case None => prefix
-				case Some(WithOperatorInfixExpression(op, exp)) => TrueInfixExp(prefix, op, exp)//1 + 2 as single expression
-				case Some(TypeCastInfixExpression(op)) => CastExp(prefix, op)
-			}
-			theTry match {
-				case None => combinedExp
-				case Some(tryModifier) => TryExp(tryModifier, combinedExp)
-			}
-		}})
-	} */
-	
 	lazy val expression: Parser[Exp] = {
 		opt(try_operator) ~ prefix_expression ~ opt(infix_expression) ^^ {case theTry ~ prefix ~ infix => {
 			val combinedExp = infix match {
@@ -134,7 +120,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val infix_expression: Parser[InfixExp] = {
-		???
+	infix_operator ~ prefix_expression ^^ { case op ~ exp => WithOperatorInfixExpression(op, exp) }
+	//still need type casting operator but i need to do types for that so hold up
 	}
 	
 
@@ -248,9 +235,9 @@ object Parser extends Parsers {
 		TryToken ^^^ NoTryModifier
 	}
 	
-	lazy val prefix_operator: Parser[Operator] = {
-		operator
-	}
+	lazy val prefix_operator: Parser[Operator] = { operator }
+	
+	lazy val infix_operator: Parser[Operator] = { operator }
 	
 	lazy val operator: Parser[Operator] = {
 		operator_thing ^^ { case OperatorLiteralToken(value) => Operator(value) }

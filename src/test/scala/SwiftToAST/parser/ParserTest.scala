@@ -14,4 +14,8 @@ class ParserTest extends FlatSpec {
 	"Parser" should "handle a test VariableExp" in {
 		assertResult(Program(Seq(VariableExp(Variable("hi"))))) { Parser(Seq(ForToken, VariableToken("hi"))) }
 	} */
+	
+	"The parser" should "handle a decimal integer literal token and return a prefix exp?" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("23")))))) { Parser(Seq(DecimalIntegerLiteralToken("23"))) }
+	}
 }
