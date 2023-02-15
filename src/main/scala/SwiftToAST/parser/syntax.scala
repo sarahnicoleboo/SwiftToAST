@@ -61,6 +61,15 @@ case object HashDSOHandleExp extends Exp
 
 
 sealed trait Type
+case class FunctionType(before: List[Type], after: Type) extends Type
+case class ArrayType(typ: Type) extends Type
+case class DictionaryType(type1: Type, type2: Type) extends Type
+case class TypeIdentifier(typ: DifferentTypes) extends Type
+
+sealed trait DifferentTypes
+case class NormalType(typeName: Exp) extends DifferentTypes	//VariableExp to be more specific?
+case class GenericType(typeName: Exp, genericTypes: GenericArgumentClause) extends DifferentTypes
+case class NestedType(typeName: Exp, genericTypes: GenericArgumentClause, nestedType: TypeIdentifier) extends DifferentTypes
 
 //statements
 sealed trait Stmt

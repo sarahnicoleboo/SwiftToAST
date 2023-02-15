@@ -171,33 +171,6 @@ object Parser extends Parsers {
 		boolean_literal | nil_literal
 	}
 	
-	lazy val array_literal: Parser[Exp] = {
-		//LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
-		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap({ case _ ~ expList ~ maybe ~ _ => if(expList.isEmpty && maybe.nonEmpty) { failure("dfsdf") } else { success(ArrayLiteralExp(expList)) }})
-	}
-	
-	lazy val dictionary_literal: Parser[Exp] = {
-		LeftBracketToken ~ SemicolonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
-		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) }
-	}
-	
-	lazy val playground_literal: Parser[Exp] = {
-		HashColorLiteralToken ~ LeftParenToken ~ RedToken ~ ColonToken ~ expression ~ CommaToken ~ GreenToken ~ ColonToken ~ expression ~ CommaToken ~ BlueToken ~ ColonToken ~ expression ~ CommaToken ~ AlphaToken ~ ColonToken ~ expression ~ RightParenToken ^^ 
-			{ case _ ~ _ ~ _ ~ _ ~ exp1 ~ _ ~ _ ~ _ ~ exp2 ~ _ ~ _ ~ _ ~ exp3 ~ _ ~ _ ~ _ ~ exp4 ~ _ => ColorPlaygroundLiteralExp(exp1, exp2, exp3, exp4) } |
-		HashFileLiteralToken ~ LeftParenToken ~ ResourceNameToken ~ ColonToken ~ expression ~ RightParenToken ^^
-			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ =>  FilePlaygroundLiteralExp(exp) } |
-		HashImageLiteralToken ~ LeftParenToken ~ ResourceNameToken ~ ColonToken ~ expression ~ RightParenToken ^^
-			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ => ImagePlaygroundLiteralExp(exp) }
-	}
-	
-	lazy val comma_sep_dictionary: Parser[List[(Exp, Exp)]] = {
-		rep1sep(expression ~ ColonToken ~ expression, CommaToken).map(_.map(input => (input._1._1, input._2)))
-	}
-	
-	lazy val comma_sep_exps: Parser[List[Exp]] = {
-		repsep(expression, CommaToken)
-	}
-	
 	lazy val numeric_literal: Parser[Exp] = {
 		opt(operator("-")) ~ integer_literal ^^ { case optMinus ~ intLiteral => optMinus.map(_ => PrefixExp(Operator("-"), intLiteral)).getOrElse(intLiteral) } |
 		opt(operator("-")) ~ float_literal ^^ { case optMinus ~ floatLiteral => optMinus.map(_ => PrefixExp(Operator("-"), floatLiteral)).getOrElse(floatLiteral) }
@@ -228,6 +201,33 @@ object Parser extends Parsers {
 		NilToken ^^^ NilExp
 	}
 	
+	lazy val array_literal: Parser[Exp] = {
+		//LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
+		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap({ case _ ~ expList ~ maybe ~ _ => if(expList.isEmpty && maybe.nonEmpty) { failure("dfsdf") } else { success(ArrayLiteralExp(expList)) }})
+	}
+	
+	lazy val dictionary_literal: Parser[Exp] = {
+		LeftBracketToken ~ SemicolonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
+		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) }
+	}
+	
+	lazy val comma_sep_dictionary: Parser[List[(Exp, Exp)]] = {
+		rep1sep(expression ~ ColonToken ~ expression, CommaToken).map(_.map(input => (input._1._1, input._2)))
+	}
+	
+	lazy val comma_sep_exps: Parser[List[Exp]] = {
+		repsep(expression, CommaToken)
+	}
+	
+	lazy val playground_literal: Parser[Exp] = {
+		HashColorLiteralToken ~ LeftParenToken ~ RedToken ~ ColonToken ~ expression ~ CommaToken ~ GreenToken ~ ColonToken ~ expression ~ CommaToken ~ BlueToken ~ ColonToken ~ expression ~ CommaToken ~ AlphaToken ~ ColonToken ~ expression ~ RightParenToken ^^ 
+			{ case _ ~ _ ~ _ ~ _ ~ exp1 ~ _ ~ _ ~ _ ~ exp2 ~ _ ~ _ ~ _ ~ exp3 ~ _ ~ _ ~ _ ~ exp4 ~ _ => ColorPlaygroundLiteralExp(exp1, exp2, exp3, exp4) } |
+		HashFileLiteralToken ~ LeftParenToken ~ ResourceNameToken ~ ColonToken ~ expression ~ RightParenToken ^^
+			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ =>  FilePlaygroundLiteralExp(exp) } |
+		HashImageLiteralToken ~ LeftParenToken ~ ResourceNameToken ~ ColonToken ~ expression ~ RightParenToken ^^
+			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ => ImagePlaygroundLiteralExp(exp) }
+	}
+	
 	//operators
 	lazy val try_operator: Parser[TryModifier] = {
 		TryToken ~ operator("?") ^^^ QuestionMarkTryModifier |
@@ -244,6 +244,33 @@ object Parser extends Parsers {
 	}
 	
 	lazy val typ: Parser[Type] = {
+		//function_type |
+		array_type |
+		dictionary_type |
+		type_identifier
+		//tuple_type
 		???
 	}
+	
+	lazy val function_type: Parser[FunctionType] = {
+		???
+	}
+	
+	lazy val array_type: Parser[ArrayType] = {
+		LeftBracketToken ~ typ ~ RightBracketToken ^^ { case _ ~ theType ~ _ => ArrayType(theType) }
+	}
+	
+	lazy val dictionary_type: Parser[DictionaryType] = {
+		LeftBracketToken ~ typ ~ ColonToken ~ typ ~ RightBracketToken ^^ { case _ ~ typ1 ~ _ ~ typ2 ~ _ => DictionaryType(typ1, typ2) }
+	}
+	
+	lazy val type_identifier: Parser[TypeIdentifier] = {
+		identifier ~ generic_argument_clause ~ operator(".") ~ type_identifier ^^ { case name ~ types ~ _ ~ recursive => TypeIdentifier(NestedType(name, types, recursive)) } |
+		identifier ~ generic_argument_clause ^^ { case name ~ types => TypeIdentifier(GenericType(name, types)) } |
+		identifier ^^ { case name => TypeIdentifier(NormalType(name)) }
+	}
+	
+/* 	lazy val tuple_type: Parser[???] = {
+		
+	} */
 }

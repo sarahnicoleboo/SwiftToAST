@@ -77,11 +77,11 @@ object TokenizerPC extends RegexParsers {
 		"get(?=[\\s\\W]+)".r ^^ (_ => GetToken) | "set(?=[\\s\\W]+)".r ^^ (_ => SetToken)
 	}
 	
-	def reserved_types: Parser[Token] = {
+/* 	def reserved_types: Parser[Token] = {
 		"Int(?=[\\s\\W]+)".r ^^ (_ => IntToken) | "String(?=[\\s\\W]+)".r ^^ (_ => StringToken) |
 		"Float(?=[\\s\\W]+)".r ^^ (_ => FloatToken) | "Double(?=[\\s\\W]+)".r ^^ (_ => DoubleToken) |
 		"Bool(?=[\\s\\W]+)".r ^^ (_ => BoolToken) | "Character(?=[\\s\\W]+)".r ^^ (_ => CharacterToken)
-	}
+	} */
 
 	//example:
 	//	as a variable			: var _ = "hi"
@@ -151,7 +151,7 @@ object TokenizerPC extends RegexParsers {
 	}
 	
 	def tokens: Parser[List[Token]] = {
-		phrase(rep(reserved_words | reserved_types | underscore | variable | implicit_parameter_OR_property_wrapper_projection
+		phrase(rep(reserved_words | underscore | variable | implicit_parameter_OR_property_wrapper_projection
 				| float_literal | integer_literal | comments | strings | operators | reservedSymbols))
 	}
 	

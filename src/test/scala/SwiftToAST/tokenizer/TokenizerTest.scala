@@ -568,7 +568,7 @@ class TokenizerTest extends FlatSpec {
 	
 	
 	//reserved type testing
-	"TokenizerPC" should "handle an Int token" in {
+/* 	"TokenizerPC" should "handle an Int token" in {
 		assertResult(List(IntToken)) { TokenizerPC("Int ") }
 	}	
 	
@@ -590,7 +590,7 @@ class TokenizerTest extends FlatSpec {
 	
 	"TokenizerPC" should "handle a Character token" in {
 		assertResult(List(CharacterToken)) { TokenizerPC("Character ") }
-	}
+	} */
 	
 	//variable testing
 	
@@ -888,7 +888,7 @@ class TokenizerTest extends FlatSpec {
 	
 	//complex testing
 	"TokenizerPC" should "handle a complex test" in {
-		assertResult(List(FuncToken, VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken, IntToken, RightParenToken, OperatorLiteralToken("->"), IntToken))							
+		assertResult(List(FuncToken, VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken,  VariableToken("Int"), RightParenToken, OperatorLiteralToken("->"),  VariableToken("Int")))							
 			{ TokenizerPC("func factorial(n: Int) -> Int ") }
 	}
 	
@@ -903,7 +903,7 @@ class TokenizerTest extends FlatSpec {
 	}
 	
 	"TokenizerPC" should "handle a combination of the above complex tests" in {
-		assertResult(List(FuncToken, VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken, IntToken, RightParenToken, OperatorLiteralToken("->"), IntToken, 
+		assertResult(List(FuncToken, VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken,  VariableToken("Int"), RightParenToken, OperatorLiteralToken("->"),  VariableToken("Int"), 
 							LeftCurlyToken, IfToken, VariableToken("n"), OperatorLiteralToken("<="), DecimalIntegerLiteralToken("1"), LeftCurlyToken, ReturnToken, VariableToken("n"), RightCurlyToken,
 							ReturnToken, VariableToken("n"), OperatorLiteralToken("*"), VariableToken("factorial"), LeftParenToken, VariableToken("n"), ColonToken, VariableToken("n"), OperatorLiteralToken("-"), DecimalIntegerLiteralToken("1"), RightParenToken, RightCurlyToken))							
 			{ TokenizerPC("func factorial(n: Int) -> Int { if n <= 1 { return n } return n * factorial(n: n - 1) }") }
