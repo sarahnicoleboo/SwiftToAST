@@ -203,20 +203,20 @@ object Parser extends Parsers {
 	
 	lazy val array_literal: Parser[Exp] = {
 		//LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
-		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap({ case _ ~ expList ~ maybe ~ _ => if(expList.isEmpty && maybe.nonEmpty) { failure("dfsdf") } else { success(ArrayLiteralExp(expList)) }})
-	}
-	
-	lazy val dictionary_literal: Parser[Exp] = {
-		LeftBracketToken ~ SemicolonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
-		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) }
-	}
-	
-	lazy val comma_sep_dictionary: Parser[List[(Exp, Exp)]] = {
-		rep1sep(expression ~ ColonToken ~ expression, CommaToken).map(_.map(input => (input._1._1, input._2)))
+		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap({ case _ ~ expList ~ maybe ~ _ => if(expList.isEmpty && maybe.nonEmpty) { failure("random comma not preceeded by an exp") } else { success(ArrayLiteralExp(expList)) }})
 	}
 	
 	lazy val comma_sep_exps: Parser[List[Exp]] = {
 		repsep(expression, CommaToken)
+	}
+	
+	lazy val dictionary_literal: Parser[Exp] = {
+		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) } |
+		LeftBracketToken ~ ColonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
+	}
+	
+	lazy val comma_sep_dictionary: Parser[List[(Exp, Exp)]] = {
+		rep1sep(expression ~ ColonToken ~ expression, CommaToken).map(_.map(input => (input._1._1, input._2)))
 	}
 	
 	lazy val playground_literal: Parser[Exp] = {

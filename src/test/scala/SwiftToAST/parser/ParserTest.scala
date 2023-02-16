@@ -49,4 +49,47 @@ class ParserTest extends FlatSpec {
 	"The parser" should "handle a nil token and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NilExp))))) { Parser(Seq(NilToken)) }
 	}
+	
+	"The parser" should "handle an array literal [] and return a postfix exp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List())))))) { Parser(Seq(LeftBracketToken, RightBracketToken)) }
+	}
+	
+	"The parser" should "handle an array literal [1] and return a postfix exp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), RightBracketToken)) }
+	}
+	
+	"The parser" should "handle an array literal [1,] and return a postfix exp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, RightBracketToken)) }
+	}
+	
+	"The parser" should "handle an array literal [1,2] and return a postfix exp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"), RightBracketToken)) }
+	}
+	
+	"The parser" should "handle an dictionary literal [:] and return a postfix exp" in {
+		val dictionaryList: List[(Exp, Exp)] = List()
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(DictionaryLiteralExp(dictionaryList)))))
+		assertResult(expected) { Parser(Seq(LeftBracketToken, ColonToken, RightBracketToken)) }
+	}
+	
+ 	"The parser" should "handle an dictionary literal [1:2] and return a postfix exp" in {
+		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), RightBracketToken)
+		val dictionaryList: List[(Exp, Exp)] = List((PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(DictionaryLiteralExp(dictionaryList)))))
+		assertResult(expected) { Parser(input) }
+	}
+	
+ 	"The parser" should "handle an dictionary literal [1:2,] and return a postfix exp" in {
+		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, RightBracketToken)
+		val dictionaryList: List[(Exp, Exp)] = List((PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(DictionaryLiteralExp(dictionaryList)))))
+		assertResult(expected) { Parser(input) }
+	}
+	
+ 	"The parser" should "handle an dictionary literal [1:2, 3:4] and return a postfix exp" in {
+		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, DecimalIntegerLiteralToken("3"), ColonToken, DecimalIntegerLiteralToken("4"), RightBracketToken)
+		val dictionaryList: List[(Exp, Exp)] = List((PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))), (PostfixExp(NumericLiteralExp("3")), PostfixExp(NumericLiteralExp("4"))))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(DictionaryLiteralExp(dictionaryList)))))
+		assertResult(expected) { Parser(input) }
+	}
 }
