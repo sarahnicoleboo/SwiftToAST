@@ -6,6 +6,7 @@ class ParserTest extends FlatSpec {
 	import SwiftToAST.tokenizer._
 	import SwiftToAST.parser._
 	
+	//numeric literals
 	"The parser" should "handle a decimal integer literal token and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("23")))))) { Parser(Seq(DecimalIntegerLiteralToken("23"))) }
 	}
@@ -30,6 +31,8 @@ class ParserTest extends FlatSpec {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("0x34.AB")))))) { Parser(Seq(FloatHexLiteralToken("0x34.AB"))) }
 	}
 	
+	
+	//string literals
 	"The parser" should "handle a single line string literal token and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SingleLineStringLiteralExp("hello")))))) { Parser(Seq(SingleLineStringLiteralToken("hello"))) }
 	}
@@ -38,6 +41,8 @@ class ParserTest extends FlatSpec {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(MultiLineStringLiteralExp("hello\nthere")))))) { Parser(Seq(MultiLineStringLiteralToken("hello\nthere"))) }
 	}
 	
+	
+	//boolean literals
 	"The parser" should "handle a boolean literal true token and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(TrueExp))))) { Parser(Seq(TrueToken)) }
 	}
@@ -46,10 +51,14 @@ class ParserTest extends FlatSpec {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(FalseExp))))) { Parser(Seq(FalseToken)) }
 	}
 	
+	
+	//nil literal
 	"The parser" should "handle a nil token and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NilExp))))) { Parser(Seq(NilToken)) }
 	}
 	
+	
+	//array literals
 	"The parser" should "handle an array literal [] and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List())))))) { Parser(Seq(LeftBracketToken, RightBracketToken)) }
 	}
@@ -66,6 +75,8 @@ class ParserTest extends FlatSpec {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"), RightBracketToken)) }
 	}
 	
+	
+	//dictionary literals
 	"The parser" should "handle an dictionary literal [:] and return a postfix exp" in {
 		val dictionaryList: List[(Exp, Exp)] = List()
 		val expected = Program(Seq(ExpressionStmt(PostfixExp(DictionaryLiteralExp(dictionaryList)))))
@@ -92,4 +103,55 @@ class ParserTest extends FlatSpec {
 		val expected = Program(Seq(ExpressionStmt(PostfixExp(DictionaryLiteralExp(dictionaryList)))))
 		assertResult(expected) { Parser(input) }
 	}
+	
+	
+	//playground literals
+	"The parser" should "handle a colorLiteral playground literal" in {
+		val input = Seq(HashColorLiteralToken, LeftParenToken, RedToken, ColonToken, DecimalIntegerLiteralToken("0"), CommaToken, GreenToken, ColonToken, DecimalIntegerLiteralToken("1"), CommaToken, BlueToken, ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, AlphaToken, ColonToken, DecimalIntegerLiteralToken("3"), RightParenToken)
+		val expected = PostfixExp(ColorPlaygroundLiteralExp(PostfixExp(NumericLiteralExp("0")), PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2")), PostfixExp(NumericLiteralExp("3"))))
+		assertResult(Program(Seq(ExpressionStmt(expected)))) { Parser(input) }
+	}
+	
+	"The parser" should "handle a fileLiteral playground literal" in {
+		val input = Seq(HashFileLiteralToken, LeftParenToken, ResourceNameToken, ColonToken, DecimalIntegerLiteralToken("0"), RightParenToken)
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(FilePlaygroundLiteralExp(PostfixExp(NumericLiteralExp("0")))))))
+		assertResult(expected) { Parser(input) }
+	}
+	
+	"The parser" should "handle an imageLiteral playground literal" in {
+		val input = Seq(HashImageLiteralToken, LeftParenToken, ResourceNameToken, ColonToken, DecimalIntegerLiteralToken("0"), RightParenToken)
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(ImagePlaygroundLiteralExp(PostfixExp(NumericLiteralExp("0")))))))
+		assertResult(expected) { Parser(input) }
+	}
+	
+	
+	//other literals
+	"The parser" should "handle a HashFileToken and return a HashFileExp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(HashFileExp))))) { Parser(Seq(HashFileToken)) }
+	}
+	
+	"The parser" should "handle a HashFileIDToken and return a HashFileIDExp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(HashFileIDExp))))) { Parser(Seq(HashFileIDToken)) }
+	}
+	
+	"The parser" should "handle a HashFilePathToken and return a HashFilePathExp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(HashFilePathExp))))) { Parser(Seq(HashFilePathToken)) }
+	}
+	
+	"The parser" should "handle a HashLineToken and return a HashLineExp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(HashLineExp))))) { Parser(Seq(HashLineToken)) }
+	}
+	
+	"The parser" should "handle a HashColumnToken and return a HashColumnExp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(HashColumnExp))))) { Parser(Seq(HashColumnToken)) }
+	}
+	
+	"The parser" should "handle a HashFunctionToken and return a HashFunctionExp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(HashFunctionExp))))) { Parser(Seq(HashFunctionToken)) }
+	}
+	
+	"The parser" should "handle a HashDSOHandleToken and return a HashDSOHandleExp" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(HashDSOHandleExp))))) { Parser(Seq(HashDSOHandleToken)) }
+	}
+	
 }
