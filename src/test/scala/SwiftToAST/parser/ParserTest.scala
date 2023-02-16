@@ -14,9 +14,34 @@ class ParserTest extends FlatSpec {
 		val typeList = GenericArgumentClause(List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int")))))))
 		val expected = Program(Seq(ExpressionStmt(PostfixExp(GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList))))) 
 		assertResult(expected) { Parser(input) }
-	}	
+	}
 	
-	//LITERAL EXPRESSIONS
+	"The parser" should "handle an identifier followed by a list of generic types: name<Int, String>" in {
+		val input = Seq(VariableToken("name"), OperatorLiteralToken("<"), VariableToken("Int"), CommaToken, VariableToken("String"), OperatorLiteralToken(">"))
+		val typeList = GenericArgumentClause(List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String")))))))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList))))) 
+		assertResult(expected) { Parser(input) }
+	}
+	
+	"The parser" should "handle a VariableExp identifier" in {
+		val input = Seq(VariableToken("variableName"))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(IdentifierExp(VariableExp(Variable("variableName"))))))) 
+		assertResult(expected) { Parser(input) }
+	}
+	
+	"The parser" should "handle an implicit parameter identifier" in {
+		val input = Seq(ImplicitParameterToken("variableName"))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(IdentifierExp(ImplicitParameterExp("variableName")))))) 
+		assertResult(expected) { Parser(input) }
+	}
+	
+	"The parser" should "handle a property wrapper projection identifier" in {
+		val input = Seq(PropertyWrapperProjectionToken("variableName"))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(IdentifierExp(PropertyWrapperProjectionExp("variableName")))))) 
+		assertResult(expected) { Parser(input) }
+	}
+	
+	//literal expressions
 	
 	//numeric literals
 	"The parser" should "handle a decimal integer literal token and return a postfix exp" in {
@@ -164,6 +189,40 @@ class ParserTest extends FlatSpec {
 	
 	"The parser" should "handle a HashDSOHandleToken and return a HashDSOHandleExp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(HashDSOHandleExp))))) { Parser(Seq(HashDSOHandleToken)) }
+	}
+	
+	
+	//self expressions
+	
+	"The parser" should "handle a single self expression" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SelfExp(SelfSolo)))))) { Parser(Seq(SelfToken)) }
+	}
+	
+	"The parser" should "handle a self method expression: self.hello" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SelfExp(SelfMethod(IdentifierExp(VariableExp(Variable("hello")))))))))) { Parser(Seq(SelfToken, OperatorLiteralToken("."), VariableToken("hello"))) }
+	}
+	
+	"The parser" should "handle a self subscript expression: self [2]" in {
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(SelfExp(SelfSubscript(List(PostfixExp(NumericLiteralExp("2")))))))))
+		assertResult(expected) { Parser(Seq(SelfToken, LeftBracketToken, DecimalIntegerLiteralToken("2"), RightBracketToken)) }
+	}
+	
+/* 	"The parser" should "handle a self subscript expression: self [name : 5]" in {
+		val input = Seq(SelfToken, LeftBracketToken, VariableToken("name"), ColonToken, DecimalIntegerLiteralToken("5"), RightBracketToken)
+		val list = List(IdentifierExp(VariableExp(Variable("name"))), PostfixExp(NumericLiteralExp("5")))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(SelfExp(SelfSubscript(list))))))
+		assertResult(expected) { Parser(input) }
+	} */
+	
+/* 	"The parser" should "handle a self subscript expression: self [2, name : 5]" in {
+		val input = Seq(SelfToken, LeftBracketToken, DecimalIntegerLiteralToken("2"), CommaToken, VariableToken("name"), ColonToken, DecimalIntegerLiteralToken("5"))
+		val list = List(PostfixExp(NumericLiteralExp("2")), (IdentifierExp(VariableExp(Variable("name"))), PostfixExp(NumericLiteralExp("5"))))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(SelfExp(SelfSubscript(list))))))
+		assertResult(expected) { Parser(input) }
+	} */
+	
+	"The parser" should "handle a self init expression" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SelfExp(SelfInit)))))) { Parser(Seq(SelfToken, OperatorLiteralToken("."), InitToken)) }
 	}
 	
 }

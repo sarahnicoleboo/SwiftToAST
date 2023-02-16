@@ -60,6 +60,10 @@ object Parser extends Parsers {
 	lazy val operator_thing: Parser[OperatorLiteralToken] = {
 		accept("operator_thing", { case id @ OperatorLiteralToken(value) => id })
 	}
+	
+	def operator(expected: String): Parser[Operator] = {
+		operator_thing.flatMap(actual => if(expected == actual.operator) success(Operator(expected)) else failure("dfsd"))
+	}
 		
 	class TokenReader(tokens: Seq[Token]) extends Reader[Token] {
 	override def first: Token = tokens.head
@@ -84,11 +88,7 @@ object Parser extends Parsers {
 	
 	//statements
 	lazy val statement: Parser[Stmt] = {
-		test_stmt | expression_stmt
-	}
-	
-	lazy val test_stmt: Parser[Stmt] = {
-		ForToken ^^^ TestStmt 
+		expression_stmt
 	}
 	
 	lazy val expression_stmt: Parser[Stmt] = {
@@ -132,7 +132,8 @@ object Parser extends Parsers {
 	lazy val primary_expression: Parser[Exp] = {
 		identifier ~ generic_argument_clause ^^ { case varName ~ listOfTypes => GenericVariableExp(varName, listOfTypes) } |
 		identifier |
-		literal_expression
+		literal_expression |
+		self_expression
 	}
 	
 	lazy val identifier: Parser[IdentifierExp] = {
@@ -147,10 +148,6 @@ object Parser extends Parsers {
 	
 	lazy val comma_sep_types: Parser[List[Type]] = {
 		rep1sep(typ, CommaToken)
-	}
-	
-	def operator(expected: String): Parser[Operator] = {
-		operator_thing.flatMap(actual => if(expected == actual.operator) success(Operator(expected)) else failure("dfsd"))
 	}
 	
 
@@ -226,6 +223,18 @@ object Parser extends Parsers {
 			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ =>  FilePlaygroundLiteralExp(exp) } |
 		HashImageLiteralToken ~ LeftParenToken ~ ResourceNameToken ~ ColonToken ~ expression ~ RightParenToken ^^
 			{ case _ ~ _ ~ _ ~ _ ~ exp ~ _ => ImagePlaygroundLiteralExp(exp) }
+	}
+	
+	lazy val self_expression: Parser[SelfExp] = {
+		SelfToken ~ operator(".") ~ identifier ^^ { case _ ~ _ ~ identifierExp => SelfExp(SelfMethod(identifierExp)) } |
+		SelfToken ~ operator(".") ~ InitToken ^^^ SelfExp(SelfInit) |
+		SelfToken ~ LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ _ ~ list ~ _ => SelfExp(SelfSubscript(list)) } |
+		SelfToken ^^^ SelfExp(SelfSolo)
+	}
+	
+	//List(1,2,"hello") List(1,2,hello:4) List(name:+)
+	lazy val function_call_argument_list: Parser[List[Any]] = {
+		rep1sep(expression | identifier ~ ColonToken ~ expression, CommaToken)
 	}
 	
 	//operators

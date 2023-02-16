@@ -30,23 +30,24 @@ case class VariableExp(name: Variable) extends DifferentIdentifiers
 case class ImplicitParameterExp(name: String) extends DifferentIdentifiers
 case class PropertyWrapperProjectionExp(name: String) extends DifferentIdentifiers
 
+sealed trait DifferentSelfs
+case object SelfSolo extends DifferentSelfs
+case class SelfMethod(exp: IdentifierExp) extends DifferentSelfs
+case class SelfSubscript(functionCallArgList: List[Any]) extends DifferentSelfs //questionable
+case object SelfInit extends DifferentSelfs
+
 //exps
 sealed trait Exp
 case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
 case class PrefixExp(operator: Op, expression: Exp) extends Exp
-
 case class PostfixExp(expression: Exp) extends Exp
 case class CastExp(exp: Exp, op: TypeCastingOp) extends Exp
 case class TrueInfixExp(exp1: Exp, op: Op, exp2: Exp) extends Exp
-
 case class GenericVariableExp(exp: IdentifierExp, typs: GenericArgumentClause) extends Exp
-
 case class IdentifierExp(exp: DifferentIdentifiers) extends Exp
-
 /* case class VariableExp(name: Variable) extends Exp
 case class ImplicitParameterExp(name: String) extends Exp
 case class PropertyWrapperProjectionExp(name: String) extends Exp */
-
 case class NumericLiteralExp(value: String) extends Exp
 case class SingleLineStringLiteralExp(value: String) extends Exp
 case class MultiLineStringLiteralExp(value: String) extends Exp
@@ -55,7 +56,6 @@ case object FalseExp extends Exp
 case object NilExp extends Exp
 case class ArrayLiteralExp(exps: List[Exp]) extends Exp
 case class DictionaryLiteralExp(exps: List[(Exp, Exp)]) extends Exp
-
 case class ColorPlaygroundLiteralExp(exp1: Exp, exp2: Exp, exp3: Exp, exp4: Exp) extends Exp
 case class FilePlaygroundLiteralExp(exp: Exp) extends Exp
 case class ImagePlaygroundLiteralExp(exp: Exp) extends Exp
@@ -66,6 +66,7 @@ case object HashLineExp extends Exp
 case object HashColumnExp extends Exp
 case object HashFunctionExp extends Exp
 case object HashDSOHandleExp extends Exp
+case class SelfExp(exp: DifferentSelfs) extends Exp
 
 
 sealed trait Type
