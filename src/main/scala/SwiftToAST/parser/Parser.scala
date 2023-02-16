@@ -134,7 +134,10 @@ object Parser extends Parsers {
 		identifier |
 		literal_expression |
 		self_expression |
-		superclass_expression
+		superclass_expression //|
+/* 		closure_expression |
+		parenthesized_expression |
+		tuple_expression */
 	}
 	
 	lazy val identifier: Parser[IdentifierExp] = {
@@ -240,8 +243,46 @@ object Parser extends Parsers {
 	}
 	
 	//List(1,2,"hello") List(1,2,hello:4) List(name:+)
-	lazy val function_call_argument_list: Parser[List[Any]] = {
-		rep1sep(expression | identifier ~ ColonToken ~ expression, CommaToken)
+	lazy val function_call_argument_list: Parser[List[FunctionCallArgument]] = {
+		rep1sep(function_call_argument, CommaToken)
+	}
+	
+	lazy val function_call_argument: Parser[FunctionCallArgument] = {
+		identifier ~ ColonToken ~ expression ^^ { case id ~ _ ~ exp => IdentifierColonExpFunctionCallArgument(id, exp) } |
+		identifier ~ ColonToken ~ operator ^^ { case id ~ _ ~ op => IdentifierColonOperatorFunctionCallArgument(id, op) } |
+		expression ^^ { case exp => ExpFunctionCallArgument(exp) } |
+		operator ^^ { case op => OperatorFunctionCallArgument(op) }
+	}
+	
+	lazy val closure_expression: Parser[ClosureExp] = {
+		???
+	}
+	
+	//attributes
+	lazy val attributes: Parser[Attribute] = {
+		AtToken ~ identifier ~ LeftParenToken ~ attribute_argument_clause ~ RightParenToken ^^  { case _ ~ name ~ _ ~ list ~ _ => Attribute(name, list) } |
+		AtToken ~ identifier ^^ { case _ ~ name => Attribute(name, List()) }
+	}
+	
+	lazy val attribute_argument_clause: Parser[List[BalancedToken]] = {
+		rep1(balanced_token)
+	}
+	
+	lazy val balanced_token: Parser[BalancedToken] = {
+		???
+	}
+	
+	lazy val parenthesized_expression: Parser[ParenthesizedExp] = {
+		LeftParenToken ~ expression ~ RightParenToken ^^ { case _ ~ exp ~ _ => ParenthesizedExp(exp) } 
+	}
+	
+	lazy val tuple_expression: Parser[TupleExp] = {
+		LeftParenToken ~ repsep(tuple_element, CommaToken) ~ RightParenToken ^^ { case _ ~ list ~ _ => TupleExp(list) }
+	}
+	
+	lazy val tuple_element: Parser[TupleElement] = {
+		identifier ~ ColonToken ~ expression ^^ { case name ~ _ ~  exp => IdentifierColonExpTuple(name, exp) } |
+		expression ^^ { case exp => ExpTuple(exp) }
 	}
 	
 	//operators
@@ -259,6 +300,7 @@ object Parser extends Parsers {
 		operator_thing ^^ { case OperatorLiteralToken(value) => Operator(value) }
 	}
 	
+	//types
 	lazy val typ: Parser[Type] = {
 		//function_type |
 		array_type |

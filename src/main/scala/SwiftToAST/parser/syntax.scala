@@ -25,6 +25,23 @@ case class AsBangType(typ: Type) extends TypeCastingOp
 
 case class GenericArgumentClause(typs: List[Type])
 
+case class Attribute(name: IdentifierExp, argClause: List[BalancedToken])
+
+sealed trait BalancedToken
+case class InParensToken(token: BalancedToken) extends BalancedToken
+case class InBracketsToken(token: BalancedToken) extends BalancedToken
+case class InBracesToken(token: BalancedToken) extends BalancedToken
+case class IdentifierToken(name: IdentifierExp) extends BalancedToken
+//case class KeywordToken(name: ???) extends BalancedToken 
+//case class 
+
+//closure sig to be done
+sealed trait ClosureSignature
+
+sealed trait TupleElement
+case class ExpTuple(exp: Exp) extends TupleElement
+case class IdentifierColonExpTuple(identifierExp: IdentifierExp, exp: Exp) extends TupleElement
+
 sealed trait DifferentIdentifiers
 case class VariableExp(name: Variable) extends DifferentIdentifiers
 case class ImplicitParameterExp(name: String) extends DifferentIdentifiers
@@ -33,13 +50,19 @@ case class PropertyWrapperProjectionExp(name: String) extends DifferentIdentifie
 sealed trait DifferentSelfs
 case object SelfSolo extends DifferentSelfs
 case class SelfMethod(exp: IdentifierExp) extends DifferentSelfs
-case class SelfSubscript(functionCallArgList: List[Any]) extends DifferentSelfs //questionable
+case class SelfSubscript(functionCallArgList: List[FunctionCallArgument]) extends DifferentSelfs //questionable
 case object SelfInit extends DifferentSelfs
 
 sealed trait DifferentSuperClasses
 case class SuperMethod(exp: IdentifierExp) extends DifferentSuperClasses
-case class SuperSubscript(functionCallArgList: List[Any]) extends DifferentSuperClasses
+case class SuperSubscript(functionCallArgList: List[FunctionCallArgument]) extends DifferentSuperClasses
 case object SuperInit extends DifferentSuperClasses
+
+sealed trait FunctionCallArgument
+case class ExpFunctionCallArgument(exp: Exp) extends FunctionCallArgument
+case class IdentifierColonExpFunctionCallArgument(identifierExp: IdentifierExp, exp: Exp) extends FunctionCallArgument
+case class OperatorFunctionCallArgument(op: Operator) extends FunctionCallArgument
+case class IdentifierColonOperatorFunctionCallArgument(identifierExp: IdentifierExp, op: Operator) extends FunctionCallArgument
 
 //exps
 sealed trait Exp
@@ -73,7 +96,9 @@ case object HashFunctionExp extends Exp
 case object HashDSOHandleExp extends Exp
 case class SelfExp(exp: DifferentSelfs) extends Exp
 case class SuperExp(exp: DifferentSuperClasses) extends Exp
-
+case class ClosureExp(attributeList: List[Attribute], closureSigList: List[ClosureSignature], stmts: List[Stmt]) extends Exp
+case class ParenthesizedExp(exp: Exp) extends Exp
+case class TupleExp(elementList: List[TupleElement]) extends Exp
 
 sealed trait Type
 case class FunctionType(before: List[Type], after: Type) extends Type
