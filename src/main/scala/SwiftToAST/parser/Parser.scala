@@ -135,14 +135,18 @@ object Parser extends Parsers {
 		literal_expression
 	}
 	
-	lazy val identifier: Parser[Exp] = {
-		variable ^^ { case VariableToken(name) => VariableExp(Variable(name)) } |
-		implicit_parameter ^^ { case ImplicitParameterToken(name) => ImplicitParameterExp(name) } |
-		property_wrapper_projection ^^ { case PropertyWrapperProjectionToken(name) => PropertyWrapperProjectionExp(name) }
+	lazy val identifier: Parser[IdentifierExp] = {
+		variable ^^ { case VariableToken(name) => IdentifierExp(VariableExp(Variable(name))) } |
+		implicit_parameter ^^ { case ImplicitParameterToken(name) => IdentifierExp(ImplicitParameterExp(name)) } |
+		property_wrapper_projection ^^ { case PropertyWrapperProjectionToken(name) => IdentifierExp(PropertyWrapperProjectionExp(name)) }
 	}
 	
 	lazy val generic_argument_clause: Parser[GenericArgumentClause] = {
 		operator("<") ~ comma_sep_types ~ operator(">") ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
+	}
+	
+	lazy val comma_sep_types: Parser[List[Type]] = {
+		rep1sep(typ, CommaToken)
 	}
 	
 	def operator(expected: String): Parser[Operator] = {
@@ -160,10 +164,6 @@ object Parser extends Parsers {
 		HashColumnToken ^^^ HashColumnExp |
 		HashFunctionToken ^^^ HashFunctionExp |
 		HashDSOHandleToken ^^^ HashDSOHandleExp
-	}
-	
-	lazy val comma_sep_types: Parser[List[Type]] = {
-		rep1sep(typ, CommaToken)
 	}
 	
 	lazy val literal: Parser[Exp] = {
@@ -249,7 +249,6 @@ object Parser extends Parsers {
 		dictionary_type |
 		type_identifier
 		//tuple_type
-		???
 	}
 	
 	lazy val function_type: Parser[FunctionType] = {

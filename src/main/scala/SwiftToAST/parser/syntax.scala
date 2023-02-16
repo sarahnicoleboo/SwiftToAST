@@ -25,6 +25,11 @@ case class AsBangType(typ: Type) extends TypeCastingOp
 
 case class GenericArgumentClause(typs: List[Type])
 
+sealed trait DifferentIdentifiers
+case class VariableExp(name: Variable) extends DifferentIdentifiers
+case class ImplicitParameterExp(name: String) extends DifferentIdentifiers
+case class PropertyWrapperProjectionExp(name: String) extends DifferentIdentifiers
+
 //exps
 sealed trait Exp
 case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
@@ -34,10 +39,13 @@ case class PostfixExp(expression: Exp) extends Exp
 case class CastExp(exp: Exp, op: TypeCastingOp) extends Exp
 case class TrueInfixExp(exp1: Exp, op: Op, exp2: Exp) extends Exp
 
-case class GenericVariableExp(exp: Exp, typs: GenericArgumentClause) extends Exp
-case class VariableExp(name: Variable) extends Exp
+case class GenericVariableExp(exp: IdentifierExp, typs: GenericArgumentClause) extends Exp
+
+case class IdentifierExp(exp: DifferentIdentifiers) extends Exp
+
+/* case class VariableExp(name: Variable) extends Exp
 case class ImplicitParameterExp(name: String) extends Exp
-case class PropertyWrapperProjectionExp(name: String) extends Exp
+case class PropertyWrapperProjectionExp(name: String) extends Exp */
 
 case class NumericLiteralExp(value: String) extends Exp
 case class SingleLineStringLiteralExp(value: String) extends Exp
@@ -67,9 +75,9 @@ case class DictionaryType(type1: Type, type2: Type) extends Type
 case class TypeIdentifier(typ: DifferentTypes) extends Type
 
 sealed trait DifferentTypes
-case class NormalType(typeName: Exp) extends DifferentTypes	//VariableExp to be more specific?
-case class GenericType(typeName: Exp, genericTypes: GenericArgumentClause) extends DifferentTypes
-case class NestedType(typeName: Exp, genericTypes: GenericArgumentClause, nestedType: TypeIdentifier) extends DifferentTypes
+case class NormalType(typeName: IdentifierExp) extends DifferentTypes	//VariableExp to be more specific?
+case class GenericType(typeName: IdentifierExp, genericTypes: GenericArgumentClause) extends DifferentTypes
+case class NestedType(typeName: IdentifierExp, genericTypes: GenericArgumentClause, nestedType: TypeIdentifier) extends DifferentTypes
 
 //statements
 sealed trait Stmt

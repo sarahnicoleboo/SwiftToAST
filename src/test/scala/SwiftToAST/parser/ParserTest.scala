@@ -6,6 +6,18 @@ class ParserTest extends FlatSpec {
 	import SwiftToAST.tokenizer._
 	import SwiftToAST.parser._
 	
+	//PRIMARY EXPRESSIONS
+	
+	//identifers
+	"The parser" should "handle an identifier followed by a list of generic types: name<Int>" in {
+		val input = Seq(VariableToken("name"), OperatorLiteralToken("<"), VariableToken("Int"), OperatorLiteralToken(">"))
+		val typeList = GenericArgumentClause(List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int")))))))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList))))) 
+		assertResult(expected) { Parser(input) }
+	}	
+	
+	//LITERAL EXPRESSIONS
+	
 	//numeric literals
 	"The parser" should "handle a decimal integer literal token and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("23")))))) { Parser(Seq(DecimalIntegerLiteralToken("23"))) }
