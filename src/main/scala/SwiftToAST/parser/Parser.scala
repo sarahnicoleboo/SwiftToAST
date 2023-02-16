@@ -133,7 +133,8 @@ object Parser extends Parsers {
 		identifier ~ generic_argument_clause ^^ { case varName ~ listOfTypes => GenericVariableExp(varName, listOfTypes) } |
 		identifier |
 		literal_expression |
-		self_expression
+		self_expression |
+		superclass_expression
 	}
 	
 	lazy val identifier: Parser[IdentifierExp] = {
@@ -230,6 +231,12 @@ object Parser extends Parsers {
 		SelfToken ~ operator(".") ~ InitToken ^^^ SelfExp(SelfInit) |
 		SelfToken ~ LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ _ ~ list ~ _ => SelfExp(SelfSubscript(list)) } |
 		SelfToken ^^^ SelfExp(SelfSolo)
+	}
+	
+	lazy val superclass_expression: Parser[SuperExp] = {
+		SuperToken ~ operator(".") ~ identifier ^^ { case _ ~ _ ~ identifierExp => SuperExp(SuperMethod(identifierExp)) } |
+		SuperToken ~ operator(".") ~ InitToken ^^^ SuperExp(SuperInit) |
+		SuperToken ~ LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ _ ~ list ~ _ => SuperExp(SuperSubscript(list)) }
 	}
 	
 	//List(1,2,"hello") List(1,2,hello:4) List(name:+)

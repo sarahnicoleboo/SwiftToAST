@@ -36,6 +36,11 @@ case class SelfMethod(exp: IdentifierExp) extends DifferentSelfs
 case class SelfSubscript(functionCallArgList: List[Any]) extends DifferentSelfs //questionable
 case object SelfInit extends DifferentSelfs
 
+sealed trait DifferentSuperClasses
+case class SuperMethod(exp: IdentifierExp) extends DifferentSuperClasses
+case class SuperSubscript(functionCallArgList: List[Any]) extends DifferentSuperClasses
+case object SuperInit extends DifferentSuperClasses
+
 //exps
 sealed trait Exp
 case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
@@ -67,6 +72,7 @@ case object HashColumnExp extends Exp
 case object HashFunctionExp extends Exp
 case object HashDSOHandleExp extends Exp
 case class SelfExp(exp: DifferentSelfs) extends Exp
+case class SuperExp(exp: DifferentSuperClasses) extends Exp
 
 
 sealed trait Type

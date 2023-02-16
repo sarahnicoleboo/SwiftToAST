@@ -224,5 +224,15 @@ class ParserTest extends FlatSpec {
 	"The parser" should "handle a self init expression" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SelfExp(SelfInit)))))) { Parser(Seq(SelfToken, OperatorLiteralToken("."), InitToken)) }
 	}
+
 	
+	//super expressions
+	
+	"The parser" should "handle a super method expression: super.hello" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SuperExp(SuperMethod(IdentifierExp(VariableExp(Variable("hello")))))))))) { Parser(Seq(SuperToken, OperatorLiteralToken("."), VariableToken("hello"))) }
+	}
+	
+	"The parser" should "handle a super init expression" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SuperExp(SuperInit)))))) { Parser(Seq(SuperToken, OperatorLiteralToken("."), InitToken)) }
+	}
 }
