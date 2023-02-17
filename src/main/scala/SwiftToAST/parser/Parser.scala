@@ -134,10 +134,13 @@ object Parser extends Parsers {
 		identifier |
 		literal_expression |
 		self_expression |
-		superclass_expression //|
-/* 		closure_expression |
+		superclass_expression |
+		//closure_expression |
 		parenthesized_expression |
-		tuple_expression */
+		tuple_expression |
+		implicit_member_expression |
+		wildcard_expression //|
+		//key_path_expression
 	}
 	
 	lazy val identifier: Parser[IdentifierExp] = {
@@ -242,7 +245,6 @@ object Parser extends Parsers {
 		SuperToken ~ LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ _ ~ list ~ _ => SuperExp(SuperSubscript(list)) }
 	}
 	
-	//List(1,2,"hello") List(1,2,hello:4) List(name:+)
 	lazy val function_call_argument_list: Parser[List[FunctionCallArgument]] = {
 		rep1sep(function_call_argument, CommaToken)
 	}
@@ -255,17 +257,18 @@ object Parser extends Parsers {
 	}
 	
 	lazy val closure_expression: Parser[ClosureExp] = {
+		//rep(attribute) ~ 
 		???
 	}
 	
 	//attributes
-	lazy val attributes: Parser[Attribute] = {
+	lazy val attribute: Parser[Attribute] = {
 		AtToken ~ identifier ~ LeftParenToken ~ attribute_argument_clause ~ RightParenToken ^^  { case _ ~ name ~ _ ~ list ~ _ => Attribute(name, list) } |
 		AtToken ~ identifier ^^ { case _ ~ name => Attribute(name, List()) }
 	}
 	
 	lazy val attribute_argument_clause: Parser[List[BalancedToken]] = {
-		rep1(balanced_token)
+		rep(balanced_token)
 	}
 	
 	lazy val balanced_token: Parser[BalancedToken] = {
@@ -277,13 +280,26 @@ object Parser extends Parsers {
 	}
 	
 	lazy val tuple_expression: Parser[TupleExp] = {
-		LeftParenToken ~ repsep(tuple_element, CommaToken) ~ RightParenToken ^^ { case _ ~ list ~ _ => TupleExp(list) }
+		LeftParenToken ~ rep1sep(tuple_element, CommaToken) ~ RightParenToken ^^ { case _ ~ list ~ _ => TupleExp(list) }
 	}
 	
 	lazy val tuple_element: Parser[TupleElement] = {
 		identifier ~ ColonToken ~ expression ^^ { case name ~ _ ~  exp => IdentifierColonExpTuple(name, exp) } |
 		expression ^^ { case exp => ExpTuple(exp) }
 	}
+	
+	lazy val implicit_member_expression: Parser[ImplicitMemberExp] = {
+		operator(".") ~ identifier ~ operator(".") ~ postfix_expression ^^ { case _ ~ id ~ _ ~ exp => ImplicitMemberExp(IdentifierDotPostFixMember(id, exp)) } |
+		operator(".") ~ identifier ^^ { case _ ~ id => ImplicitMemberExp(IdentifierImplicitMember(id)) }
+	}
+	
+	lazy val wildcard_expression: Parser[Exp] = {
+		UnderscoreToken ^^^ WildcardExp
+	}
+	
+/* 	lazy val key_path_expression: Parser[] = {
+		
+	} */
 	
 	//operators
 	lazy val try_operator: Parser[TryModifier] = {

@@ -64,6 +64,10 @@ case class IdentifierColonExpFunctionCallArgument(identifierExp: IdentifierExp, 
 case class OperatorFunctionCallArgument(op: Operator) extends FunctionCallArgument
 case class IdentifierColonOperatorFunctionCallArgument(identifierExp: IdentifierExp, op: Operator) extends FunctionCallArgument
 
+sealed trait DifferentImplicitMembers
+case class IdentifierImplicitMember(identifierExp: IdentifierExp) extends DifferentImplicitMembers
+case class IdentifierDotPostFixMember(identifierExp: IdentifierExp, postfixExp: Exp) extends DifferentImplicitMembers
+
 //exps
 sealed trait Exp
 case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
@@ -99,6 +103,8 @@ case class SuperExp(exp: DifferentSuperClasses) extends Exp
 case class ClosureExp(attributeList: List[Attribute], closureSigList: List[ClosureSignature], stmts: List[Stmt]) extends Exp
 case class ParenthesizedExp(exp: Exp) extends Exp
 case class TupleExp(elementList: List[TupleElement]) extends Exp
+case class ImplicitMemberExp(exps: DifferentImplicitMembers) extends Exp
+case object WildcardExp extends Exp
 
 sealed trait Type
 case class FunctionType(before: List[Type], after: Type) extends Type

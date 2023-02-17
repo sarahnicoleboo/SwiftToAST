@@ -193,7 +193,6 @@ class ParserTest extends FlatSpec {
 	
 	
 	//self expressions
-	
 	"The parser" should "handle a single self expression" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SelfExp(SelfSolo)))))) { Parser(Seq(SelfToken)) }
 	}
@@ -228,12 +227,27 @@ class ParserTest extends FlatSpec {
 
 	
 	//super expressions
-	
 	"The parser" should "handle a super method expression: super.hello" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SuperExp(SuperMethod(IdentifierExp(VariableExp(Variable("hello")))))))))) { Parser(Seq(SuperToken, OperatorLiteralToken("."), VariableToken("hello"))) }
 	}
 	
 	"The parser" should "handle a super init expression" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SuperExp(SuperInit)))))) { Parser(Seq(SuperToken, OperatorLiteralToken("."), InitToken)) }
+	}
+	
+	"The parser" should "handle a super subscript expression: super [2, name : 5]" in {
+		val input = Seq(SuperToken, LeftBracketToken, DecimalIntegerLiteralToken("2"), CommaToken, VariableToken("name"), ColonToken, DecimalIntegerLiteralToken("5"), RightBracketToken)
+		val list = List(ExpFunctionCallArgument(PostfixExp(NumericLiteralExp("2"))) , IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("name"))), PostfixExp(NumericLiteralExp("5"))))
+		val expected = Program(Seq(ExpressionStmt(PostfixExp(SuperExp(SuperSubscript(list))))))
+		assertResult(expected) { Parser(input) }
+	}
+	
+	
+	//closure expressions
+	
+	
+	//parenthesized expressions
+	"The parser" should "handle a parenthesized expression: (12)" in {
+		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ParenthesizedExp(PostfixExp(NumericLiteralExp("12")))))))) { Parser(Seq(LeftParenToken, DecimalIntegerLiteralToken("12"), RightParenToken)) }
 	}
 }
