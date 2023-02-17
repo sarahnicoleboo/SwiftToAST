@@ -80,6 +80,14 @@ object Parser extends Parsers {
 		}
 	}
 	
+	def apply[A](parser: Parser[A], tokens: Seq[Token]): A = {
+		val reader = new TokenReader(tokens)
+		parser(reader) match {
+			case NoSuccess(message, next) => throw new ParserException(message)
+			case Success(result, next) => result
+		}
+	}
+	
 	def program: Parser[Program] = phrase(block)
 	
 	def block: Parser[Program] = {
@@ -135,7 +143,7 @@ object Parser extends Parsers {
 		literal_expression |
 		self_expression |
 		superclass_expression |
-		closure_expression |
+		//closure_expression |
 		parenthesized_expression |
 		tuple_expression |
 		implicit_member_expression |
