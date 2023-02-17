@@ -135,7 +135,7 @@ object Parser extends Parsers {
 		literal_expression |
 		self_expression |
 		superclass_expression |
-		//closure_expression |
+		closure_expression |
 		parenthesized_expression |
 		tuple_expression |
 		implicit_member_expression |
@@ -206,7 +206,6 @@ object Parser extends Parsers {
 	}
 	
 	lazy val array_literal: Parser[Exp] = {
-		//LeftBracketToken ~ expression ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ exp ~ _ ~ _ => ArrayLiteralExp(List(exp)) } |
 		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap({ case _ ~ expList ~ maybe ~ _ => if(expList.isEmpty && maybe.nonEmpty) { failure("random comma not preceeded by an exp") } else { success(ArrayLiteralExp(expList)) }})
 	}
 	
@@ -272,7 +271,14 @@ object Parser extends Parsers {
 	}
 	
 	lazy val balanced_token: Parser[BalancedToken] = {
-		???
+		LeftParenToken ~ balanced_token ~ RightParenToken ^^ { case _ ~ token ~ _ => InParensBalancedToken(token) } |
+		LeftBracketToken ~ balanced_token ~ RightBracketToken ^^ { case _ ~ token ~ _ => InBracketsBalancedToken(token) } |
+		LeftCurlyToken ~ balanced_token ~ RightCurlyToken ^^ { case _ ~ token ~ _ => InBracesBalancedToken(token) } |
+		identifier ^^ { case id => IdentifierBalancedToken(id) } |
+		keyword ^^ { case word => KeywordBalancedToken(word) } |	//bottom of file bcuz big af
+		literal ^^ { case lit => LiteralBalancedToken(lit) } |
+		operator ^^ { case op => OperatorBalancedToken(op) } |
+		punctuation ^^ { case punc => PunctuationBalancedToken(punc) }	//also bottom of file with keywords
 	}
 	
 	lazy val parenthesized_expression: Parser[ParenthesizedExp] = {
@@ -280,7 +286,7 @@ object Parser extends Parsers {
 	}
 	
 	lazy val tuple_expression: Parser[TupleExp] = {
-		LeftParenToken ~ rep1sep(tuple_element, CommaToken) ~ RightParenToken ^^ { case _ ~ list ~ _ => TupleExp(list) }
+		(LeftParenToken ~ repsep(tuple_element, CommaToken) ~ RightParenToken).flatMap({ case _ ~ list ~ _ => if(list.length == 1) { failure("cannot have only 1 item") } else { success(TupleExp(list)) }})
 	}
 	
 	lazy val tuple_element: Parser[TupleElement] = {
@@ -346,4 +352,93 @@ object Parser extends Parsers {
 /* 	lazy val tuple_type: Parser[???] = {
 		
 	} */
+	
+	//big parser down here:
+	lazy val punctuation: Parser[Punctuation] = {
+		operator(".") ^^^ Period |
+		CommaToken ^^^ Comma |
+		ColonToken ^^^ Colon |
+		SemicolonToken ^^^ Semicolon |
+		operator("=") ^^^ Equal |
+		AtToken ^^^ At |
+		HashToken ^^^ Hash |
+		BackTickToken ^^^ BackTick |
+		operator("?") ^^^ Question |
+		operator("-") ~ operator(">") ^^^ Arrow |
+		operator("&") ^^^ And |
+		operator("!") ^^^ Exclamation
+	}
+	
+	lazy val keyword: Parser[Keyword] = {
+		AssociatedTypeToken ^^^ AssociatedTypeKeyword |
+		ClassToken ^^^ ClassKeyword |
+		DeinitToken ^^^ DeinitKeyword |
+		EnumToken ^^^ EnumKeyword |
+		ExtensionToken ^^^ ExtensionKeyword |
+		FilePrivateToken ^^^ FilePrivateKeyword |
+		FuncToken ^^^ FuncKeyword |
+		ImportToken ^^^ ImportKeyword |
+		InitToken ^^^ InitKeyword |
+		InOutToken ^^^ InOutKeyword |
+		InternalToken ^^^ InternalKeyword |
+		LetToken ^^^ LetKeyword |
+		OpenToken ^^^ OpenKeyword |
+		OperatorToken ^^^ OperatorKeyword |
+		PrivateToken ^^^ PrivateKeyword |
+		ProtocolToken ^^^ ProtocolKeyword |
+		PublicToken ^^^ PublicKeyword |
+		RethrowsToken ^^^ RethrowsKeyword |
+		StaticToken ^^^ StaticKeyword |
+		StructToken ^^^ StructKeyword |
+		SubscriptToken ^^^ SubscriptKeyword |
+		TypeAliasToken ^^^ TypeAliasKeyword |
+		VarToken ^^^ VarKeyword |
+		BreakToken ^^^ BreakKeyword |
+		ContinueToken ^^^ ContinueKeyword |
+		DefaultToken ^^^ DefaultKeyword |
+		DeferToken ^^^ DeferKeyword |
+		DoToken ^^^ DoKeyword |
+		ElseToken ^^^ ElseKeyword |
+		FallthroughToken ^^^ FallthroughKeyword |
+		ForToken ^^^ ForKeyword |
+		GuardToken ^^^ GuardKeyword |
+		IfToken ^^^ IfKeyword |
+		InToken ^^^ InKeyword |
+		RepeatToken ^^^ RepeatKeyword |
+		ReturnToken ^^^ ReturnKeyword |
+		SwitchToken ^^^ SwitchKeyword |
+		WhereToken ^^^ WhereKeyword |
+		WhileToken ^^^ WhileKeyword |
+		AsToken ^^^ AsKeyword |
+		AnyToken ^^^ AnyKeyword |
+		CatchToken ^^^ CatchKeyword |
+		FalseToken ^^^ FalseKeyword |
+		IsToken ^^^ IsKeyword |
+		NilToken ^^^ NilKeyword |
+		SuperToken ^^^ SuperKeyword |
+		SelfToken ^^^ SelfKeyword |
+		SelfBigToken ^^^ SelfBigKeyword |
+		ThrowToken ^^^ ThrowKeyword |
+		ThrowsToken ^^^ ThrowsKeyword |
+		TrueToken ^^^ TrueKeyword |
+		TryToken ^^^ TryKeyword |
+		UnderscoreToken ^^^ UnderscoreKeyword |
+		AvailableToken ^^^ AvailableKeyword |
+		HashColorLiteralToken ^^^ HashColorLiteralKeyword |
+		HashColumnToken ^^^ HashColumnKeyword |
+		HashElseToken ^^^ HashElseKeyword |
+		HashElseIfToken ^^^ HashElseIfKeyword |
+		ErrorToken ^^^ ErrorKeyword |
+		HashFileToken ^^^ HashFileKeyword |
+		HashFileIDToken ^^^ HashFileIDKeyword |
+		HashFileLiteralToken ^^^ HashFileLiteralKeyword |
+		HashFilePathToken ^^^ HashFilePathKeyword |
+		HashFunctionToken ^^^ HashFunctionKeyword |
+		HashIfToken ^^^ HashIfKeyword |
+		HashImageLiteralToken ^^^ HashImageLiteralKeyword |
+		HashLineToken ^^^ HashLineKeyword |
+		HashSelectorToken ^^^ HashSelectorKeyword |
+		SourceLocationToken ^^^ SourceLocationKeyword |
+		WarningToken ^^^ WarningKeyword
+	}
 }

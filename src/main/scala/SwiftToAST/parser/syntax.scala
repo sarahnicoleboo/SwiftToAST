@@ -28,11 +28,15 @@ case class GenericArgumentClause(typs: List[Type])
 case class Attribute(name: IdentifierExp, argClause: List[BalancedToken])
 
 sealed trait BalancedToken
-case class InParensToken(token: BalancedToken) extends BalancedToken
-case class InBracketsToken(token: BalancedToken) extends BalancedToken
-case class InBracesToken(token: BalancedToken) extends BalancedToken
-case class IdentifierToken(name: IdentifierExp) extends BalancedToken
-//case class KeywordToken(name: ???) extends BalancedToken 
+case class InParensBalancedToken(token: BalancedToken) extends BalancedToken
+case class InBracketsBalancedToken(token: BalancedToken) extends BalancedToken
+case class InBracesBalancedToken(token: BalancedToken) extends BalancedToken
+case class IdentifierBalancedToken(name: IdentifierExp) extends BalancedToken
+case class KeywordBalancedToken(name: Keyword) extends BalancedToken
+case class LiteralBalancedToken(name: Exp) extends BalancedToken
+case class OperatorBalancedToken(op: Operator) extends BalancedToken
+case class PunctuationBalancedToken(punc: Punctuation) extends BalancedToken
+ 
 //case class 
 
 //closure sig to be done
@@ -77,9 +81,6 @@ case class CastExp(exp: Exp, op: TypeCastingOp) extends Exp
 case class TrueInfixExp(exp1: Exp, op: Op, exp2: Exp) extends Exp
 case class GenericVariableExp(exp: IdentifierExp, typs: GenericArgumentClause) extends Exp
 case class IdentifierExp(exp: DifferentIdentifiers) extends Exp
-/* case class VariableExp(name: Variable) extends Exp
-case class ImplicitParameterExp(name: String) extends Exp
-case class PropertyWrapperProjectionExp(name: String) extends Exp */
 case class NumericLiteralExp(value: String) extends Exp
 case class SingleLineStringLiteralExp(value: String) extends Exp
 case class MultiLineStringLiteralExp(value: String) extends Exp
@@ -122,3 +123,97 @@ sealed trait Stmt
 case class ExpressionStmt(exp: Exp) extends Stmt
 
 case object TestStmt extends Stmt
+
+//punctuation
+sealed trait Punctuation
+case object Period extends Punctuation
+case object Comma extends Punctuation
+case object Colon extends Punctuation
+case object Semicolon extends Punctuation
+case object Equal extends Punctuation
+case object At extends Punctuation
+case object Hash extends Punctuation
+case object BackTick extends Punctuation
+case object Question extends Punctuation
+case object Arrow extends Punctuation
+case object And extends Punctuation
+case object Exclamation extends Punctuation
+
+//keywords
+sealed trait Keyword
+//"used in declarations"
+case object AssociatedTypeKeyword extends Keyword
+case object ClassKeyword extends Keyword
+case object DeinitKeyword extends Keyword
+case object EnumKeyword extends Keyword
+case object ExtensionKeyword extends Keyword
+case object FilePrivateKeyword extends Keyword
+case object FuncKeyword extends Keyword
+case object ImportKeyword extends Keyword
+case object InitKeyword extends Keyword
+case object InOutKeyword extends Keyword
+case object InternalKeyword extends Keyword
+case object LetKeyword extends Keyword
+case object OpenKeyword extends Keyword
+case object OperatorKeyword extends Keyword
+case object PrivateKeyword extends Keyword
+case object ProtocolKeyword extends Keyword
+case object PublicKeyword extends Keyword
+case object RethrowsKeyword extends Keyword
+case object StaticKeyword extends Keyword
+case object StructKeyword extends Keyword
+case object SubscriptKeyword extends Keyword
+case object TypeAliasKeyword extends Keyword
+case object VarKeyword extends Keyword
+//"used in statements"
+case object BreakKeyword extends Keyword
+case object ContinueKeyword extends Keyword
+case object DefaultKeyword extends Keyword
+case object DeferKeyword extends Keyword
+case object DoKeyword extends Keyword
+case object ElseKeyword extends Keyword
+case object FallthroughKeyword extends Keyword
+case object ForKeyword extends Keyword
+case object GuardKeyword extends Keyword
+case object IfKeyword extends Keyword
+case object InKeyword extends Keyword
+case object RepeatKeyword extends Keyword
+case object ReturnKeyword extends Keyword
+case object SwitchKeyword extends Keyword
+case object WhereKeyword extends Keyword
+case object WhileKeyword extends Keyword
+//"used in expressions and types"
+case object AsKeyword extends Keyword
+case object AnyKeyword extends Keyword
+case object CatchKeyword extends Keyword
+case object FalseKeyword extends Keyword
+case object IsKeyword extends Keyword
+case object NilKeyword extends Keyword
+case object SuperKeyword extends Keyword
+case object SelfKeyword extends Keyword
+case object SelfBigKeyword extends Keyword
+case object ThrowKeyword extends Keyword
+case object ThrowsKeyword extends Keyword
+case object TrueKeyword extends Keyword
+case object TryKeyword extends Keyword
+//"used in patterns"
+case object UnderscoreKeyword extends Keyword
+//"begin with a #"
+case object AvailableKeyword extends Keyword
+case object HashColorLiteralKeyword extends Keyword
+case object HashColumnKeyword extends Keyword //also appears in Exp
+case object HashElseKeyword extends Keyword
+case object HashElseIfKeyword extends Keyword
+case object HashEndIfKeyword extends Keyword
+case object ErrorKeyword extends Keyword
+case object HashFileKeyword extends Keyword //also appears in Exp
+case object HashFileIDKeyword extends Keyword //also appears in Exp
+case object HashFileLiteralKeyword extends Keyword
+case object HashFilePathKeyword extends Keyword //also appears in Exp
+case object HashFunctionKeyword extends Keyword //also appears in Exp
+case object HashIfKeyword extends Keyword
+case object HashImageLiteralKeyword extends Keyword //also appears in Exp
+case object HashLineKeyword extends Keyword //also appears in Exp
+case object HashSelectorKeyword extends Keyword
+case object SourceLocationKeyword extends Keyword
+case object WarningKeyword extends Keyword
