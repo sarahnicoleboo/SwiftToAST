@@ -74,7 +74,8 @@ object TokenizerPC extends RegexParsers {
 		"#dsohandle(?=[\\s\\W]+)".r ^^ (_ => HashDSOHandleToken) | "#selector(?=[\\s\\W]+)".r ^^ (_ => HashSelectorToken) |
 		"#keyPath(?=[\\s\\W]+)".r ^^ (_ => HashKeyPathToken) | "#colorLiteral(?=[\\s\\W]+)".r ^^ (_ => HashColorLiteralToken) |
 		"#file(?=[\\s\\W]+)".r ^^ (_ => HashFileToken) | "#imageLiteral(?=[\\s\\W]+)".r ^^ (_ => HashImageLiteralToken) |
-		"get(?=[\\s\\W]+)".r ^^ (_ => GetToken) | "set(?=[\\s\\W]+)".r ^^ (_ => SetToken)
+		"get(?=[\\s\\W]+)".r ^^ (_ => GetToken) | "set(?=[\\s\\W]+)".r ^^ (_ => SetToken) |
+		"async(?=[\\s\\W]+)".r ^^ (_ => AsyncToken)
 	}
 	
 /* 	def reserved_types: Parser[Token] = {

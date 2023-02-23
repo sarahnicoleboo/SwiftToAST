@@ -95,6 +95,10 @@ object Parser extends Parsers {
 	}
 	
 	//statements
+	lazy val statements: Parser[List[Stmt]] = {
+		rep1(statement)
+	}
+	
 	lazy val statement: Parser[Stmt] = {
 		expression_stmt
 	}
@@ -143,7 +147,7 @@ object Parser extends Parsers {
 		literal_expression |
 		self_expression |
 		superclass_expression |
-		//closure_expression |
+		closure_expression |
 		parenthesized_expression |
 		tuple_expression |
 		implicit_member_expression |
@@ -264,11 +268,14 @@ object Parser extends Parsers {
 	}
 	
 	lazy val closure_expression: Parser[ClosureExp] = {
-		//rep(attribute) ~ 
-		???
+		opt(attributes) ~ opt(closure_signature) ~ opt(statements) ^^ { case optAttributes ~ optSig ~ optStmts => ClosureExp(optAttributes, optSig, optStmts) }
 	}
 	
 	//attributes
+	lazy val attributes: Parser[List[Attribute]] = {
+		rep1(attribute)
+	}
+	
 	lazy val attribute: Parser[Attribute] = {
 		AtToken ~ identifier ~ LeftParenToken ~ attribute_argument_clause ~ RightParenToken ^^  { case _ ~ name ~ _ ~ list ~ _ => Attribute(name, list) } |
 		AtToken ~ identifier ^^ { case _ ~ name => Attribute(name, List()) }
@@ -287,6 +294,52 @@ object Parser extends Parsers {
 		literal ^^ { case lit => LiteralBalancedToken(lit) } |
 		operator ^^ { case op => OperatorBalancedToken(op) } |
 		punctuation ^^ { case punc => PunctuationBalancedToken(punc) }	//also bottom of file with keywords
+	}
+	
+	lazy val closure_signature: Parser[ClosureSignature] = {
+		opt(capture_list) ~ closure_parameter_clause ~ opt(asynch_modifier) ~ opt(throws_modifier) ~ opt(function_result) ^^
+			{ case captureList ~ clause ~ asynch ~ throws ~ funcResult => ClosureSignatureComplex(captureList, clause, asynch, throws, funcResult) } |
+		capture_list ^^ { case list => ClosureSignatureSimple(list) } 
+	}
+	
+	lazy val capture_list: Parser[CaptureList] = {
+		LeftBracketToken ~ rep1sep(capture_list_item, CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ => CaptureList(list) }
+	}
+	
+	lazy val capture_list_item: Parser[CaptureListItem] = {
+		opt(capture_specifier) ~ identifier ^^ { case cp ~ id => CaptureListItemIdentifier(cp, id) } |
+		opt(capture_specifier) ~ assignment_exp ^^ { case cp ~ exp => CaptureListItemAssignment(cp, exp) } |
+		opt(capture_specifier) ~ self_expression ^^ { case cp ~ self => CaptureListItemSelf(cp, self) }
+	}
+	
+	lazy val capture_specifier: Parser[CaptureSpecifier] = {
+		WeakToken ^^^ WeakCaptureSpecifier |
+		UnownedToken ^^^ UnownedCaptureSpecifier |
+		UnownedToken ~ LeftParenToken ~ SafeToken ~ RightParenToken ^^^ UnownedSafeCaptureSpecifier |
+		UnownedToken ~ LeftParenToken ~ UnsafeToken ~ RightParenToken ^^^ UnownedUnsafeCaptureSpecifier
+	}
+	
+	lazy val closure_parameter_clause: Parser[ClosureParameterClause] = {
+		rep1sep(identifier, CommaToken) ^^ { case idList => CPCIdentifierList(idList) } |
+		LeftParenToken ~ rep1sep(closure_parameter, CommaToken) ~ RightParenToken ^^ { case _ ~ paramList ~ _ => CPCClosureParameterList(paramList) } |
+		LeftParenToken ~ RightParenToken ^^^ CPCClosureParameterList(List())
+	}
+	
+	lazy val closure_parameter: Parser[ClosureParameter] = {
+		identifier ~ type_annotation ~ operator(".") ~ operator(".") ~ operator(".") ^^ { case id ~ annotation ~ _ ~ _ ~ _ => ClosureParameterElipses(id, annotation) } |
+		identifier ~ opt(type_annotation) ^^ { case id ~ optAnnotation => ClosureParameterReg(id, optAnnotation) }
+	}
+	
+	lazy val asynch_modifier: Parser[AsyncMod] = { AsyncToken ^^^ AsyncModifier }
+	
+	lazy val throws_modifier: Parser[ThrowsMod] = { ThrowsToken ^^^ ThrowsModifier }
+	
+	lazy val function_result: Parser[FunctionResult] = {
+		rep(attribute) ~ typ ^^ { case optAttributes ~ theType => FunctionResult(optAttributes, theType) }
+	}
+	
+	lazy val assignment_exp: Parser[AssignmentExp] = {
+		identifier ~ operator("=") ~ expression ^^ { case id ~ _ ~ exp => AssignmentExp(id, exp) }
 	}
 	
 	lazy val parenthesized_expression: Parser[ParenthesizedExp] = {
@@ -361,7 +414,15 @@ object Parser extends Parsers {
 		
 	} */
 	
-	//big parser down here:
+	lazy val type_annotation: Parser[TypeAnnotation] = {
+		opt(attributes) ~ opt(in_out_modifier) ~ typ ^^ { case optAttributes ~ optInOut ~ theType => TypeAnnotation(optAttributes, optInOut, theType) }
+	}
+	
+	lazy val in_out_modifier: Parser[InOutMod] = {
+		InOutToken ^^^ InOutModifier
+	}
+	
+	//big parsers down here:
 	lazy val punctuation: Parser[Punctuation] = {
 		operator(".") ^^^ Period |
 		CommaToken ^^^ Comma |

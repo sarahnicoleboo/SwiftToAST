@@ -99,6 +99,7 @@ case object TypeToken extends Token
 case object PrecedenceToken extends Token
 case object SelfToken extends Token
 case object SelfBigToken extends Token
+case object AsyncToken extends Token
 
 case object MacOSToken extends Token
 case object IOSToken extends Token

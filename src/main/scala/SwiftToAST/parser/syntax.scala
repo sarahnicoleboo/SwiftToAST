@@ -8,6 +8,10 @@ case class Variable(name: String)
 sealed trait Op
 case class Operator(value: String) extends Op
 
+//also hacky but works i guess
+sealed trait InOutMod
+case object InOutModifier extends InOutMod
+
 sealed trait TryModifier
 case object NoTryModifier extends TryModifier
 case object QuestionMarkTryModifier extends TryModifier
@@ -36,11 +40,37 @@ case class KeywordBalancedToken(name: Keyword) extends BalancedToken
 case class LiteralBalancedToken(name: Exp) extends BalancedToken
 case class OperatorBalancedToken(op: Operator) extends BalancedToken
 case class PunctuationBalancedToken(punc: Punctuation) extends BalancedToken
- 
-//case class 
 
-//closure sig to be done
 sealed trait ClosureSignature
+case class ClosureSignatureComplex(list: Option[CaptureList], clause: ClosureParameterClause, asynch: Option[AsyncMod], throws: Option[ThrowsMod], functionResult: Option[FunctionResult]) extends ClosureSignature
+case class ClosureSignatureSimple(list: CaptureList) extends ClosureSignature
+//hacky but works i guess
+sealed trait AsyncMod
+case object AsyncModifier extends AsyncMod
+sealed trait ThrowsMod
+case object ThrowsModifier extends ThrowsMod
+
+case class CaptureList(list: List[CaptureListItem])
+sealed trait CaptureListItem
+case class CaptureListItemIdentifier(specifier: Option[CaptureSpecifier], id: IdentifierExp) extends CaptureListItem
+case class CaptureListItemAssignment(specifier: Option[CaptureSpecifier], assignmentExp: AssignmentExp) extends CaptureListItem
+case class CaptureListItemSelf(specifier: Option[CaptureSpecifier], self: SelfExp) extends CaptureListItem
+
+sealed trait CaptureSpecifier
+case object WeakCaptureSpecifier extends CaptureSpecifier
+case object UnownedCaptureSpecifier extends CaptureSpecifier
+case object UnownedSafeCaptureSpecifier extends CaptureSpecifier
+case object UnownedUnsafeCaptureSpecifier extends CaptureSpecifier
+
+sealed trait ClosureParameterClause
+case class CPCIdentifierList(list: List[IdentifierExp]) extends ClosureParameterClause
+case class CPCClosureParameterList(list: List[ClosureParameter]) extends ClosureParameterClause
+
+sealed trait ClosureParameter
+case class ClosureParameterReg(id: IdentifierExp, typeAnnotation: Option[TypeAnnotation]) extends ClosureParameter
+case class ClosureParameterElipses(id: IdentifierExp, typeAnnotation: TypeAnnotation) extends ClosureParameter
+
+case class FunctionResult(attributes: List[Attribute], typ: Type)
 
 sealed trait TupleElement
 case class ExpTuple(exp: Exp) extends TupleElement
@@ -101,11 +131,18 @@ case object HashFunctionExp extends Exp
 case object HashDSOHandleExp extends Exp
 case class SelfExp(exp: DifferentSelfs) extends Exp
 case class SuperExp(exp: DifferentSuperClasses) extends Exp
-case class ClosureExp(attributeList: List[Attribute], closureSigList: List[ClosureSignature], stmts: List[Stmt]) extends Exp
+case class ClosureExp(attributeList: Option[List[Attribute]], closureSig: Option[ClosureSignature], stmts: Option[List[Stmt]]) extends Exp
 case class ParenthesizedExp(exp: Exp) extends Exp
 case class TupleExp(elementList: List[TupleElement]) extends Exp
 case class ImplicitMemberExp(exps: DifferentImplicitMembers) extends Exp
 case object WildcardExp extends Exp
+
+//
+case class AssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
+//
+
+//types
+case class TypeAnnotation(attributes: Option[List[Attribute]], inout: Option[InOutMod], typ: Type)
 
 sealed trait Type
 case class FunctionType(before: List[Type], after: Type) extends Type
