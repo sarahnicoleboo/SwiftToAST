@@ -415,7 +415,7 @@ object Parser extends Parsers {
 	} */
 	
 	lazy val type_annotation: Parser[TypeAnnotation] = {
-		opt(attributes) ~ opt(in_out_modifier) ~ typ ^^ { case optAttributes ~ optInOut ~ theType => TypeAnnotation(optAttributes, optInOut, theType) }
+		ColonToken ~ opt(attributes) ~ opt(in_out_modifier) ~ typ ^^ { case _ ~ optAttributes ~ optInOut ~ theType => TypeAnnotation(optAttributes, optInOut, theType) }
 	}
 	
 	lazy val in_out_modifier: Parser[InOutMod] = {
