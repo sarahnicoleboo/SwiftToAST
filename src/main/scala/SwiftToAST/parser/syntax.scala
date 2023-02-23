@@ -5,9 +5,50 @@ import SwiftToAST.tokenizer._
 case class Program(stmts: Seq[Stmt])
 case class Variable(name: String)
 
+//ops
 sealed trait Op
 case class Operator(value: String) extends Op
 
+
+//exps
+sealed trait Exp
+case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
+case class PrefixExp(operator: Op, expression: Exp) extends Exp
+case class PostfixExp(expression: Exp) extends Exp
+case class CastExp(exp: Exp, op: TypeCastingOp) extends Exp
+case class TrueInfixExp(exp1: Exp, op: Op, exp2: Exp) extends Exp
+case class GenericVariableExp(exp: IdentifierExp, typs: GenericArgumentClause) extends Exp
+case class IdentifierExp(exp: DifferentIdentifiers) extends Exp
+case class NumericLiteralExp(value: String) extends Exp
+case class SingleLineStringLiteralExp(value: String) extends Exp
+case class MultiLineStringLiteralExp(value: String) extends Exp
+case object TrueExp extends Exp
+case object FalseExp extends Exp
+case object NilExp extends Exp
+case class ArrayLiteralExp(exps: List[Exp]) extends Exp
+case class DictionaryLiteralExp(exps: List[(Exp, Exp)]) extends Exp
+case class ColorPlaygroundLiteralExp(exp1: Exp, exp2: Exp, exp3: Exp, exp4: Exp) extends Exp
+case class FilePlaygroundLiteralExp(exp: Exp) extends Exp
+case class ImagePlaygroundLiteralExp(exp: Exp) extends Exp
+case object HashFileExp extends Exp
+case object HashFileIDExp extends Exp
+case object HashFilePathExp extends Exp
+case object HashLineExp extends Exp
+case object HashColumnExp extends Exp
+case object HashFunctionExp extends Exp
+case object HashDSOHandleExp extends Exp
+case class SelfExp(exp: DifferentSelfs) extends Exp
+case class SuperExp(exp: DifferentSuperClasses) extends Exp
+case class ClosureExp(attributeList: Option[List[Attribute]], closureSig: Option[ClosureSignature], stmts: Option[List[Stmt]]) extends Exp
+case class ParenthesizedExp(exp: Exp) extends Exp
+case class TupleExp(elementList: List[TupleElement]) extends Exp
+case class ImplicitMemberExp(exps: DifferentImplicitMembers) extends Exp
+case object WildcardExp extends Exp
+//
+case class AssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
+//
+
+//helpers for exps
 //also hacky but works i guess
 sealed trait InOutMod
 case object InOutModifier extends InOutMod
@@ -44,6 +85,7 @@ case class PunctuationBalancedToken(punc: Punctuation) extends BalancedToken
 sealed trait ClosureSignature
 case class ClosureSignatureComplex(list: Option[CaptureList], clause: ClosureParameterClause, asynch: Option[AsyncMod], throws: Option[ThrowsMod], functionResult: Option[FunctionResult]) extends ClosureSignature
 case class ClosureSignatureSimple(list: CaptureList) extends ClosureSignature
+
 //hacky but works i guess
 sealed trait AsyncMod
 case object AsyncModifier extends AsyncMod
@@ -102,44 +144,7 @@ sealed trait DifferentImplicitMembers
 case class IdentifierImplicitMember(identifierExp: IdentifierExp) extends DifferentImplicitMembers
 case class IdentifierDotPostFixMember(identifierExp: IdentifierExp, postfixExp: Exp) extends DifferentImplicitMembers
 
-//exps
-sealed trait Exp
-case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
-case class PrefixExp(operator: Op, expression: Exp) extends Exp
-case class PostfixExp(expression: Exp) extends Exp
-case class CastExp(exp: Exp, op: TypeCastingOp) extends Exp
-case class TrueInfixExp(exp1: Exp, op: Op, exp2: Exp) extends Exp
-case class GenericVariableExp(exp: IdentifierExp, typs: GenericArgumentClause) extends Exp
-case class IdentifierExp(exp: DifferentIdentifiers) extends Exp
-case class NumericLiteralExp(value: String) extends Exp
-case class SingleLineStringLiteralExp(value: String) extends Exp
-case class MultiLineStringLiteralExp(value: String) extends Exp
-case object TrueExp extends Exp
-case object FalseExp extends Exp
-case object NilExp extends Exp
-case class ArrayLiteralExp(exps: List[Exp]) extends Exp
-case class DictionaryLiteralExp(exps: List[(Exp, Exp)]) extends Exp
-case class ColorPlaygroundLiteralExp(exp1: Exp, exp2: Exp, exp3: Exp, exp4: Exp) extends Exp
-case class FilePlaygroundLiteralExp(exp: Exp) extends Exp
-case class ImagePlaygroundLiteralExp(exp: Exp) extends Exp
-case object HashFileExp extends Exp
-case object HashFileIDExp extends Exp
-case object HashFilePathExp extends Exp
-case object HashLineExp extends Exp
-case object HashColumnExp extends Exp
-case object HashFunctionExp extends Exp
-case object HashDSOHandleExp extends Exp
-case class SelfExp(exp: DifferentSelfs) extends Exp
-case class SuperExp(exp: DifferentSuperClasses) extends Exp
-case class ClosureExp(attributeList: Option[List[Attribute]], closureSig: Option[ClosureSignature], stmts: Option[List[Stmt]]) extends Exp
-case class ParenthesizedExp(exp: Exp) extends Exp
-case class TupleExp(elementList: List[TupleElement]) extends Exp
-case class ImplicitMemberExp(exps: DifferentImplicitMembers) extends Exp
-case object WildcardExp extends Exp
 
-//
-case class AssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
-//
 
 //types
 case class TypeAnnotation(attributes: Option[List[Attribute]], inout: Option[InOutMod], typ: Type)
@@ -150,10 +155,12 @@ case class ArrayType(typ: Type) extends Type
 case class DictionaryType(type1: Type, type2: Type) extends Type
 case class TypeIdentifier(typ: DifferentTypes) extends Type
 
+//helpers for types
 sealed trait DifferentTypes
-case class NormalType(typeName: IdentifierExp) extends DifferentTypes	//VariableExp to be more specific?
+case class NormalType(typeName: IdentifierExp) extends DifferentTypes
 case class GenericType(typeName: IdentifierExp, genericTypes: GenericArgumentClause) extends DifferentTypes
 case class NestedType(typeName: IdentifierExp, genericTypes: GenericArgumentClause, nestedType: TypeIdentifier) extends DifferentTypes
+
 
 //statements
 sealed trait Stmt
@@ -161,6 +168,7 @@ case class ExpressionStmt(exp: Exp) extends Stmt
 
 case object TestStmt extends Stmt
 
+//random shit down here
 //punctuation
 sealed trait Punctuation
 case object Period extends Punctuation

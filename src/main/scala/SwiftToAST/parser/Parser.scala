@@ -226,8 +226,10 @@ object Parser extends Parsers {
 	}
 	
 	lazy val dictionary_literal: Parser[Exp] = {
-		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) } |
-		LeftBracketToken ~ ColonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
+		//had to switch them around
+		LeftBracketToken ~ ColonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List()) |
+		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) } //|
+		//LeftBracketToken ~ ColonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
 	}
 	
 	lazy val comma_sep_dictionary: Parser[List[(Exp, Exp)]] = {
