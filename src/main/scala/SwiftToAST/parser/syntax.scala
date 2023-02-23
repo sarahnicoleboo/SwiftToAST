@@ -78,7 +78,7 @@ case class IdentifierColonExpTuple(identifierExp: IdentifierExp, exp: Exp) exten
 
 sealed trait DifferentIdentifiers
 case class VariableExp(name: Variable) extends DifferentIdentifiers
-case class ImplicitParameterExp(name: String) extends DifferentIdentifiers
+case class ImplicitParameterExpOrPWP(name: String) extends DifferentIdentifiers
 case class PropertyWrapperProjectionExp(name: String) extends DifferentIdentifiers
 
 sealed trait DifferentSelfs

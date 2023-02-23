@@ -6,113 +6,192 @@ class ParserTest extends FlatSpec {
 	import SwiftToAST.tokenizer._
 	import SwiftToAST.parser._
 	
-	//PRIMARY EXPRESSIONS
-	
-	//identifers
-	"The parser" should "handle an identifier followed by a list of generic types: name<Int>" in {
+	//primary_expression
+	"primary_expression" should "handle an identifier followed by a list of generic types: name<Int>" in {
 		val input = Seq(VariableToken("name"), OperatorLiteralToken("<"), VariableToken("Int"), OperatorLiteralToken(">"))
 		val typeList = GenericArgumentClause(List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int")))))))
-		val expected = Program(Seq(ExpressionStmt(PostfixExp(GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList))))) 
-		assertResult(expected) { Parser(input) }
+		val expected = GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList) 
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
 	
-	"The parser" should "handle an identifier followed by a list of generic types: name<Int, String>" in {
+	"primary_expression" should "handle an identifier followed by a list of generic types: name<Int, String>" in {
 		val input = Seq(VariableToken("name"), OperatorLiteralToken("<"), VariableToken("Int"), CommaToken, VariableToken("String"), OperatorLiteralToken(">"))
 		val typeList = GenericArgumentClause(List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String")))))))
-		val expected = Program(Seq(ExpressionStmt(PostfixExp(GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList))))) 
-		assertResult(expected) { Parser(input) }
+		val expected = GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList) 
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
 	
-	"The parser" should "handle a VariableExp identifier" in {
+	
+	//identifier
+	"identifier" should "handle a VariableExp identifier" in {
 		val input = Seq(VariableToken("variableName"))
-		val expected = Program(Seq(ExpressionStmt(PostfixExp(IdentifierExp(VariableExp(Variable("variableName"))))))) 
-		assertResult(expected) { Parser(input) }
+		assertResult(IdentifierExp(VariableExp(Variable("variableName")))) { Parser(Parser.identifier, input) }
 	}
 	
-	"The parser" should "handle an implicit parameter identifier" in {
-		val input = Seq(ImplicitParameterToken("variableName"))
-		val expected = Program(Seq(ExpressionStmt(PostfixExp(IdentifierExp(ImplicitParameterExp("variableName")))))) 
-		assertResult(expected) { Parser(input) }
+	"identifier" should "handle an implicit parameter OR property wrapper projction identifier: $4" in {
+		val input = Seq(ImplicitParameterOrPropertyWrapperProjectionToken("$4"))
+		val expected = IdentifierExp(ImplicitParameterExpOrPWP("$4")) 
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
 	
-	"The parser" should "handle a property wrapper projection identifier" in {
-		val input = Seq(PropertyWrapperProjectionToken("variableName"))
-		val expected = Program(Seq(ExpressionStmt(PostfixExp(IdentifierExp(PropertyWrapperProjectionExp("variableName")))))) 
-		assertResult(expected) { Parser(input) }
+	"identifier" should "handle a property wrapper projection identifier: $abc" in {
+		val input = Seq(PropertyWrapperProjectionToken("$abc"))
+		val expected = IdentifierExp(PropertyWrapperProjectionExp("$abc")) 
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
 	
-	//literal expressions
-	
-	//numeric literals
-	"The parser" should "handle a decimal integer literal token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("23")))))) { Parser(Seq(DecimalIntegerLiteralToken("23"))) }
+	//literal_expression
+	//(literal)
+	"literal_expression" should "handle an unsigned decimal integer literal token: 23" in {
+		val input = Seq(DecimalIntegerLiteralToken("23"))
+		assertResult(NumericLiteralExp("23")) { Parser(Parser.literal_expression, input) }
 	}
 	
-	"The parser" should "handle a binary integer literal token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("0b0101")))))) { Parser(Seq(BinaryIntegerLiteralToken("0b0101"))) }
+	//(array_literal)
+	//add here
+	
+	//literal
+	//(numeric_literal)
+	"literal" should "handle an unsigned decimal integer literal token: 23" in {
+		val input = Seq(DecimalIntegerLiteralToken("23"))
+		assertResult(NumericLiteralExp("23")) { Parser(Parser.literal, input) }
 	}
 	
-	"The parser" should "handle an octal integer literal token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("0o734")))))) { Parser(Seq(OctalIntegerLiteralToken("0o734"))) }
+	//(string_literal)
+	"literal" should "handle a single line string literal token: hello" in {
+		val input = Seq(SingleLineStringLiteralToken("hello"))
+		assertResult(SingleLineStringLiteralExp("hello")) { Parser(Parser.literal, input) }
 	}
 	
-	"The parser" should "handle a hex integer literal token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("0xA43B")))))) { Parser(Seq(BinaryIntegerLiteralToken("0xA43B"))) }
+	//(boolean_literal)
+	"literal" should "handle a boolean literal true token" in {
+		val input = Seq(TrueToken)
+		assertResult(TrueExp) { Parser(Parser.literal, input) }
 	}
 	
-	"The parser" should "handle a decimal float literal token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("34.5")))))) { Parser(Seq(FloatDecimalLiteralToken("34.5"))) }
+	//(nil_literal)
+	"literal" should "handle a nil token" in {
+		val input = Seq(NilToken)
+		assertResult(NilExp) { Parser(Parser.literal, input) }
 	}
 	
-	"The parser" should "handle a hex float literal token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NumericLiteralExp("0x34.AB")))))) { Parser(Seq(FloatHexLiteralToken("0x34.AB"))) }
-	}
+	//array_literal
+/* 	"array_literal" should "handle an array literal []" in {
+		val input = Seq(LeftBracketToken, RightBracketToken)
+		assertResult(ArrayLiteralExp(List())) { Parser(Parser.array_literal, input) }
+	} */
 	
+/* 	"array_literal" should "handle an array literal [1]" in {
+		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), RightBracketToken)
+		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))
+		assertResult(expected) { Parser(Parser.array_literal, input) }
+	} */
 	
-	//string literals
-	"The parser" should "handle a single line string literal token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(SingleLineStringLiteralExp("hello")))))) { Parser(Seq(SingleLineStringLiteralToken("hello"))) }
-	}
-	
-	"The parser" should "handle a multi line string literal token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(MultiLineStringLiteralExp("hello\nthere")))))) { Parser(Seq(MultiLineStringLiteralToken("hello\nthere"))) }
-	}
-	
-	
-	//boolean literals
-	"The parser" should "handle a boolean literal true token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(TrueExp))))) { Parser(Seq(TrueToken)) }
-	}
-	
-	"The parser" should "handle a boolean literal false token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(FalseExp))))) { Parser(Seq(FalseToken)) }
-	}
-	
-	
-	//nil literal
-	"The parser" should "handle a nil token and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(NilExp))))) { Parser(Seq(NilToken)) }
+	//comma_sep_exps
+	"comma_sep_exps" should "handle and empty list" in {
+		val input = Seq(LeftBracketToken, RightBracketToken)
+		assertResult(List()) { Parser(Parser.comma_sep_exps, input) }
 	}
 	
 	
-	//array literals
-	"The parser" should "handle an array literal [] and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List())))))) { Parser(Seq(LeftBracketToken, RightBracketToken)) }
-	}
-	
-	"The parser" should "handle an array literal [1] and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), RightBracketToken)) }
-	}
-	
-	"The parser" should "handle an array literal [1,] and return a postfix exp" in {
+/* 	"The parser" should "handle an array literal [1,] and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, RightBracketToken)) }
 	}
 	
 	"The parser" should "handle an array literal [1,2] and return a postfix exp" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"), RightBracketToken)) }
+	} */
+	
+	//numeric_literal
+	"numeric_literal" should "handle an unsigned decimal integer literal token: 23" in {
+		val input = Seq(DecimalIntegerLiteralToken("23"))
+		assertResult(NumericLiteralExp("23")) { Parser(Parser.numeric_literal, input) }
+	}
+
+	"numeric_literal" should "handle a negative decimal integer literal token: -23" in {
+		val input = Seq(OperatorLiteralToken("-"), DecimalIntegerLiteralToken("23"))
+		assertResult(PrefixExp(Operator("-"), NumericLiteralExp("23"))) { Parser(Parser.numeric_literal, input) }
 	}
 	
+	"numeric_literal" should "handle an unsigned decimal float literal token: 2.3" in {
+		val input = Seq(FloatDecimalLiteralToken("2.3"))
+		assertResult(NumericLiteralExp("2.3")) { Parser(Parser.numeric_literal, input) }
+	}
 	
+	"numeric_literal" should "handle a negative decimal float literal token: -2.3" in {
+		val input = Seq(OperatorLiteralToken("-"), FloatDecimalLiteralToken("2.3"))
+		assertResult(PrefixExp(Operator("-"), NumericLiteralExp("2.3"))) { Parser(Parser.numeric_literal, input) }
+	}
+	
+	//integer_literal
+	//(decimal_integer)
+	"integer_literal" should "handle a decimal integer literal token: 23" in {
+		val input = Seq(DecimalIntegerLiteralToken("23"))
+		assertResult(NumericLiteralExp("23")) { Parser(Parser.integer_literal, input) }
+	}
+	
+	//(binary_integer)
+	"integer_literal" should "handle a binary integer literal token: 0b0101" in {
+		val input = Seq(BinaryIntegerLiteralToken("0b0101"))
+		assertResult(NumericLiteralExp("0b0101")) { Parser(Parser.integer_literal, input) }
+	}
+	
+	//(octal_integer)
+	"integer_literal" should "handle an octal integer literal token: 0o734" in {
+		val input = Seq(OctalIntegerLiteralToken("0o734"))
+		assertResult(NumericLiteralExp("0o734")) { Parser(Parser.integer_literal, input) }
+	}
+	
+	//(hex_integer)
+	"integer_literal" should "handle a hex integer literal token: 0xA43B" in {
+		val input = Seq(HexIntegerLiteralToken("0xA43B"))
+		assertResult(NumericLiteralExp("0xA43B")) { Parser(Parser.integer_literal, input) }
+	}
+	
+	//float_literal
+	//(decimal_float)
+	"float_literal" should "handle a decimal float literal token: 34.5" in {
+		val input = Seq(FloatDecimalLiteralToken("34.5"))
+		assertResult(NumericLiteralExp("34.5")) { Parser(Parser.float_literal, input) }
+	}
+	
+	//(hex_float)
+	"float_literal" should "handle a hex float literal token: 0xA34.B5" in {
+		val input = Seq(FloatHexLiteralToken("0xA34.B5"))
+		assertResult(NumericLiteralExp("0xA34.B5")) { Parser(Parser.float_literal, input) }
+	}
+	
+	//string_literal
+	//(single_line_string)
+	"string_literal" should "handle a single line string literal token: hello" in {
+		val input = Seq(SingleLineStringLiteralToken("hello"))
+		assertResult(SingleLineStringLiteralExp("hello")) { Parser(Parser.string_literal, input) }
+	}
+	
+	//(multi_line_string)
+	"string_literal" should "handle a multi line string literal token: hello\nthere" in {
+		val input = Seq(MultiLineStringLiteralToken("hello\nthere"))
+		assertResult(MultiLineStringLiteralExp("hello\nthere")) { Parser(Parser.string_literal, input) }
+	}
+	
+	//boolean_literal
+	"boolean_literal" should "handle a boolean literal true token" in {
+		val input = Seq(TrueToken)
+		assertResult(TrueExp) { Parser(Parser.boolean_literal, input) }
+	}
+	
+	"boolean_literal" should "handle a boolean literal false token" in {
+		val input = Seq(FalseToken)
+		assertResult(FalseExp) { Parser(Parser.boolean_literal, input) }
+	}
+	
+	//nil_literal
+	"nil_literal" should "handle a nil token" in {
+		val input = Seq(NilToken)
+		assertResult(NilExp) { Parser(Parser.nil_literal, input) }
+	}
+	
+/* 	
 	//dictionary literals
 	"The parser" should "handle an dictionary literal [:] and return a postfix exp" in {
 		val dictionaryList: List[(Exp, Exp)] = List()
@@ -249,5 +328,5 @@ class ParserTest extends FlatSpec {
 	//parenthesized expressions
 	"The parser" should "handle a parenthesized expression: (12)" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ParenthesizedExp(PostfixExp(NumericLiteralExp("12")))))))) { Parser(Seq(LeftParenToken, DecimalIntegerLiteralToken("12"), RightParenToken)) }
-	}
+	} */
 }

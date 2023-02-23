@@ -13,16 +13,16 @@ object Parser extends Parsers {
 		accept("variable", { case id @ VariableToken(name) => id })
 	}
 	
-	lazy val implicit_parameter: Parser[ImplicitParameterToken] = {
+/* 	lazy val implicit_parameter: Parser[ImplicitParameterToken] = {
 		accept("implicit_parameter", { case id @ ImplicitParameterToken(name) => id })
-	}
+	} */
 	
 	lazy val property_wrapper_projection: Parser[PropertyWrapperProjectionToken] = {
 		accept("property_wrapper_projection", { case id @ PropertyWrapperProjectionToken(name) => id })
 	}
 	
-	lazy val ip_OR_pw: Parser[ImplicitParameterOrPropertyWrapperProjectionToken] = {
-		accept("ip_OR_pw", { case id @ ImplicitParameterOrPropertyWrapperProjectionToken(name) => id })
+	lazy val ip_OR_pwp: Parser[ImplicitParameterOrPropertyWrapperProjectionToken] = {
+		accept("ip_OR_pwp", { case id @ ImplicitParameterOrPropertyWrapperProjectionToken(name) => id })
 	}
 	
 	lazy val binary_integer: Parser[BinaryIntegerLiteralToken] = {
@@ -157,7 +157,7 @@ object Parser extends Parsers {
 	
 	lazy val identifier: Parser[IdentifierExp] = {
 		variable ^^ { case VariableToken(name) => IdentifierExp(VariableExp(Variable(name))) } |
-		implicit_parameter ^^ { case ImplicitParameterToken(name) => IdentifierExp(ImplicitParameterExp(name)) } |
+		ip_OR_pwp ^^ { case ImplicitParameterOrPropertyWrapperProjectionToken(name) => IdentifierExp(ImplicitParameterExpOrPWP(name)) } |
 		property_wrapper_projection ^^ { case PropertyWrapperProjectionToken(name) => IdentifierExp(PropertyWrapperProjectionExp(name)) }
 	}
 	
