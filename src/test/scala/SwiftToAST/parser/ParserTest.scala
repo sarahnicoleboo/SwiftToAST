@@ -79,28 +79,43 @@ class ParserTest extends FlatSpec {
 /* 	"array_literal" should "handle an array literal []" in {
 		val input = Seq(LeftBracketToken, RightBracketToken)
 		assertResult(ArrayLiteralExp(List())) { Parser(Parser.array_literal, input) }
-	} */
+	} */ 
 	
-/* 	"array_literal" should "handle an array literal [1]" in {
+	"array_literal" should "handle an array literal [1]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), RightBracketToken)
+		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))
+		assertResult(expected) { Parser(Parser.array_literal, input) }
+	}
+	
+/* 	"array_literal" should "handle an array literal [1,]" in {
+		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, RightBracketToken)
 		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))
 		assertResult(expected) { Parser(Parser.array_literal, input) }
 	} */
 	
+	"array_literal" should "handle an array literal [1,2]" in {
+		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"), RightBracketToken)
+		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))
+		assertResult(expected) { Parser(Parser.array_literal, input) }
+	}
+	
 	//comma_sep_exps
-	"comma_sep_exps" should "handle and empty list" in {
-		val input = Seq(LeftBracketToken, RightBracketToken)
-		assertResult(List()) { Parser(Parser.comma_sep_exps, input) }
-	}
-	
-	
-/* 	"The parser" should "handle an array literal [1,] and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, RightBracketToken)) }
-	}
-	
-	"The parser" should "handle an array literal [1,2] and return a postfix exp" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))))))) { Parser(Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"), RightBracketToken)) }
+/* 	"comma_sep_exps" should "handle an empty list" in {
+		val input: Seq[Token] = Seq()
+		val emptyReturnList: List[Exp] = List()
+		assertResult(emptyReturnList) { Parser(Parser.comma_sep_exps, input) }
 	} */
+	
+	"comma_sep_exps" should "handle a list with one element" in {
+		val input = Seq(DecimalIntegerLiteralToken("1"))
+		assertResult(List(PostfixExp(NumericLiteralExp("1")))) { Parser(Parser.comma_sep_exps, input) }
+	}
+	
+	"comma_sep_exps" should "handle a list with two elements" in {
+		val input = Seq(DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"))
+		val expected = List(PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2")))
+		assertResult(expected) { Parser(Parser.comma_sep_exps, input) }
+	}
 	
 	//numeric_literal
 	"numeric_literal" should "handle an unsigned decimal integer literal token: 23" in {

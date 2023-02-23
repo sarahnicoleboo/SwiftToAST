@@ -72,13 +72,13 @@ object Parser extends Parsers {
 	override def rest: Reader[Token] = new TokenReader(tokens.tail)
 	}
 	
-	def apply(tokens: Seq[Token]): Program = {
+/* 	def apply(tokens: Seq[Token]): Program = {
 		val reader = new TokenReader(tokens)
 		program(reader) match {
 			case NoSuccess(message, next) => throw new ParserException(message)
 			case Success(result, next) => result
 		}
-	}
+	} */
 	
 	def apply[A](parser: Parser[A], tokens: Seq[Token]): A = {
 		val reader = new TokenReader(tokens)
