@@ -6,10 +6,8 @@ class ParserTest extends FlatSpec {
 	import SwiftToAST.tokenizer._
 	import SwiftToAST.parser._
 	
-	//these are broken and i think it's because i broke something with types, but there's no testing for types
-	//so we'll revisit this after we test typ
 	//primary_expression
-/* 	"primary_expression" should "handle an identifier followed by a list of generic types: name<Int>" in {
+	"primary_expression" should "handle an identifier followed by a list of generic types: name<Int>" in {
 		val input = Seq(VariableToken("name"), OperatorLiteralToken("<"), VariableToken("Int"), OperatorLiteralToken(">"))
 		val typeList = GenericArgumentClause(List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int")))))))
 		val expected = GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList) 
@@ -21,7 +19,7 @@ class ParserTest extends FlatSpec {
 		val typeList = GenericArgumentClause(List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String")))))))
 		val expected = GenericVariableExp(IdentifierExp(VariableExp(Variable("name"))), typeList) 
 		assertResult(expected) { Parser(Parser.primary_expression, input) }
-	} */
+	}
 	
 	//(identifier) thru primary_expression
 	"primary_expression" should "handle a VariableExp identifier" in {
@@ -213,12 +211,12 @@ class ParserTest extends FlatSpec {
 	
 	
 	//array_literal
-/* 	"array_literal" should "handle an array literal []" in {
+	"array_literal" should "handle an array literal []" in {
 		val input = Seq(LeftBracketToken, RightBracketToken)
 		val emptyList: List[Exp] = List()
 		val expected = ArrayLiteralExp(emptyList)
 		assertResult(ArrayLiteralExp(emptyList)) { Parser(Parser.array_literal, input) }
-	}  */
+	} 
 	
 	"array_literal" should "handle an array literal [1]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), RightBracketToken)
@@ -226,11 +224,12 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.array_literal, input) }
 	}
 	
-/* 	"array_literal" should "handle an array literal [1,]" in {
+	//broken
+	"array_literal" should "handle an array literal [1,]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, RightBracketToken)
 		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))
 		assertResult(expected) { Parser(Parser.array_literal, input) }
-	} */
+	}
 	
 	"array_literal" should "handle an array literal [1,2]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"), RightBracketToken)
@@ -239,11 +238,12 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//comma_sep_exps
-/* 	"comma_sep_exps" should "handle an empty list" in {
+	//broken
+	"comma_sep_exps" should "handle an empty list" in {
 		val input: Seq[Token] = Seq()
 		val emptyReturnList: List[Exp] = List()
 		assertResult(emptyReturnList) { Parser(Parser.comma_sep_exps, input) }
-	} */
+	}
 	
 	"comma_sep_exps" should "handle a list with one element" in {
 		val input = Seq(DecimalIntegerLiteralToken("1"))
@@ -271,12 +271,14 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.dictionary_literal, input) }
 	}
 	
-/*  	"dictionary_literal" should "handle an dictionary literal: [1:2,]" in {
+	
+	//broken
+ 	"dictionary_literal" should "handle an dictionary literal: [1:2,]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, RightBracketToken)
 		val dictionaryList: List[(Exp, Exp)] = List((PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))
 		val expected = DictionaryLiteralExp(dictionaryList)
 		assertResult(expected) { Parser(Parser.dictionary_literal, input) }
-	} */
+	}
 	
  	"dictionary_literal" should "handle an dictionary literal: [1:2, 3:4]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, DecimalIntegerLiteralToken("3"), ColonToken, DecimalIntegerLiteralToken("4"), RightBracketToken)
@@ -391,11 +393,11 @@ class ParserTest extends FlatSpec {
 		assertResult(NilExp) { Parser(Parser.nil_literal, input) }
 	}
 	
-/* 	
+	
 	//closure expressions
 	
 	
-	//parenthesized expressions
+/* 	//parenthesized expressions
 	"The parser" should "handle a parenthesized expression: (12)" in {
 		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ParenthesizedExp(PostfixExp(NumericLiteralExp("12")))))))) { Parser(Seq(LeftParenToken, DecimalIntegerLiteralToken("12"), RightParenToken)) }
 	} */

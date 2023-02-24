@@ -104,7 +104,7 @@ object Parser extends Parsers {
 	}
 	
 	lazy val expression_stmt: Parser[Stmt] = {
-		expression ^^ { case exp => ExpressionStmt(exp) }
+		expression ~ opt(SemicolonToken) ^^ { case exp ~ _ => ExpressionStmt(exp) }
 	}
 	
 	lazy val expression: Parser[Exp] = {
@@ -162,11 +162,11 @@ object Parser extends Parsers {
 	}
 	
 	lazy val generic_argument_clause: Parser[GenericArgumentClause] = {
-		operator("<") ~ comma_sep_types ~ operator(">") ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
+		operator("<") ~ log(comma_sep_types)("commaseptypes") ~ operator(">") ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
 	}
 	
 	lazy val comma_sep_types: Parser[List[Type]] = {
-		rep1sep(typ, CommaToken)
+		rep1sep(log(typ)("typ"), CommaToken)
 	}
 	
 
@@ -218,7 +218,10 @@ object Parser extends Parsers {
 	}
 	
 	lazy val array_literal: Parser[Exp] = {
-		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap({ case _ ~ expList ~ maybe ~ _ => if(expList.isEmpty && maybe.nonEmpty) { failure("random comma not preceeded by an exp") } else { success(ArrayLiteralExp(expList)) }})
+		(LeftBracketToken ~ comma_sep_exps ~ opt(CommaToken) ~ RightBracketToken).flatMap(
+			{ case _ ~ expList ~ maybe ~ _ =>
+				if(expList.isEmpty && maybe.nonEmpty)
+					{ failure("random comma not preceeded by an exp") } else { success(ArrayLiteralExp(expList)) }})
 	}
 	
 	lazy val comma_sep_exps: Parser[List[Exp]] = {
@@ -270,7 +273,7 @@ object Parser extends Parsers {
 	}
 	
 	lazy val closure_expression: Parser[ClosureExp] = {
-		opt(attributes) ~ opt(closure_signature) ~ opt(statements) ^^ { case optAttributes ~ optSig ~ optStmts => ClosureExp(optAttributes, optSig, optStmts) }
+		LeftCurlyToken ~ opt(attributes) ~ opt(closure_signature) ~ opt(statements) ~ RightCurlyToken ^^ { case _ ~ optAttributes ~ optSig ~ optStmts ~ _ => ClosureExp(optAttributes, optSig, optStmts) }
 	}
 	
 	//attributes
@@ -390,7 +393,7 @@ object Parser extends Parsers {
 		function_type |
 		array_type |
 		dictionary_type |
-		type_identifier
+		type_identifier |
 		tuple_type |
 		optional_type |
 		implicitly_unwrapped_optional_type |
