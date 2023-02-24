@@ -394,11 +394,78 @@ class ParserTest extends FlatSpec {
 	}
 	
 	
-	//closure expressions
+	//typ
+	//(function_type) thru typ
 	
 	
-/* 	//parenthesized expressions
-	"The parser" should "handle a parenthesized expression: (12)" in {
-		assertResult(Program(Seq(ExpressionStmt(PostfixExp(ParenthesizedExp(PostfixExp(NumericLiteralExp("12")))))))) { Parser(Seq(LeftParenToken, DecimalIntegerLiteralToken("12"), RightParenToken)) }
-	} */
+	//(array_type) thru typ
+	
+	
+	//(dictionary_type) thru typ
+	
+	
+	//(type_identifier) thru typ
+	
+	
+	//(tuple_type) thru typ
+	
+	
+	//(optional_type) thru typ
+	
+	
+	//(implicitly_unwrapped_optional_type) thru typ
+	
+	
+	//(protocol_composition_type) thru typ
+	
+	
+	//(opaque_type) thru typ
+	
+	
+	//(metatype_type) thru typ
+	
+	
+	//(AnyType)
+	
+	
+	//(SelfType)
+	
+	
+	//(in_parens_type) thru typ
+	
+	
+	
+	//function_type
+	
+	
+	//array_type
+	
+	
+	//dictionary_type
+	
+	
+	//type_identifier
+	
+	
+	//tuple_type
+	
+	
+	//optional_type
+	
+	
+	//implicitly_unwrapped_optional_type
+	
+	
+	//protocol_composition_type
+	
+	
+	//opaque_type
+	
+	
+	//metatype_type
+	
+	
+	//in_parens_type
+	
+	
 }
