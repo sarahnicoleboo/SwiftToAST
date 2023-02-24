@@ -387,15 +387,37 @@ object Parser extends Parsers {
 	
 	//types
 	lazy val typ: Parser[Type] = {
-		//function_type |
+		function_type |
 		array_type |
 		dictionary_type |
 		type_identifier
-		//tuple_type
+		tuple_type |
+		optional_type |
+		implicitly_unwrapped_optional_type |
+		protocol_composition_type |
+		opaque_type |
+		//metatype_type	//need protocol for this which I haven't done yet
+		AnyToken ^^^ AnyType |
+		SelfBigToken ^^^ SelfType |
+		in_parens_type
 	}
 	
 	lazy val function_type: Parser[FunctionType] = {
-		???
+		opt(attributes) ~ function_type_arg_clause ~ opt(asynch_modifier) ~ opt(throws_modifier) ~ operator("->") ~ typ ^^ { case optAttributes ~ argClause ~ optAsync ~ optThrows ~ _ ~ theType => FunctionType(optAttributes, argClause, optAsync, optThrows, theType) }
+	}
+	
+	lazy val function_type_arg_clause: Parser[FunctionTypeArgClause] = {
+		LeftParenToken ~ RightParenToken ^^^ FunctionTypeArgClause(List()) |
+		LeftParenToken ~ function_type_arg_list ~ opt(operator(".")) ~ opt(operator(".")) ~ opt(operator(".")) ~ RightParenToken ^^ { case _ ~ list ~ _ ~ _ ~ _ ~ _ => FunctionTypeArgClause(list) }
+	}
+	
+	lazy val function_type_arg_list: Parser[List[FunctionTypeArg]] = {
+		rep1sep(function_type_arg, CommaToken)
+	}
+	
+	lazy val function_type_arg: Parser[FunctionTypeArg] = {
+		opt(attributes) ~ opt(in_out_modifier) ~ typ ^^ { case optAttributes ~ optInOut ~ theType => FunctionTypeArg1(optAttributes, optInOut, theType) } |
+		identifier ~ type_annotation ^^ { case id ~ typeAnnotation => FunctionTypeArg2(id, typeAnnotation) }
 	}
 	
 	lazy val array_type: Parser[ArrayType] = {
@@ -412,9 +434,19 @@ object Parser extends Parsers {
 		identifier ^^ { case name => TypeIdentifier(NormalType(name)) }
 	}
 	
-/* 	lazy val tuple_type: Parser[???] = {
-		
-	} */
+	lazy val tuple_type: Parser[TupleType] = {
+		LeftParenToken ~ RightParenToken ^^^ TupleType(List()) |
+		LeftParenToken ~ tuple_type_element_list ~ RightParenToken ^^ { case _ ~ list ~ _ => TupleType(list) }
+	}
+	
+	lazy val tuple_type_element_list: Parser[List[TupleTypeElement]] = {
+		rep1sep(tuple_type_element, CommaToken)
+	}
+	
+	lazy val tuple_type_element: Parser[TupleTypeElement] = {
+		identifier ~ type_annotation ^^ { case id ~ typeAnnotation => TupleTypeElementNameAnnotation(id, typeAnnotation) } |
+		typ ^^ { case theType => TupleTypeElementType(theType) }
+	}
 	
 	lazy val type_annotation: Parser[TypeAnnotation] = {
 		ColonToken ~ opt(attributes) ~ opt(in_out_modifier) ~ typ ^^ { case _ ~ optAttributes ~ optInOut ~ theType => TypeAnnotation(optAttributes, optInOut, theType) }
@@ -422,6 +454,35 @@ object Parser extends Parsers {
 	
 	lazy val in_out_modifier: Parser[InOutMod] = {
 		InOutToken ^^^ InOutModifier
+	}
+	
+	lazy val optional_type: Parser[OptionalType] = {
+		typ ~ operator("?") ^^ { case theType ~ _ => OptionalType(theType) }
+	}
+	
+	lazy val implicitly_unwrapped_optional_type: Parser[ImplicitlyUnwrappedOptionalType] = {
+		typ ~ operator("!") ^^ { case theType ~ _ => ImplicitlyUnwrappedOptionalType(theType) }
+	}
+	
+	lazy val protocol_composition_type: Parser[ProtocolCompositionType] = {
+		type_IDs ^^ { case typeIDs => ProtocolCompositionType(typeIDs) }
+	}
+	
+	lazy val type_IDs: Parser[List[TypeIdentifier]] = {
+		rep1sep(type_identifier, operator("&"))
+	}
+	
+	lazy val opaque_type: Parser[OpaqueType] = {
+		SomeToken ~ typ ^^ { case _ ~ theType => OpaqueType(theType) }
+	}
+	
+	//this is here to be done in future because it relies on protocol which I haven't done yet
+/* 	lazy val metatype_type: Parser[???] = {
+		???
+	} */
+	
+	lazy val in_parens_type: Parser[InParensType] = {
+		LeftParenToken ~ typ ~ RightParenToken ^^ { case _ ~ theType ~ _ => InParensType(theType) }
 	}
 	
 	//big parsers down here:

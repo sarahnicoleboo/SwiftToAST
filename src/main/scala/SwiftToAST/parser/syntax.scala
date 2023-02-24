@@ -52,6 +52,7 @@ case class AssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
 //also hacky but works i guess
 sealed trait InOutMod
 case object InOutModifier extends InOutMod
+//above are also used as helpers for types
 
 sealed trait TryModifier
 case object NoTryModifier extends TryModifier
@@ -150,17 +151,35 @@ case class IdentifierDotPostFixMember(identifierExp: IdentifierExp, postfixExp: 
 case class TypeAnnotation(attributes: Option[List[Attribute]], inout: Option[InOutMod], typ: Type)
 
 sealed trait Type
-case class FunctionType(before: List[Type], after: Type) extends Type
+case class FunctionType(optAttributes: Option[List[Attribute]], argClause: FunctionTypeArgClause, async: Option[AsyncMod], throws: Option[ThrowsMod], typ: Type) extends Type
 case class ArrayType(typ: Type) extends Type
 case class DictionaryType(type1: Type, type2: Type) extends Type
 case class TypeIdentifier(typ: DifferentTypes) extends Type
+case class TupleType(list: List[TupleTypeElement]) extends Type
+case class OptionalType(typ: Type) extends Type
+case class ImplicitlyUnwrappedOptionalType(typ: Type) extends Type
+case class ProtocolCompositionType(typeIDs: List[TypeIdentifier]) extends Type
+case class OpaqueType(typ: Type) extends Type
+case object AnyType extends Type
+case object SelfType extends Type
+case class InParensType(typ: Type) extends Type
 
 //helpers for types
+case class FunctionTypeArgClause(list: List[FunctionTypeArg])
+
+sealed trait FunctionTypeArg
+//i am confused because the below is exactly the same as a type annotation
+case class FunctionTypeArg1(attributesList: Option[List[Attribute]], inout: Option[InOutMod], typ: Type) extends FunctionTypeArg
+case class FunctionTypeArg2(id: IdentifierExp, typeAnnotation: TypeAnnotation) extends FunctionTypeArg
+
 sealed trait DifferentTypes
 case class NormalType(typeName: IdentifierExp) extends DifferentTypes
 case class GenericType(typeName: IdentifierExp, genericTypes: GenericArgumentClause) extends DifferentTypes
 case class NestedType(typeName: IdentifierExp, genericTypes: GenericArgumentClause, nestedType: TypeIdentifier) extends DifferentTypes
 
+sealed trait TupleTypeElement
+case class TupleTypeElementNameAnnotation(id: IdentifierExp, typeAnnotation: TypeAnnotation) extends TupleTypeElement
+case class TupleTypeElementType(typ: Type) extends TupleTypeElement
 
 //statements
 sealed trait Stmt
