@@ -175,7 +175,8 @@ case class FunctionTypeArg2(id: IdentifierExp, typeAnnotation: TypeAnnotation) e
 sealed trait DifferentTypes
 case class NormalType(typeName: IdentifierExp) extends DifferentTypes
 case class GenericType(typeName: IdentifierExp, genericTypes: GenericArgumentClause) extends DifferentTypes
-case class NestedType(typeName: IdentifierExp, genericTypes: GenericArgumentClause, nestedType: TypeIdentifier) extends DifferentTypes
+case class NestedNormalType(typeName: IdentifierExp, nestedType: TypeIdentifier) extends DifferentTypes
+case class NestedGenericType(typeName: IdentifierExp, genericTypes: GenericArgumentClause, nestedType: TypeIdentifier) extends DifferentTypes
 
 sealed trait TupleTypeElement
 case class TupleTypeElementNameAnnotation(id: IdentifierExp, typeAnnotation: TypeAnnotation) extends TupleTypeElement

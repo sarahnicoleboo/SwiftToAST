@@ -87,11 +87,21 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//(array_literal) thru literal_expression
-	
+	"literal_expression" should "handle an array literal []" in {
+		val input = Seq(LeftBracketToken, RightBracketToken)
+		val emptyList: List[Exp] = List()
+		val expected = ArrayLiteralExp(emptyList)
+		assertResult(ArrayLiteralExp(emptyList)) { Parser(Parser.literal_expression, input) }
+	} 
 	
 	
 	//(dictionary_literal) thru literal_expression
-	
+	"literal_expression" should "handle an empty dictionary literal: [:]" in {
+		val input = Seq(LeftBracketToken, ColonToken, RightBracketToken)
+		val dictionaryList: List[(Exp, Exp)] = List()
+		val expected = DictionaryLiteralExp(dictionaryList)
+		assertResult(expected) { Parser(Parser.literal_expression, input) }
+	}
 	
 	
 	//(playground_literal) thrue literal_expression
@@ -184,6 +194,64 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.superclass_expression, input) }
 	}
 	
+	//closure_expression
+	"closure_expression" should "handle {}" in {
+		val input = Seq(LeftCurlyToken, RightCurlyToken)
+		val expected = ClosureExp(None, None, None)
+		assertResult(expected) { Parser(Parser.closure_expression, input) }
+	}
+	
+	"closure_expression" should "handle { @name }" in {
+		val input = Seq(LeftCurlyToken, AtToken, VariableToken("name"), RightCurlyToken)
+		val emptyList: List[BalancedToken] = List()
+		val attributeList = List(Attribute(IdentifierExp(VariableExp(Variable("name"))), emptyList))
+		val expected = ClosureExp(Some(attributeList), None, None)
+		assertResult(expected) { Parser(Parser.closure_expression, input) }
+	}
+	
+	"closure_expression" should "handle {  }" in {
+		val input = Seq(LeftCurlyToken, RightCurlyToken)
+		val expected = ClosureExp(None, None, None)
+		assertResult(expected) { Parser(Parser.closure_expression, input) }
+	}
+	//more still
+	
+	//helper: closure_signature
+	
+	
+	//helper: capture_list
+	
+	
+	//helper: capture_list_item
+	
+	
+	//helper: capture_specifier
+	
+	
+	//helper: closure_parameter_clause
+	
+	
+	//helper: closure_parameter
+	
+	
+	
+	
+	//parenthesized_expression
+	
+	
+	//tuple_expression
+	
+	
+	//implicit_member_expression
+	
+	
+	//wildcard_expression
+	
+	
+	//key_path_expression
+	
+	
+	
 	//literal
 	//(numeric_literal) thru literal
 	"literal" should "handle an unsigned decimal integer literal token: 23" in {
@@ -224,7 +292,6 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.array_literal, input) }
 	}
 	
-	//broken
 	"array_literal" should "handle an array literal [1,]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, RightBracketToken)
 		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))
@@ -237,8 +304,7 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.array_literal, input) }
 	}
 	
-	//comma_sep_exps
-	//broken
+	//helper: comma_sep_exps
 	"comma_sep_exps" should "handle an empty list" in {
 		val input: Seq[Token] = Seq()
 		val emptyReturnList: List[Exp] = List()
@@ -272,7 +338,6 @@ class ParserTest extends FlatSpec {
 	}
 	
 	
-	//broken
  	"dictionary_literal" should "handle an dictionary literal: [1:2,]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, RightBracketToken)
 		val dictionaryList: List[(Exp, Exp)] = List((PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))
@@ -396,19 +461,41 @@ class ParserTest extends FlatSpec {
 	
 	//typ
 	//(function_type) thru typ
-	
+	"typ" should "handle () -> Int" in {
+		val input = Seq(LeftParenToken, RightParenToken, OperatorLiteralToken("->"), VariableToken("Int"))
+		val list: List[FunctionTypeArg] = List()
+		val expected = FunctionType(None, FunctionTypeArgClause(list), None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(array_type) thru typ
-	
+	"typ" should "handle [Int]" in {
+		val input = Seq(LeftBracketToken, VariableToken("Int"), RightBracketToken)
+		val expected = ArrayType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}	
 	
 	//(dictionary_type) thru typ
-	
+	"typ" should "handle [Int: Bool]" in {
+		val input = Seq(LeftBracketToken, VariableToken("Int"), ColonToken, VariableToken("Bool"), RightBracketToken)
+		val expected = DictionaryType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(type_identifier) thru typ
-	
+	"typ" should "handle the normal type: Int" in {
+		val input = Seq(VariableToken("Int"))
+		val expected = TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int")))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(tuple_type) thru typ
-	
+	"typ" should "handle ()" in {
+		val input = Seq(LeftParenToken, RightParenToken)
+		val emptyList: List[TupleTypeElement] = List()
+		val expected = TupleType(emptyList)
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(optional_type) thru typ
 	
@@ -417,55 +504,311 @@ class ParserTest extends FlatSpec {
 	
 	
 	//(protocol_composition_type) thru typ
-	
+	"typ" should "handle: Int & Bool" in {
+		val input = Seq(VariableToken("Int"), OperatorLiteralToken("&"), VariableToken("Bool"))
+		val list = List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))),
+				   TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool"))))))
+		val expected = ProtocolCompositionType(list)
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(opaque_type) thru typ
-	
+	"typ" should "handle: some Int" in {
+		val input = Seq(SomeToken, VariableToken("Int"))
+		val expected = OpaqueType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(metatype_type) thru typ
 	
 	
 	//(AnyType)
-	
+	"typ" should "handle: Any" in {
+		assertResult(AnyType) { Parser(Parser.typ, Seq(AnyToken)) }
+	}
 	
 	//(SelfType)
-	
+	"typ" should "handle: Self" in {
+		assertResult(SelfType) { Parser(Parser.typ, Seq(SelfBigToken)) }
+	}
 	
 	//(in_parens_type) thru typ
-	
+	"typ" should "handle: (Int)" in {
+		val input = Seq(LeftParenToken, VariableToken("Int"), RightParenToken)
+		val expected = InParensType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	
 	//function_type
+	"function_type" should "handle () -> Int" in {
+		val input = Seq(LeftParenToken, RightParenToken, OperatorLiteralToken("->"), VariableToken("Int"))
+		val list: List[FunctionTypeArg] = List()
+		val expected = FunctionType(None, FunctionTypeArgClause(list), None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.function_type, input) }
+	}
 	
+	"function_type" should "handle (Bool) -> Int" in {
+		val input = Seq(LeftParenToken, VariableToken("Bool"), RightParenToken, OperatorLiteralToken("->"), VariableToken("Int"))
+		val list: List[FunctionTypeArg] = List(FunctionTypeArg1(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool")))))))
+		val expected = FunctionType(None, FunctionTypeArgClause(list), None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.function_type, input) }
+	}
+	
+	"function_type" should "handle (Bool, x: String) -> Int" in {
+		val input = Seq(LeftParenToken, VariableToken("Bool"), CommaToken, VariableToken("x"), ColonToken, VariableToken("String"), RightParenToken, OperatorLiteralToken("->"), VariableToken("Int"))
+		val list: List[FunctionTypeArg] = List(FunctionTypeArg1(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool")))))),
+											FunctionTypeArg2(IdentifierExp(VariableExp(Variable("x"))), TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))))
+		val expected = FunctionType(None, FunctionTypeArgClause(list), None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.function_type, input) }
+	}
+	
+	"function_type" should "handle (Bool, x: String) asynch -> Int" in {
+		val input = Seq(LeftParenToken, VariableToken("Bool"), CommaToken, VariableToken("x"), ColonToken, VariableToken("String"), RightParenToken, 
+					AsyncToken, OperatorLiteralToken("->"), VariableToken("Int"))
+		val list: List[FunctionTypeArg] = List(FunctionTypeArg1(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool")))))),
+											FunctionTypeArg2(IdentifierExp(VariableExp(Variable("x"))), TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))))
+		val expected = FunctionType(None, FunctionTypeArgClause(list), Some(AsyncModifier), None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.function_type, input) }
+	}
+	
+	//PROBLEM
+/* 	"function_type" should "handle @name () -> Int" in {
+		val input = Seq(AtToken, VariableToken("name"), LeftParenToken, RightParenToken, OperatorLiteralToken("->"), VariableToken("Int"))
+		val list: List[FunctionTypeArg] = List()
+		val emptyBTList: List[BalancedToken] = List()
+		val theAttribute = Attribute(IdentifierExp(VariableExp(Variable("name"))) , emptyBTList)
+		val expected = FunctionType(Some(List(theAttribute)), FunctionTypeArgClause(list), None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.function_type, input) }
+	} */
+	
+	
+	//helper: function_type_arg
+	"function_type_arg" should "handle x: String" in {
+		val input = Seq(VariableToken("x"), ColonToken, VariableToken("String"))
+		val typeAnnotation = TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))
+		val expected = FunctionTypeArg2(IdentifierExp(VariableExp(Variable("x"))), typeAnnotation)
+		assertResult(expected) { Parser(Parser.function_type_arg, input) }
+	}
+	
+	//helper: type_annotation
+	"type_annotation" should "handle : String" in {
+		val input = Seq(ColonToken, VariableToken("String"))
+		val expected = TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))
+		assertResult(expected) { Parser(Parser.type_annotation, input) }
+	}	
 	
 	//array_type
-	
+	"array_type" should "handle [Int]" in {
+		val input = Seq(LeftBracketToken, VariableToken("Int"), RightBracketToken)
+		val expected = ArrayType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.array_type, input) }
+	}	
 	
 	//dictionary_type
-	
+	"dictionary_type" should "handle [Int: Bool]" in {
+		val input = Seq(LeftBracketToken, VariableToken("Int"), ColonToken, VariableToken("Bool"), RightBracketToken)
+		val expected = DictionaryType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool"))))))
+		assertResult(expected) { Parser(Parser.dictionary_type, input) }
+	}	
 	
 	//type_identifier
+	"type_identifier" should "handle the normal type: Int" in {
+		val input = Seq(VariableToken("Int"))
+		val expected = TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int")))))
+		assertResult(expected) { Parser(Parser.type_identifier, input) }
+	}
 	
+	"type_identifier" should "handle the generic type: Int<Bool, Int>" in {
+		val input = Seq(VariableToken("Int"), OperatorLiteralToken("<"), VariableToken("Bool"), CommaToken, VariableToken("Int"), OperatorLiteralToken(">"))
+		val genericList: List[Type] = List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool"))))), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		val expected = TypeIdentifier(GenericType(IdentifierExp(VariableExp(Variable("Int"))), GenericArgumentClause(genericList)))
+		assertResult(expected) { Parser(Parser.type_identifier, input) }
+	}
+	
+	"type_identifier" should "handle the nested normal type: Number.int" in {
+		val input = Seq(VariableToken("Number"), OperatorLiteralToken("."), VariableToken("int"))
+		val expected = TypeIdentifier(NestedNormalType(IdentifierExp(VariableExp(Variable("Number"))), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("int")))))))
+		assertResult(expected) { Parser(Parser.type_identifier, input) }
+	}
+	
+	//issue here with . and >.
+	//we would need it to tokenize as > and . rather than >.
+	"type_identifier" should "handle the nested generic type: Number<Int>.int" in {
+		val input = Seq(VariableToken("Number"), OperatorLiteralToken("<"), VariableToken("Int"), OperatorLiteralToken(">"), OperatorLiteralToken("."), VariableToken("int"))
+		val genericList: List[Type] = List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		val genericArgClause = GenericArgumentClause(genericList)
+		val expected = TypeIdentifier(NestedGenericType(IdentifierExp(VariableExp(Variable("Number"))), genericArgClause ,TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("int")))))))
+		assertResult(expected) { Parser(Parser.type_identifier, input) }
+	}
 	
 	//tuple_type
+	"tuple_type" should "handle ()" in {
+		val input = Seq(LeftParenToken, RightParenToken)
+		val emptyList: List[TupleTypeElement] = List()
+		val expected = TupleType(emptyList)
+		assertResult(expected) { Parser(Parser.tuple_type, input) }
+	}
 	
+	"tuple_type" should "handle (Int)" in {
+		val input = Seq(LeftParenToken, VariableToken("Int"), RightParenToken)
+		val list: List[TupleTypeElement] = List(TupleTypeElementType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int")))))))
+		val expected = TupleType(list)
+		assertResult(expected) { Parser(Parser.tuple_type, input) }
+	}
+	
+	"tuple_type" should "handle (Int, x: Bool)" in {
+		val input = Seq(LeftParenToken, VariableToken("Int"), CommaToken, VariableToken("x"), ColonToken, VariableToken("Bool"), RightParenToken)
+		val list: List[TupleTypeElement] = List(TupleTypeElementType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int")))))), 
+												TupleTypeElementNameAnnotation(IdentifierExp(VariableExp(Variable("x"))),
+																				TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool"))))))))
+		val expected = TupleType(list)
+		assertResult(expected) { Parser(Parser.tuple_type, input) }
+	}
 	
 	//optional_type
-	
+	//left recursion
+/* 	"optional_type" should "handle Int?" in {
+		val input = Seq(VariableToken("Int"), OperatorLiteralToken("?"))
+		val expected = OptionalType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.optional_type, input) }
+	} */
 	
 	//implicitly_unwrapped_optional_type
+	//also gonna have left recursion
 	
 	
 	//protocol_composition_type
-	
+	"protocol_composition_type" should "handle: Int & Bool" in {
+		val input = Seq(VariableToken("Int"), OperatorLiteralToken("&"), VariableToken("Bool"))
+		val list = List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))),
+				   TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Bool"))))))
+		val expected = ProtocolCompositionType(list)
+		assertResult(expected) { Parser(Parser.protocol_composition_type, input) }
+	}
 	
 	//opaque_type
+	"opaque_type" should "handle: some Int" in {
+		val input = Seq(SomeToken, VariableToken("Int"))
+		val expected = OpaqueType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.opaque_type, input) }
+	}
 	
 	
 	//metatype_type
 	
 	
 	//in_parens_type
+	"in_parens_type" should "handle: (Int)" in {
+		val input = Seq(LeftParenToken, VariableToken("Int"), RightParenToken)
+		val expected = InParensType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.in_parens_type, input) }
+	}
+	
+	
+	//attribute & attributes
+	"attribute" should "handle @varName" in {
+		val input = Seq(AtToken, VariableToken("varName"))
+		val emptyBTList: List[BalancedToken] = List()
+		val expected = Attribute(IdentifierExp(VariableExp(Variable("varName"))) , emptyBTList)
+		assertResult(expected) { Parser(Parser.attribute, input) }
+	}
+	
+	"attribute" should "handle @varName ()" in {
+		val input = Seq(AtToken, VariableToken("varName"), LeftParenToken, RightParenToken)
+		val emptyBTList: List[BalancedToken] = List()
+		val expected = Attribute(IdentifierExp(VariableExp(Variable("varName"))) , emptyBTList)
+		assertResult(expected) { Parser(Parser.attribute, input) }
+	}
+	
+	"attribute" should "handle @varName (xy)" in {
+		val input = Seq(AtToken, VariableToken("varName"), LeftParenToken, VariableToken("xy"), RightParenToken)
+		val list: List[BalancedToken] = List(IdentifierBalancedToken(IdentifierExp(VariableExp(Variable("xy")))))
+		val expected = Attribute(IdentifierExp(VariableExp(Variable("varName"))) , list)
+		assertResult(expected) { Parser(Parser.attribute, input) }
+	}
+	
+	"attribute" should "handle @varName (xy Do)" in {
+		val input = Seq(AtToken, VariableToken("varName"), LeftParenToken, VariableToken("xy"), DoToken, RightParenToken)
+		val list: List[BalancedToken] = List(IdentifierBalancedToken(IdentifierExp(VariableExp(Variable("xy")))), KeywordBalancedToken(DoKeyword))
+		val expected = Attribute(IdentifierExp(VariableExp(Variable("varName"))) , list)
+		assertResult(expected) { Parser(Parser.attribute, input) }
+	}
+	
+	"attributes" should "handle two attributes: @varName @name(xy)" in {
+		val input = Seq(AtToken, VariableToken("varName"), AtToken, VariableToken("name"), LeftParenToken, VariableToken("xy"), RightParenToken)
+		val emptyBTList: List[BalancedToken] = List()
+		val list: List[BalancedToken] = List(IdentifierBalancedToken(IdentifierExp(VariableExp(Variable("xy")))))
+		val expected: List[Attribute] = List(Attribute(IdentifierExp(VariableExp(Variable("varName"))) , emptyBTList), 
+											Attribute(IdentifierExp(VariableExp(Variable("name"))) , list))
+		assertResult(expected) { Parser(Parser.attributes, input) }
+	}
+	
+	//attribute_argument_clause
+	"attribute_argument_clause" should "handle one balanced token: xy" in {
+		val input = Seq(LeftParenToken, VariableToken("xy"), RightParenToken)
+		val expected: List[BalancedToken] = List(IdentifierBalancedToken(IdentifierExp(VariableExp(Variable("xy")))))
+		assertResult(expected) { Parser(Parser.attribute_argument_clause, input) }
+	}
+	
+	//balanced_token
+	"balanced_token" should "handle an identifier: xy" in {
+		val input = Seq(VariableToken("xy"))
+		val expected = IdentifierBalancedToken(IdentifierExp(VariableExp(Variable("xy"))))
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	"balanced_token" should "handle a keyword: Do" in {
+		val input = Seq(DoToken)
+		val expected = KeywordBalancedToken(DoKeyword)
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	"balanced_token" should "handle a literal: 5" in {
+		val input = Seq(DecimalIntegerLiteralToken("5"))
+		val expected = LiteralBalancedToken(NumericLiteralExp("5"))
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	"balanced_token" should "handle an operator: -" in {
+		val input = Seq(OperatorLiteralToken("-"))
+		val expected = OperatorBalancedToken(Operator("-"))
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	"balanced_toked" should "handle an operator: -" in {
+		val input = Seq(OperatorLiteralToken("-"))
+		val expected = OperatorBalancedToken(Operator("-"))
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	"balanced_token" should "handle a punctuation: ." in {
+		val input = Seq(OperatorLiteralToken("."))
+		val expected = PunctuationBalancedToken(Period)
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	"balanced_token" should "handle a parenthesized punctuation: (.)" in {
+		val input = Seq(LeftParenToken, OperatorLiteralToken("."), RightParenToken)
+		val expected = InParensBalancedToken(PunctuationBalancedToken(Period))
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	"balanced_token" should "handle a bracketed punctuation: [.]" in {
+		val input = Seq(LeftBracketToken, OperatorLiteralToken("."), RightBracketToken)
+		val expected = InBracketsBalancedToken(PunctuationBalancedToken(Period))
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	"balanced_token" should "handle a braced punctuation: {.}" in {
+		val input = Seq(LeftCurlyToken, OperatorLiteralToken("."), RightCurlyToken)
+		val expected = InBracesBalancedToken(PunctuationBalancedToken(Period))
+		assertResult(expected) { Parser(Parser.balanced_token, input) }
+	}
+	
+	
+	//other shit
+	//function_result
 	
 	
 }

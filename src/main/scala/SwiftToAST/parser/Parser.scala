@@ -147,12 +147,13 @@ object Parser extends Parsers {
 		literal_expression |
 		self_expression |
 		superclass_expression |
-		closure_expression |
+		closure_expression |	//stopped testing here
 		parenthesized_expression |
 		tuple_expression |
 		implicit_member_expression |
 		wildcard_expression //|
 		//key_path_expression
+		//still need more
 	}
 	
 	lazy val identifier: Parser[IdentifierExp] = {
@@ -162,11 +163,11 @@ object Parser extends Parsers {
 	}
 	
 	lazy val generic_argument_clause: Parser[GenericArgumentClause] = {
-		operator("<") ~ log(comma_sep_types)("commaseptypes") ~ operator(">") ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
+		operator("<") ~ comma_sep_types ~ operator(">") ^^ { case _ ~ typs ~ _ => GenericArgumentClause(typs) }
 	}
 	
 	lazy val comma_sep_types: Parser[List[Type]] = {
-		rep1sep(log(typ)("typ"), CommaToken)
+		rep1sep (typ, CommaToken)
 	}
 	
 
@@ -282,12 +283,13 @@ object Parser extends Parsers {
 	}
 	
 	lazy val attribute: Parser[Attribute] = {
-		AtToken ~ identifier ~ LeftParenToken ~ attribute_argument_clause ~ RightParenToken ^^  { case _ ~ name ~ _ ~ list ~ _ => Attribute(name, list) } |
+		//AtToken ~ identifier ~ LeftParenToken ~ attribute_argument_clause ~ RightParenToken ^^  { case _ ~ name ~ _ ~ list ~ _ => Attribute(name, list) } |
+		AtToken ~ identifier ~ attribute_argument_clause ^^ { case _ ~ name ~ clause => Attribute(name, clause) } |
 		AtToken ~ identifier ^^ { case _ ~ name => Attribute(name, List()) }
 	}
 	
 	lazy val attribute_argument_clause: Parser[List[BalancedToken]] = {
-		rep(balanced_token)
+		LeftParenToken ~ rep(balanced_token) ~ RightParenToken ^^ { case _ ~ tokens ~ _ => tokens}
 	}
 	
 	lazy val balanced_token: Parser[BalancedToken] = {
@@ -297,8 +299,9 @@ object Parser extends Parsers {
 		identifier ^^ { case id => IdentifierBalancedToken(id) } |
 		keyword ^^ { case word => KeywordBalancedToken(word) } |	//bottom of file bcuz big af
 		literal ^^ { case lit => LiteralBalancedToken(lit) } |
-		operator ^^ { case op => OperatorBalancedToken(op) } |
-		punctuation ^^ { case punc => PunctuationBalancedToken(punc) }	//also bottom of file with keywords
+		punctuation ^^ { case punc => PunctuationBalancedToken(punc) } |	//also bottom of file with keywords
+		operator ^^ { case op => OperatorBalancedToken(op) }
+		//punctuation ^^ { case punc => PunctuationBalancedToken(punc) }	//also bottom of file with keywords
 	}
 	
 	lazy val closure_signature: Parser[ClosureSignature] = {
@@ -393,16 +396,16 @@ object Parser extends Parsers {
 		function_type |
 		array_type |
 		dictionary_type |
-		type_identifier |
-		tuple_type |
-		optional_type |
-		implicitly_unwrapped_optional_type |
 		protocol_composition_type |
+		type_identifier |
+		in_parens_type |
+		tuple_type |
+		//optional_type |
+		//implicitly_unwrapped_optional_type |
 		opaque_type |
 		//metatype_type	//need protocol for this which I haven't done yet
 		AnyToken ^^^ AnyType |
-		SelfBigToken ^^^ SelfType |
-		in_parens_type
+		SelfBigToken ^^^ SelfType
 	}
 	
 	lazy val function_type: Parser[FunctionType] = {
@@ -419,8 +422,9 @@ object Parser extends Parsers {
 	}
 	
 	lazy val function_type_arg: Parser[FunctionTypeArg] = {
-		opt(attributes) ~ opt(in_out_modifier) ~ typ ^^ { case optAttributes ~ optInOut ~ theType => FunctionTypeArg1(optAttributes, optInOut, theType) } |
-		identifier ~ type_annotation ^^ { case id ~ typeAnnotation => FunctionTypeArg2(id, typeAnnotation) }
+		identifier ~ type_annotation ^^ { case id ~ typeAnnotation => FunctionTypeArg2(id, typeAnnotation) } |
+		opt(attributes) ~ opt(in_out_modifier) ~ typ ^^ { case optAttributes ~ optInOut ~ theType => FunctionTypeArg1(optAttributes, optInOut, theType) } //|
+		//identifier ~ type_annotation ^^ { case id ~ typeAnnotation => FunctionTypeArg2(id, typeAnnotation) }
 	}
 	
 	lazy val array_type: Parser[ArrayType] = {
@@ -432,7 +436,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val type_identifier: Parser[TypeIdentifier] = {
-		identifier ~ generic_argument_clause ~ operator(".") ~ type_identifier ^^ { case name ~ types ~ _ ~ recursive => TypeIdentifier(NestedType(name, types, recursive)) } |
+		identifier ~ operator(".") ~ type_identifier ^^ { case name ~ _ ~ nestedType => TypeIdentifier(NestedNormalType(name, nestedType)) } |
+		identifier ~ generic_argument_clause ~ operator(".") ~ type_identifier ^^ { case name ~ types ~ _ ~ recursive => TypeIdentifier(NestedGenericType(name, types, recursive)) } |
 		identifier ~ generic_argument_clause ^^ { case name ~ types => TypeIdentifier(GenericType(name, types)) } |
 		identifier ^^ { case name => TypeIdentifier(NormalType(name)) }
 	}
@@ -472,7 +477,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val type_IDs: Parser[List[TypeIdentifier]] = {
-		rep1sep(type_identifier, operator("&"))
+		//rep1sep(type_identifier, operator("&"))
+		type_identifier ~ operator("&") ~ rep1sep(type_identifier, operator("&")) ^^ { case first ~ _ ~ rest => first+:rest }
 	}
 	
 	lazy val opaque_type: Parser[OpaqueType] = {
