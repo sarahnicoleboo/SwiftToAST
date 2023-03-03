@@ -305,9 +305,9 @@ object Parser extends Parsers {
 	}
 	
 	lazy val closure_signature: Parser[ClosureSignature] = {
-		opt(capture_list) ~ closure_parameter_clause ~ opt(asynch_modifier) ~ opt(throws_modifier) ~ opt(function_result) ^^
-			{ case captureList ~ clause ~ asynch ~ throws ~ funcResult => ClosureSignatureComplex(captureList, clause, asynch, throws, funcResult) } |
-		capture_list ^^ { case list => ClosureSignatureSimple(list) } 
+		opt(capture_list) ~ closure_parameter_clause ~ opt(asynch_modifier) ~ opt(throws_modifier) ~ opt(function_result) ~ InToken ^^
+			{ case captureList ~ clause ~ asynch ~ throws ~ funcResult ~ _ => ClosureSignatureComplex(captureList, clause, asynch, throws, funcResult) } |
+		capture_list ~ InToken ^^ { case list ~ _ => ClosureSignatureSimple(list) } 
 	}
 	
 	lazy val capture_list: Parser[CaptureList] = {
@@ -315,16 +315,17 @@ object Parser extends Parsers {
 	}
 	
 	lazy val capture_list_item: Parser[CaptureListItem] = {
-		opt(capture_specifier) ~ identifier ^^ { case cp ~ id => CaptureListItemIdentifier(cp, id) } |
 		opt(capture_specifier) ~ assignment_exp ^^ { case cp ~ exp => CaptureListItemAssignment(cp, exp) } |
+		opt(capture_specifier) ~ identifier ^^ { case cp ~ id => CaptureListItemIdentifier(cp, id) } |
+		//opt(capture_specifier) ~ assignment_exp ^^ { case cp ~ exp => CaptureListItemAssignment(cp, exp) } |
 		opt(capture_specifier) ~ self_expression ^^ { case cp ~ self => CaptureListItemSelf(cp, self) }
 	}
 	
 	lazy val capture_specifier: Parser[CaptureSpecifier] = {
 		WeakToken ^^^ WeakCaptureSpecifier |
-		UnownedToken ^^^ UnownedCaptureSpecifier |
 		UnownedToken ~ LeftParenToken ~ SafeToken ~ RightParenToken ^^^ UnownedSafeCaptureSpecifier |
-		UnownedToken ~ LeftParenToken ~ UnsafeToken ~ RightParenToken ^^^ UnownedUnsafeCaptureSpecifier
+		UnownedToken ~ LeftParenToken ~ UnsafeToken ~ RightParenToken ^^^ UnownedUnsafeCaptureSpecifier |
+		UnownedToken ^^^ UnownedCaptureSpecifier
 	}
 	
 	lazy val closure_parameter_clause: Parser[ClosureParameterClause] = {
@@ -334,7 +335,7 @@ object Parser extends Parsers {
 	}
 	
 	lazy val closure_parameter: Parser[ClosureParameter] = {
-		identifier ~ type_annotation ~ operator(".") ~ operator(".") ~ operator(".") ^^ { case id ~ annotation ~ _ ~ _ ~ _ => ClosureParameterElipses(id, annotation) } |
+		identifier ~ type_annotation ~ operator("...") ^^ { case id ~ annotation ~ _ => ClosureParameterElipses(id, annotation) } |
 		identifier ~ opt(type_annotation) ^^ { case id ~ optAnnotation => ClosureParameterReg(id, optAnnotation) }
 	}
 	

@@ -47,18 +47,49 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//(closure_expression) thru primary_expression
-	
+	"primary_expression" should "handle {}" in {
+		val input = Seq(LeftCurlyToken, RightCurlyToken)
+		val expected = ClosureExp(None, None, None)
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
+	}
 	
 	//(parenthesized_expression) thru primary_expression
-	
+	"primary_expression" should "handle: (5)" in {
+		val input = Seq(LeftParenToken, DecimalIntegerLiteralToken("5"), RightParenToken)
+		val expected = ParenthesizedExp(PostfixExp(NumericLiteralExp("5")))
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
+	}
 	
 	//(tuple_expression) thru primary_expression
+	"primary_expression" should "handle ()" in {
+		val input = Seq(LeftParenToken, RightParenToken)
+		val tupleList: List[TupleElement] = List() 
+		val expected = TupleExp(tupleList)
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
+	}
 	
 	
 	//(implicit_member_expression) thru primary expression
-	
+	"primary_expression" should "handle .x" in {
+		val input = Seq(OperatorLiteralToken("."), VariableToken("x"))
+		val expected = ImplicitMemberExp(IdentifierImplicitMember(IdentifierExp(VariableExp(Variable("x")))))
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
+	}
 	
 	//(wilcard_expression) thru primary_expression
+	"primary_expression" should "handle _" in {
+		assertResult(WildcardExp) { Parser(Parser.primary_expression, Seq(UnderscoreToken)) }
+	}
+	
+	//(key_path_expression) thru primary_expression
+	
+	
+	//(selctor_expression) thru primary_expression
+	
+	
+	//(key_path_string_expression) thru primary expression
+	
+	
 	
 	
 	//identifier
@@ -214,41 +245,296 @@ class ParserTest extends FlatSpec {
 		val expected = ClosureExp(None, None, None)
 		assertResult(expected) { Parser(Parser.closure_expression, input) }
 	}
-	//more still
+	
+	"closure_expression" should "handle { attributes }" in {
+		val input = Seq(LeftCurlyToken, AtToken, VariableToken("name"), RightCurlyToken)
+		val emptyBTList: List[BalancedToken] = List()
+		val theAttribute = Attribute(IdentifierExp(VariableExp(Variable("name"))) , emptyBTList)
+		val expected = ClosureExp(Some(List(theAttribute)), None, None)
+		assertResult(expected) { Parser(Parser.closure_expression, input) }
+	}
+	
+	"closure_expression" should "handle { closure-signature } which is { () in }" in {
+		val input = Seq(LeftCurlyToken, LeftParenToken, RightParenToken, InToken, RightCurlyToken)
+		val emptyList: List[ClosureParameter] = List()
+		val cpc = CPCClosureParameterList(emptyList)
+		val closureSig = (ClosureSignatureComplex(None, cpc, None, None, None))
+		val expected = ClosureExp(None, Some(closureSig), None)
+		assertResult(expected) { Parser(Parser.closure_expression, input) }
+	}
+
+	"closure_expression" should "handle { statements }" in {
+		val input = Seq(LeftCurlyToken, DecimalIntegerLiteralToken("1"), RightCurlyToken)
+		val stmt = ExpressionStmt(PostfixExp(NumericLiteralExp("1")))
+		val expected = ClosureExp(None, None, Some(List(stmt)))
+		assertResult(expected) { Parser(Parser.closure_expression, input) }
+	}
+	
+	//PROBLEM same issue with getting stuck in attribute as function_type
+/* 	"closure_expression" should "handle the combination of the above tests into { attributes closure-signature statements }" in {
+		val input = Seq(LeftCurlyToken, AtToken, VariableToken("name"), LeftParenToken, RightParenToken, InToken, DecimalIntegerLiteralToken("1"), RightCurlyToken)
+		val emptyBTList: List[BalancedToken] = List()
+		val theAttribute = Attribute(IdentifierExp(VariableExp(Variable("name"))) , emptyBTList)
+		val emptyList: List[ClosureParameter] = List()
+		val cpc = CPCClosureParameterList(emptyList)
+		val closureSig = (ClosureSignatureComplex(None, cpc, None, None, None))
+		val stmt = ExpressionStmt(PostfixExp(NumericLiteralExp("1")))
+		val expected = ClosureExp(Some(List(theAttribute)), Some(closureSig), Some(List(stmt)))
+		assertResult(expected) { Parser(Parser.closure_expression, input) }
+	}	 */
+	
 	
 	//helper: closure_signature
+	"closure_signature" should "handle the complex closure signature -> closure_parameter_clause in" in {
+		val input = Seq(LeftParenToken, RightParenToken, InToken)
+		val emptyList: List[ClosureParameter] = List()
+		val cpc = CPCClosureParameterList(emptyList)
+		val expected = (ClosureSignatureComplex(None, cpc, None, None, None))
+		assertResult(expected) { Parser(Parser.closure_signature, input) }
+	}
 	
+	"closure_signature" should "handle the complex closure signature -> capture-list closure_parameter_clause in" in {
+		val input = Seq(LeftBracketToken, VariableToken("identifierName"), RightBracketToken, LeftParenToken, RightParenToken, InToken)
+		val emptyList: List[ClosureParameter] = List()
+		val cpc = CPCClosureParameterList(emptyList)
+		val list: List[CaptureListItem] = List(CaptureListItemIdentifier(None, IdentifierExp(VariableExp(Variable("identifierName")))))
+		val captureList = CaptureList(list)
+		val expected = (ClosureSignatureComplex(Some(captureList), cpc, None, None, None))
+		assertResult(expected) { Parser(Parser.closure_signature, input) }
+	}
+	
+	"closure_signature" should "handle the complex closure signature -> capture-list closure_parameter_clause async in" in {
+		val input = Seq(LeftBracketToken, VariableToken("identifierName"), RightBracketToken, LeftParenToken, RightParenToken, AsyncToken, InToken)
+		val emptyList: List[ClosureParameter] = List()
+		val cpc = CPCClosureParameterList(emptyList)
+		val list: List[CaptureListItem] = List(CaptureListItemIdentifier(None, IdentifierExp(VariableExp(Variable("identifierName")))))
+		val captureList = CaptureList(list)
+		val expected = (ClosureSignatureComplex(Some(captureList), cpc, Some(AsyncModifier), None, None))
+		assertResult(expected) { Parser(Parser.closure_signature, input) }
+	}
+	
+	"closure_signature" should "handle the complex closure signature -> capture-list closure_parameter_clause async throws in" in {
+		val input = Seq(LeftBracketToken, VariableToken("identifierName"), RightBracketToken, LeftParenToken, RightParenToken, AsyncToken, ThrowsToken, InToken)
+		val emptyList: List[ClosureParameter] = List()
+		val cpc = CPCClosureParameterList(emptyList)
+		val list: List[CaptureListItem] = List(CaptureListItemIdentifier(None, IdentifierExp(VariableExp(Variable("identifierName")))))
+		val captureList = CaptureList(list)
+		val expected = (ClosureSignatureComplex(Some(captureList), cpc, Some(AsyncModifier), Some(ThrowsModifier), None))
+		assertResult(expected) { Parser(Parser.closure_signature, input) }
+	}
+	
+	"closure_signature" should "handle the complex closure signature -> capture-list closure_parameter_clause async throws function-result in" in {
+		val input = Seq(LeftBracketToken, VariableToken("identifierName"), RightBracketToken, LeftParenToken, RightParenToken, AsyncToken, ThrowsToken, VariableToken("Int"), InToken)
+		val emptyList: List[ClosureParameter] = List()
+		val cpc = CPCClosureParameterList(emptyList)
+		val list: List[CaptureListItem] = List(CaptureListItemIdentifier(None, IdentifierExp(VariableExp(Variable("identifierName")))))
+		val captureList = CaptureList(list)
+		val emptyList1: List[Attribute] = List()
+		val funcResult = FunctionResult(emptyList1, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		val expected = (ClosureSignatureComplex(Some(captureList), cpc, Some(AsyncModifier), Some(ThrowsModifier), Some(funcResult)))
+		assertResult(expected) { Parser(Parser.closure_signature, input) }
+	}
+	
+	"closure-signature" should "handle the simple closure signature -> capture-list in" in {
+		val input = Seq(LeftBracketToken, VariableToken("identifierName"), RightBracketToken, InToken)
+		val list: List[CaptureListItem] = List(CaptureListItemIdentifier(None, IdentifierExp(VariableExp(Variable("identifierName")))))
+		val captureList = CaptureList(list)
+		val expected = ClosureSignatureSimple(captureList)
+		assertResult(expected) { Parser(Parser.closure_signature, input) }
+	}
 	
 	//helper: capture_list
+	"capture_list" should "handle [identifierName]" in {
+		val input = Seq(LeftBracketToken, VariableToken("identifierName"), RightBracketToken)
+		val list: List[CaptureListItem] = List(CaptureListItemIdentifier(None, IdentifierExp(VariableExp(Variable("identifierName")))))
+		val expected = CaptureList(list)
+		assertResult(expected) { Parser(Parser.capture_list, input) }
+	}
 	
+	"capture_list" should "handle [identifierName, weak self]" in {
+		val input = Seq(LeftBracketToken, VariableToken("identifierName"), CommaToken, WeakToken, SelfToken, RightBracketToken)
+		val list: List[CaptureListItem] = List(CaptureListItemIdentifier(None, IdentifierExp(VariableExp(Variable("identifierName")))),
+											   CaptureListItemSelf(Some(WeakCaptureSpecifier), SelfExp(SelfSolo)))
+		val expected = CaptureList(list)
+		assertResult(expected) { Parser(Parser.capture_list, input) }
+	}
 	
 	//helper: capture_list_item
+	"capture_list_item" should "handle -> identifier" in {
+		val input = Seq(VariableToken("identifier"))
+		val expected = CaptureListItemIdentifier(None, IdentifierExp(VariableExp(Variable("identifier"))))
+		assertResult(expected) { Parser(Parser.capture_list_item, input) }
+	}
+	
+	"capture_list_item" should "handle -> capture-specifier identifier" in {
+		val input = Seq(WeakToken, VariableToken("identifier"))
+		val expected = CaptureListItemIdentifier(Some(WeakCaptureSpecifier), IdentifierExp(VariableExp(Variable("identifier"))))
+		assertResult(expected) { Parser(Parser.capture_list_item, input) }
+	}
+	
+	"capture_list_item" should "handle -> identifier = expression" in {
+		val input = Seq(VariableToken("identifier"), OperatorLiteralToken("="), DecimalIntegerLiteralToken("1"))
+		val expected = CaptureListItemAssignment(None, 
+												 AssignmentExp(IdentifierExp(VariableExp(Variable("identifier"))),
+															   PostfixExp(NumericLiteralExp("1"))))
+		assertResult(expected) { Parser(Parser.capture_list_item, input) }
+	}
+	
+	"capture_list_item" should "handle -> capture-specifier identifier = expression" in {
+		val input = Seq(WeakToken, VariableToken("identifier"), OperatorLiteralToken("="), DecimalIntegerLiteralToken("1"))
+		val expected = CaptureListItemAssignment(Some(WeakCaptureSpecifier), 
+												 AssignmentExp(IdentifierExp(VariableExp(Variable("identifier"))),
+															   PostfixExp(NumericLiteralExp("1"))))
+		assertResult(expected) { Parser(Parser.capture_list_item, input) }
+	}
+	
+	"capture_list_item" should "handle -> self-expression" in {
+		val input = Seq(SelfToken)
+		val expected = CaptureListItemSelf(None, SelfExp(SelfSolo))
+		assertResult(expected) { Parser(Parser.capture_list_item, input) }
+	}
+	
+	"capture_list_item" should "handle -> capture-specifier self-expression" in {
+		val input = Seq(WeakToken, SelfToken)
+		val expected = CaptureListItemSelf(Some(WeakCaptureSpecifier), SelfExp(SelfSolo))
+		assertResult(expected) { Parser(Parser.capture_list_item, input) }
+	}
 	
 	
 	//helper: capture_specifier
+	"capture_specifier" should "handle: weak" in {
+		assertResult(WeakCaptureSpecifier) { Parser(Parser.capture_specifier, Seq(WeakToken)) }
+	}
+	
+	"capture_specifier" should "handle: unowned" in {
+		assertResult(UnownedCaptureSpecifier) { Parser(Parser.capture_specifier, Seq(UnownedToken)) }
+	}
+	
+	"capture_specifier" should "handle: unowned(safe)" in {
+		val input = Seq(UnownedToken, LeftParenToken, SafeToken, RightParenToken)
+		assertResult(UnownedSafeCaptureSpecifier) { Parser(Parser.capture_specifier, input) }
+	}
+	
+	"capture_specifier" should "handle: unowned(unsafe)" in {
+		val input = Seq(UnownedToken, LeftParenToken, UnsafeToken, RightParenToken)
+		assertResult(UnownedUnsafeCaptureSpecifier) { Parser(Parser.capture_specifier, input) }
+	}
 	
 	
 	//helper: closure_parameter_clause
+	"closure_parameter_clause" should "handle: ()" in {
+		val input = Seq(LeftParenToken, RightParenToken)
+		val emptyList: List[ClosureParameter] = List()
+		val expected = CPCClosureParameterList(emptyList)
+		assertResult(expected) { Parser(Parser.closure_parameter_clause, input) }
+	}
 	
+	"closure_parameter_clause" should "handle: (name)" in {
+		val input = Seq(LeftParenToken, VariableToken("name"), RightParenToken)
+		val list: List[ClosureParameter] = List(ClosureParameterReg(IdentifierExp(VariableExp(Variable("name"))), None))
+		val expected = CPCClosureParameterList(list)
+		assertResult(expected) { Parser(Parser.closure_parameter_clause, input) }
+	}
+	
+	"closure_parameter_clause" should "handle: (name, name: String)" in {
+		val input = Seq(LeftParenToken, VariableToken("name"), CommaToken, VariableToken("name"), ColonToken, VariableToken("String"), RightParenToken)
+		val list: List[ClosureParameter] = List(ClosureParameterReg(IdentifierExp(VariableExp(Variable("name"))), None),
+												ClosureParameterReg(IdentifierExp(VariableExp(Variable("name"))), 
+																	Some(TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String")))))))))
+		val expected = CPCClosureParameterList(list)
+		assertResult(expected) { Parser(Parser.closure_parameter_clause, input) }
+	}
+	
+	"closure_parameter_clause" should "handle an identifier list: name, theName" in {
+		val input = Seq(VariableToken("name"), CommaToken, VariableToken("theName"))
+		val idList = List(IdentifierExp(VariableExp(Variable("name"))), IdentifierExp(VariableExp(Variable("theName"))))
+		val expected = CPCIdentifierList(idList)
+		assertResult(expected) { Parser(Parser.closure_parameter_clause, input) }
+	}
 	
 	//helper: closure_parameter
+	"closure_parameter" should "handle -> identifier: name" in {
+		val input = Seq(VariableToken("name"))
+		val expected = ClosureParameterReg(IdentifierExp(VariableExp(Variable("name"))), None)
+		assertResult(expected) { Parser(Parser.closure_parameter, input) }
+	}
 	
+	"closure_parameter" should "handle name: String" in {
+		val input = Seq(VariableToken("name"), ColonToken, VariableToken("String"))
+		val expected = ClosureParameterReg(IdentifierExp(VariableExp(Variable("name"))), 
+										   Some(TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))))
+		assertResult(expected) { Parser(Parser.closure_parameter, input) }
+	}
 	
-	
+	"closure_parameter" should "handle name: String..." in {
+		val input = Seq(VariableToken("name"), ColonToken, VariableToken("String"), OperatorLiteralToken("..."))
+		val expected = ClosureParameterElipses(IdentifierExp(VariableExp(Variable("name"))), 
+											   TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String")))))))
+		assertResult(expected) { Parser(Parser.closure_parameter, input) } 
+	}
 	
 	//parenthesized_expression
-	
+	"parenthesized_expression" should "handle: (5)" in {
+		val input = Seq(LeftParenToken, DecimalIntegerLiteralToken("5"), RightParenToken)
+		val expected = ParenthesizedExp(PostfixExp(NumericLiteralExp("5")))
+		assertResult(expected) { Parser(Parser.parenthesized_expression, input) }
+	}
 	
 	//tuple_expression
+	"tuple_expression" should "handle ()" in {
+		val input = Seq(LeftParenToken, RightParenToken)
+		val tupleList: List[TupleElement] = List() 
+		val expected = TupleExp(tupleList)
+		assertResult(expected) { Parser(Parser.tuple_expression, input) }
+	}
 	
+	"tuple_expression" should "handle (expression, identifier:expression) which is (5, x:3)" in {
+		val input = Seq(LeftParenToken, DecimalIntegerLiteralToken("5"), CommaToken, VariableToken("x"), ColonToken, DecimalIntegerLiteralToken("3"), RightParenToken)
+		val tupleList: List[TupleElement] = List(ExpTuple(PostfixExp(NumericLiteralExp("5"))),
+												 IdentifierColonExpTuple(IdentifierExp(VariableExp(Variable("x"))), PostfixExp(NumericLiteralExp("3")))) 
+		val expected = TupleExp(tupleList)
+		assertResult(expected) { Parser(Parser.tuple_expression, input) }
+	}
+	
+	//helper: tuple_element
+	"tuple_element" should "handle -> expression which is 5" in {
+		val input = Seq(DecimalIntegerLiteralToken("5"))
+		val expected = ExpTuple(PostfixExp(NumericLiteralExp("5")))
+		assertResult(expected) { Parser(Parser.tuple_element, input) }
+	}
+	
+	"tuple_element" should "handle -> expression which is x:3" in {
+		val input = Seq(VariableToken("x"), ColonToken, DecimalIntegerLiteralToken("3"))
+		val expected = IdentifierColonExpTuple(IdentifierExp(VariableExp(Variable("x"))), PostfixExp(NumericLiteralExp("3")))
+		assertResult(expected) { Parser(Parser.tuple_element, input) }
+	}
 	
 	//implicit_member_expression
+	"implicit_member_expression" should "handle .x" in {
+		val input = Seq(OperatorLiteralToken("."), VariableToken("x"))
+		val expected = ImplicitMemberExp(IdentifierImplicitMember(IdentifierExp(VariableExp(Variable("x")))))
+		assertResult(expected) { Parser(Parser.implicit_member_expression, input) }
+	}
 	
+	"implicit_member_expression" should "handle .x.5" in {
+		val input = Seq(OperatorLiteralToken("."), VariableToken("x"), OperatorLiteralToken("."), DecimalIntegerLiteralToken("5"))
+		val expected = ImplicitMemberExp(IdentifierDotPostFixMember(IdentifierExp(VariableExp(Variable("x"))),
+										 NumericLiteralExp("5")))
+		assertResult(expected) { Parser(Parser.implicit_member_expression, input) }
+	}
 	
 	//wildcard_expression
-	
+	"wildcard_expression" should "handle _" in {
+		assertResult(WildcardExp) { Parser(Parser.wildcard_expression, Seq(UnderscoreToken)) }
+	}
 	
 	//key_path_expression
+	
+	
+	//selector_expression
+	
+	
+	//key_path_string_expression
 	
 	
 	
@@ -596,7 +882,23 @@ class ParserTest extends FlatSpec {
 		val input = Seq(ColonToken, VariableToken("String"))
 		val expected = TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))
 		assertResult(expected) { Parser(Parser.type_annotation, input) }
-	}	
+	}
+	
+	"type_annotation" should "handle : @name String" in {
+		val input = Seq(ColonToken, AtToken, VariableToken("name"), VariableToken("String"))
+		val emptyBTList: List[BalancedToken] = List()
+		val theAttribute = Attribute(IdentifierExp(VariableExp(Variable("name"))) , emptyBTList)
+		val expected = TypeAnnotation(Some(List(theAttribute)), None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))
+		assertResult(expected) { Parser(Parser.type_annotation, input) }
+	}
+	
+	"type_annotation" should "handle : @name inout String" in {
+		val input = Seq(ColonToken, AtToken, VariableToken("name"), InOutToken, VariableToken("String"))
+		val emptyBTList: List[BalancedToken] = List()
+		val theAttribute = Attribute(IdentifierExp(VariableExp(Variable("name"))) , emptyBTList)
+		val expected = TypeAnnotation(Some(List(theAttribute)), Some(InOutModifier), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))
+		assertResult(expected) { Parser(Parser.type_annotation, input) }
+	}
 	
 	//array_type
 	"array_type" should "handle [Int]" in {
@@ -667,7 +969,7 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//optional_type
-	//left recursion
+	//PROBLEM left recursion
 /* 	"optional_type" should "handle Int?" in {
 		val input = Seq(VariableToken("Int"), OperatorLiteralToken("?"))
 		val expected = OptionalType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
@@ -809,6 +1111,19 @@ class ParserTest extends FlatSpec {
 	
 	//other shit
 	//function_result
+	"function-result" should "handle -> type" in {
+		val input = Seq(VariableToken("Int"))
+		val emptyList: List[Attribute] = List()
+		val expected = FunctionResult(emptyList, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.function_result, input) }
+	}
 	
+	"function-result" should "handle -> @name type" in {
+		val input = Seq(AtToken, VariableToken("name"), VariableToken("Int"))
+		val emptyList: List[BalancedToken] = List()
+		val list: List[Attribute] = List(Attribute(IdentifierExp(VariableExp(Variable("name"))), emptyList))
+		val expected = FunctionResult(list, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.function_result, input) }
+	}
 	
 }
