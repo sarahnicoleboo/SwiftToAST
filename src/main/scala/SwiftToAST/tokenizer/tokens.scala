@@ -197,7 +197,7 @@ case object AtToken extends Token
 case object HashToken extends Token
 case object BackTickToken extends Token
 case object DollarToken extends Token
-case object DoubleBackSlashToken extends Token
+case object BackSlashToken extends Token
 
 
 //numerical literals

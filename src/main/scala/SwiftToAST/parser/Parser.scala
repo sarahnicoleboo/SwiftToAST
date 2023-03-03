@@ -230,10 +230,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val dictionary_literal: Parser[Exp] = {
-		//had to switch them around
 		LeftBracketToken ~ ColonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List()) |
 		LeftBracketToken ~ comma_sep_dictionary ~ opt(CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ ~ _ => DictionaryLiteralExp(list) } //|
-		//LeftBracketToken ~ ColonToken ~ RightBracketToken ^^^ DictionaryLiteralExp(List())
 	}
 	
 	lazy val comma_sep_dictionary: Parser[List[(Exp, Exp)]] = {
@@ -283,7 +281,6 @@ object Parser extends Parsers {
 	}
 	
 	lazy val attribute: Parser[Attribute] = {
-		//AtToken ~ identifier ~ LeftParenToken ~ attribute_argument_clause ~ RightParenToken ^^  { case _ ~ name ~ _ ~ list ~ _ => Attribute(name, list) } |
 		AtToken ~ identifier ~ attribute_argument_clause ^^ { case _ ~ name ~ clause => Attribute(name, clause) } |
 		AtToken ~ identifier ^^ { case _ ~ name => Attribute(name, List()) }
 	}
@@ -301,7 +298,6 @@ object Parser extends Parsers {
 		literal ^^ { case lit => LiteralBalancedToken(lit) } |
 		punctuation ^^ { case punc => PunctuationBalancedToken(punc) } |	//also bottom of file with keywords
 		operator ^^ { case op => OperatorBalancedToken(op) }
-		//punctuation ^^ { case punc => PunctuationBalancedToken(punc) }	//also bottom of file with keywords
 	}
 	
 	lazy val closure_signature: Parser[ClosureSignature] = {
@@ -373,9 +369,26 @@ object Parser extends Parsers {
 		UnderscoreToken ^^^ WildcardExp
 	}
 	
-/* 	lazy val key_path_expression: Parser[] = {
-		
-	} */
+	lazy val key_path_expression: Parser[KeyPathExp] = {
+		BackSlashToken ~ opt(typ) ~ operator(".") ~ rep1sep(key_path_component, operator(".")) ^^ 
+			{ case _ ~ optType ~ _ ~ keyPathComponents => KeyPathExp(optType, keyPathComponents) }
+	}
+	
+	lazy val key_path_component: Parser[KeyPathComponent] = {
+		identifier ~ opt(key_path_postfixes) ^^ { case id ~ optPostfixes => IdentifierThenOptPostfixesKPC(id, optPostfixes) } |
+		key_path_postfixes ^^ { case postfixes => PostfixesKPC(postfixes) }
+	}
+	
+	lazy val key_path_postfixes: Parser[List[KeyPathPostfix]] = {
+		rep1(key_path_postfix)
+	}
+	
+	lazy val key_path_postfix: Parser[KeyPathPostfix] = {
+		operator("?") ^^^ QuestionKPP |
+		operator("!") ^^^ ExclamationKPP |
+		SelfToken ^^^ SelfKPP |
+		LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ list ~ _ => FuncCallArgListKPP(list) }
+	}
 	
 	//operators
 	lazy val try_operator: Parser[TryModifier] = {

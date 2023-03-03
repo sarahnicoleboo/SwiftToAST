@@ -881,8 +881,8 @@ class TokenizerTest extends FlatSpec {
 		assertResult(List(BackTickToken)) { TokenizerPC("`") }
 	}
 	
-	"TokenizerPC" should "handle a double backslash token" in {
-		assertResult(List(DoubleBackSlashToken)) { TokenizerPC("\\") }
+	"TokenizerPC" should "handle a backslash token" in {
+		assertResult(List(BackSlashToken)) { TokenizerPC("\\") }
 	}
 	
 	

@@ -146,7 +146,7 @@ object TokenizerPC extends RegexParsers {
 		"@" ^^ (_ => AtToken) |
 		"#" ^^ (_ => HashToken) |
 		"`" ^^ (_ => BackTickToken) |
-		"\\" ^^ (_ => DoubleBackSlashToken) |
+		"\\" ^^ (_ => BackSlashToken) |
 		"$" ^^ (_ => DollarToken)
 		//"_" ^^ (_ => UnderscoreToken)
 	}

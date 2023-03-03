@@ -529,7 +529,67 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//key_path_expression
+	"key_path_expression" should "handle \\.name" in {
+		val input = Seq(BackSlashToken, OperatorLiteralToken("."), VariableToken("name"))
+		val list: List[KeyPathComponent] = List(IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), None))
+		val expected = KeyPathExp(None, list)
+		assertResult(expected) { Parser(Parser.key_path_expression, input) }
+	}
 	
+	//possibly run into another issue with the tokenization of operators here concerning . and ? or .?
+/* 	"key_path_expression" should "handle \\.name.?" in {
+		val input = Seq(BackSlashToken, OperatorLiteralToken("."), VariableToken("name"), OperatorLiteralToken(".?"))
+		val list: List[KeyPathComponent] = List(IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), None))
+		val expected = KeyPathExp(None, list)
+		assertResult(expected) { Parser(Parser.key_path_expression, input) }
+	} */
+
+	
+	//helper: key_path_component
+	"key_path_component" should "handle name" in {
+		val input = Seq(VariableToken("name"))
+		val expected = IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), None)
+		assertResult(expected) { Parser(Parser.key_path_component, input) }
+	}
+	
+	"key_path_component" should "handle name ? !" in {
+		val input = Seq(VariableToken("name"), OperatorLiteralToken("?"), OperatorLiteralToken("!"))
+		val expected = IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), Some(List(QuestionKPP, ExclamationKPP)))
+		assertResult(expected) { Parser(Parser.key_path_component, input) }
+	}
+	
+	"key_path_component" should "handle ? !" in {
+		val input = Seq(OperatorLiteralToken("?"), OperatorLiteralToken("!"))
+		val expected = PostfixesKPC(List(QuestionKPP, ExclamationKPP))
+		assertResult(expected) { Parser(Parser.key_path_component, input) }
+	}
+	
+	//helper: key_path_postfixes
+	"key_path_postfixes" should "handle ? !" in {
+		val input = Seq(OperatorLiteralToken("?"), OperatorLiteralToken("!"))
+		val expected: List[KeyPathPostfix] = List(QuestionKPP, ExclamationKPP)
+		assertResult(expected) { Parser(Parser.key_path_postfixes, input) }
+	}
+	
+	//helper: key_path_postfix
+	"key_path_postfix" should "handle ?" in {
+		assertResult(QuestionKPP) { Parser(Parser.key_path_postfix, Seq(OperatorLiteralToken("?"))) }
+	}
+	
+	"key_path_postfix" should "handle !" in {
+		assertResult(ExclamationKPP) { Parser(Parser.key_path_postfix, Seq(OperatorLiteralToken("!"))) }
+	}
+	
+	"key_path_postfix" should "handle self" in {
+		assertResult(SelfKPP) { Parser(Parser.key_path_postfix, Seq(SelfToken)) }
+	}
+	
+	"key_path_postfix" should "handle a function call argument list: [ 5 ]" in {
+		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("5"), RightBracketToken)
+		val list: List[FunctionCallArgument] = List(ExpFunctionCallArgument(PostfixExp(NumericLiteralExp("5"))))
+		val expected = FuncCallArgListKPP(list)
+		assertResult(expected) { Parser(Parser.key_path_postfix, input) }
+	}
 	
 	//selector_expression
 	
@@ -1124,6 +1184,31 @@ class ParserTest extends FlatSpec {
 		val list: List[Attribute] = List(Attribute(IdentifierExp(VariableExp(Variable("name"))), emptyList))
 		val expected = FunctionResult(list, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
 		assertResult(expected) { Parser(Parser.function_result, input) }
+	}
+	
+	//function_call_argument
+	"function_call_argument" should "handle 5" in {
+		assertResult(ExpFunctionCallArgument(PostfixExp(NumericLiteralExp("5")))) { Parser(Parser.function_call_argument, Seq(DecimalIntegerLiteralToken("5"))) }
+	}
+	
+	"function_call_argument" should "handle x:5" in {
+		val input = Seq(VariableToken("x"), ColonToken, DecimalIntegerLiteralToken("5"))
+		val expected = IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("x"))),
+															  PostfixExp(NumericLiteralExp("5")))
+		assertResult(expected) { Parser(Parser.function_call_argument, input) }
+	}
+	
+	"function_call_argument" should "handle +" in {
+		val input = Seq(OperatorLiteralToken("+"))
+		val expected = OperatorFunctionCallArgument(Operator("+"))
+		assertResult(expected) { Parser(Parser.function_call_argument, input) }
+	}
+	
+	"function_call_argument" should "handle x:+" in {
+		val input = Seq(VariableToken("x"), ColonToken, OperatorLiteralToken("+"))
+		val expected = IdentifierColonOperatorFunctionCallArgument(IdentifierExp(VariableExp(Variable("x"))),
+																   Operator("+"))
+		assertResult(expected) { Parser(Parser.function_call_argument, input) }
 	}
 	
 }

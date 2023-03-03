@@ -44,6 +44,7 @@ case class ParenthesizedExp(exp: Exp) extends Exp
 case class TupleExp(elementList: List[TupleElement]) extends Exp
 case class ImplicitMemberExp(exps: DifferentImplicitMembers) extends Exp
 case object WildcardExp extends Exp
+case class KeyPathExp(typ: Option[Type], keyPathComponents: List[KeyPathComponent]) extends Exp
 //
 case class AssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
 //
@@ -145,7 +146,15 @@ sealed trait DifferentImplicitMembers
 case class IdentifierImplicitMember(identifierExp: IdentifierExp) extends DifferentImplicitMembers
 case class IdentifierDotPostFixMember(identifierExp: IdentifierExp, postfixExp: Exp) extends DifferentImplicitMembers
 
+sealed trait KeyPathComponent
+case class IdentifierThenOptPostfixesKPC(id: IdentifierExp, postfixes: Option[List[KeyPathPostfix]]) extends KeyPathComponent
+case class PostfixesKPC(postfixes: List[KeyPathPostfix]) extends KeyPathComponent
 
+sealed trait KeyPathPostfix
+case object QuestionKPP extends KeyPathPostfix
+case object ExclamationKPP extends KeyPathPostfix
+case object SelfKPP extends KeyPathPostfix
+case class FuncCallArgListKPP(list: List[FunctionCallArgument]) extends KeyPathPostfix
 
 //types
 case class TypeAnnotation(attributes: Option[List[Attribute]], inout: Option[InOutMod], typ: Type)
