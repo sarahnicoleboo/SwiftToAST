@@ -77,12 +77,6 @@ object TokenizerPC extends RegexParsers {
 		"get(?=[\\s\\W]+)".r ^^ (_ => GetToken) | "set(?=[\\s\\W]+)".r ^^ (_ => SetToken) |
 		"async(?=[\\s\\W]+)".r ^^ (_ => AsyncToken)
 	}
-	
-/* 	def reserved_types: Parser[Token] = {
-		"Int(?=[\\s\\W]+)".r ^^ (_ => IntToken) | "String(?=[\\s\\W]+)".r ^^ (_ => StringToken) |
-		"Float(?=[\\s\\W]+)".r ^^ (_ => FloatToken) | "Double(?=[\\s\\W]+)".r ^^ (_ => DoubleToken) |
-		"Bool(?=[\\s\\W]+)".r ^^ (_ => BoolToken) | "Character(?=[\\s\\W]+)".r ^^ (_ => CharacterToken)
-	} */
 
 	//example:
 	//	as a variable			: var _ = "hi"
@@ -100,10 +94,8 @@ object TokenizerPC extends RegexParsers {
 		"[$][a-zA-Z_][a-zA-Z0-9_]*".r ^^ { str => PropertyWrapperProjectionToken(str) } |
 		"[$][0-9]+[a-zA-Z_][a-zA-Z0-9_]*".r ^^ { str => PropertyWrapperProjectionToken(str) } |
 		"[$][0-9]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
-		//"[$][a-zA-Z0-9_]+".r ^^ { str => ImplicitParameterOrPropertyWrapperProjectionToken(str) }
 	}
 	
-	//not finished, went on side quest
 	def float_literal = {
 		"[0][x][0-9a-fA-F][0-9a-fA-F_]*[.][0-9a-fA-F][0-9a-fA-F_]*".r ^^ { str => FloatHexLiteralToken(str) } |
 		"[0][x][0-9a-fA-F][0-9a-fA-F_]*[Pp][+-]?[0-9a-fA-F][0-9a-fA-F_]*".r ^^ { str => FloatHexLiteralToken(str) } |
@@ -126,11 +118,11 @@ object TokenizerPC extends RegexParsers {
 	def strings = {
 		"""["\\]["\\]["\\](.|\n)*[\\"]["\\]["\\]""".r ^^ { str => MultiLineStringLiteralToken(str.substring(3, str.length-3)) } |
 		"""["\\].*[\\"]""".r ^^ { str => SingleLineStringLiteralToken(str.substring(1, str.length-1)) }
-		//""""((?:[^"\\]|\\[\\"ntbrf])+)"""".r ^^ { str => StringLiteralToken(str) }
 	}
 	
-	def operators: Parser[OperatorLiteralToken] = {
-		"""[/=+!*%<>&|^~?.-]+""".r ^^ { str => OperatorLiteralToken(str) }
+	def operators: Parser[Token] = {
+		"""[/=+!*%<>&|^~?-]+""".r ^^ { str => OperatorLiteralToken(str) } |
+		"""[.][./=+!*%<>&|^~?-]*""".r ^^ { str => DotOperatorLiteralToken(str) }
 	}
 	
 	def reservedSymbols: Parser[Token] = {

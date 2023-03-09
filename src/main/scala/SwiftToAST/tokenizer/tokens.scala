@@ -156,6 +156,7 @@ case object BoolToken extends Token
 case object CharacterToken extends Token
 
 //operator
+case class DotOperatorLiteralToken(operator: String) extends Token
 case class OperatorLiteralToken(operator: String) extends Token
 //this makes a lot of the reserved symbols tokens defunct, leaving this as a comment so i can remember to remove them later.
 

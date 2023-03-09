@@ -770,7 +770,7 @@ class TokenizerTest extends FlatSpec {
 	
 	//reserved symbol testing
 	"TokenizerPC" should "handle a dot token" in {
-		assertResult(List(OperatorLiteralToken("."))) { TokenizerPC(".") }
+		assertResult(List(DotOperatorLiteralToken("."))) { TokenizerPC(".") }
 	}
 	
 	"TokenizerPC" should "handle a left curly token" in {
@@ -883,6 +883,10 @@ class TokenizerTest extends FlatSpec {
 	
 	"TokenizerPC" should "handle a backslash token" in {
 		assertResult(List(BackSlashToken)) { TokenizerPC("\\") }
+	}
+	
+	"TokenizerPC" should "handle a custom dot operator" in {
+		assertResult(List(DotOperatorLiteralToken(".!."))) { TokenizerPC(".!.") }
 	}
 	
 	
