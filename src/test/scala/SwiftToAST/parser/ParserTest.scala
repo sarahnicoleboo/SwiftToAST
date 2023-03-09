@@ -41,7 +41,7 @@ class ParserTest extends FlatSpec {
 	
 	//(superclass_expression) thru primary_expression
 	"primary_expression" should "handle a super method expression: super.hello" in {
-		val input = Seq(SuperToken, OperatorLiteralToken("."), VariableToken("hello"))
+		val input = Seq(SuperToken, DotOperatorLiteralToken("."), VariableToken("hello"))
 		val expected = SuperExp(SuperMethod(IdentifierExp(VariableExp(Variable("hello"))))) 
 		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
@@ -71,7 +71,7 @@ class ParserTest extends FlatSpec {
 	
 	//(implicit_member_expression) thru primary expression
 	"primary_expression" should "handle .x" in {
-		val input = Seq(OperatorLiteralToken("."), VariableToken("x"))
+		val input = Seq(DotOperatorLiteralToken("."), VariableToken("x"))
 		val expected = ImplicitMemberExp(IdentifierImplicitMember(IdentifierExp(VariableExp(Variable("x")))))
 		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
@@ -177,7 +177,7 @@ class ParserTest extends FlatSpec {
 	}
 	
 	"self_expression" should "handle a self method expression: self.hello" in {
-		val input = Seq(SelfToken, OperatorLiteralToken("."), VariableToken("hello"))
+		val input = Seq(SelfToken, DotOperatorLiteralToken("."), VariableToken("hello"))
 		val expected = SelfExp(SelfMethod(IdentifierExp(VariableExp(Variable("hello")))))
 		assertResult(expected) { Parser(Parser.self_expression, input) }
 	}
@@ -204,18 +204,18 @@ class ParserTest extends FlatSpec {
 	}
 	
 	"self_expression" should "handle a self init expression" in {
-		assertResult(SelfExp(SelfInit)) { Parser(Parser.self_expression, Seq(SelfToken, OperatorLiteralToken("."), InitToken)) }
+		assertResult(SelfExp(SelfInit)) { Parser(Parser.self_expression, Seq(SelfToken, DotOperatorLiteralToken("."), InitToken)) }
 	}
 	
 	//superclass_expression
 	"superclass_expression" should "handle a super method expression: super.hello" in {
-		val input = Seq(SuperToken, OperatorLiteralToken("."), VariableToken("hello"))
+		val input = Seq(SuperToken, DotOperatorLiteralToken("."), VariableToken("hello"))
 		val expected = SuperExp(SuperMethod(IdentifierExp(VariableExp(Variable("hello"))))) 
 		assertResult(expected) { Parser(Parser.superclass_expression, input) }
 	}
 	
 	"superclass_expression" should "handle a super init expression" in {
-		assertResult(SuperExp(SuperInit)) { Parser(Parser.superclass_expression, Seq(SuperToken, OperatorLiteralToken("."), InitToken)) }
+		assertResult(SuperExp(SuperInit)) { Parser(Parser.superclass_expression, Seq(SuperToken, DotOperatorLiteralToken("."), InitToken)) }
 	}
 	
 	"superclass_expression" should "handle a super subscript expression: super [2, name : 5]" in {
@@ -511,13 +511,13 @@ class ParserTest extends FlatSpec {
 	
 	//implicit_member_expression
 	"implicit_member_expression" should "handle .x" in {
-		val input = Seq(OperatorLiteralToken("."), VariableToken("x"))
+		val input = Seq(DotOperatorLiteralToken("."), VariableToken("x"))
 		val expected = ImplicitMemberExp(IdentifierImplicitMember(IdentifierExp(VariableExp(Variable("x")))))
 		assertResult(expected) { Parser(Parser.implicit_member_expression, input) }
 	}
 	
 	"implicit_member_expression" should "handle .x.5" in {
-		val input = Seq(OperatorLiteralToken("."), VariableToken("x"), OperatorLiteralToken("."), DecimalIntegerLiteralToken("5"))
+		val input = Seq(DotOperatorLiteralToken("."), VariableToken("x"), DotOperatorLiteralToken("."), DecimalIntegerLiteralToken("5"))
 		val expected = ImplicitMemberExp(IdentifierDotPostFixMember(IdentifierExp(VariableExp(Variable("x"))),
 										 NumericLiteralExp("5")))
 		assertResult(expected) { Parser(Parser.implicit_member_expression, input) }
@@ -530,19 +530,19 @@ class ParserTest extends FlatSpec {
 	
 	//key_path_expression
 	"key_path_expression" should "handle \\.name" in {
-		val input = Seq(BackSlashToken, OperatorLiteralToken("."), VariableToken("name"))
+		val input = Seq(BackSlashToken, DotOperatorLiteralToken("."), VariableToken("name"))
 		val list: List[KeyPathComponent] = List(IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), None))
 		val expected = KeyPathExp(None, list)
 		assertResult(expected) { Parser(Parser.key_path_expression, input) }
 	}
 	
 	//possibly run into another issue with the tokenization of operators here concerning . and ? or .?
-/* 	"key_path_expression" should "handle \\.name.?" in {
-		val input = Seq(BackSlashToken, OperatorLiteralToken("."), VariableToken("name"), OperatorLiteralToken(".?"))
+	"key_path_expression" should "handle \\.name.?" in {
+		val input = Seq(BackSlashToken, DotOperatorLiteralToken("."), VariableToken("name"), DotOperatorLiteralToken(".?"))
 		val list: List[KeyPathComponent] = List(IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), None))
 		val expected = KeyPathExp(None, list)
 		assertResult(expected) { Parser(Parser.key_path_expression, input) }
-	} */
+	}
 
 	
 	//helper: key_path_component
@@ -989,15 +989,13 @@ class ParserTest extends FlatSpec {
 	}
 	
 	"type_identifier" should "handle the nested normal type: Number.int" in {
-		val input = Seq(VariableToken("Number"), OperatorLiteralToken("."), VariableToken("int"))
+		val input = Seq(VariableToken("Number"), DotOperatorLiteralToken("."), VariableToken("int"))
 		val expected = TypeIdentifier(NestedNormalType(IdentifierExp(VariableExp(Variable("Number"))), TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("int")))))))
 		assertResult(expected) { Parser(Parser.type_identifier, input) }
 	}
 	
-	//issue here with . and >.
-	//we would need it to tokenize as > and . rather than >.
 	"type_identifier" should "handle the nested generic type: Number<Int>.int" in {
-		val input = Seq(VariableToken("Number"), OperatorLiteralToken("<"), VariableToken("Int"), OperatorLiteralToken(">"), OperatorLiteralToken("."), VariableToken("int"))
+		val input = Seq(VariableToken("Number"), OperatorLiteralToken("<"), VariableToken("Int"), OperatorLiteralToken(">"), DotOperatorLiteralToken("."), VariableToken("int"))
 		val genericList: List[Type] = List(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
 		val genericArgClause = GenericArgumentClause(genericList)
 		val expected = TypeIdentifier(NestedGenericType(IdentifierExp(VariableExp(Variable("Number"))), genericArgClause ,TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("int")))))))
@@ -1145,25 +1143,25 @@ class ParserTest extends FlatSpec {
 	}
 	
 	"balanced_token" should "handle a punctuation: ." in {
-		val input = Seq(OperatorLiteralToken("."))
+		val input = Seq(DotOperatorLiteralToken("."))
 		val expected = PunctuationBalancedToken(Period)
 		assertResult(expected) { Parser(Parser.balanced_token, input) }
 	}
 	
 	"balanced_token" should "handle a parenthesized punctuation: (.)" in {
-		val input = Seq(LeftParenToken, OperatorLiteralToken("."), RightParenToken)
+		val input = Seq(LeftParenToken, DotOperatorLiteralToken("."), RightParenToken)
 		val expected = InParensBalancedToken(PunctuationBalancedToken(Period))
 		assertResult(expected) { Parser(Parser.balanced_token, input) }
 	}
 	
 	"balanced_token" should "handle a bracketed punctuation: [.]" in {
-		val input = Seq(LeftBracketToken, OperatorLiteralToken("."), RightBracketToken)
+		val input = Seq(LeftBracketToken, DotOperatorLiteralToken("."), RightBracketToken)
 		val expected = InBracketsBalancedToken(PunctuationBalancedToken(Period))
 		assertResult(expected) { Parser(Parser.balanced_token, input) }
 	}
 	
 	"balanced_token" should "handle a braced punctuation: {.}" in {
-		val input = Seq(LeftCurlyToken, OperatorLiteralToken("."), RightCurlyToken)
+		val input = Seq(LeftCurlyToken, DotOperatorLiteralToken("."), RightCurlyToken)
 		val expected = InBracesBalancedToken(PunctuationBalancedToken(Period))
 		assertResult(expected) { Parser(Parser.balanced_token, input) }
 	}

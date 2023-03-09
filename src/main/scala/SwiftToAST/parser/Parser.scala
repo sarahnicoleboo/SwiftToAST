@@ -61,8 +61,16 @@ object Parser extends Parsers {
 		accept("operator_thing", { case id @ OperatorLiteralToken(value) => id })
 	}
 	
+	lazy val dot_operator_thing: Parser[DotOperatorLiteralToken] = {
+		accept("dot_operator_thing", { case id @ DotOperatorLiteralToken(value) => id })
+	}
+	
 	def operator(expected: String): Parser[Operator] = {
 		operator_thing.flatMap(actual => if(expected == actual.operator) success(Operator(expected)) else failure("dfsd"))
+	}
+	
+	def dot_operator(expected: String): Parser[Operator] = {
+		dot_operator_thing.flatMap(actual => if(expected == actual.operator) success(Operator(expected)) else failure("oops"))
 	}
 		
 	class TokenReader(tokens: Seq[Token]) extends Reader[Token] {
@@ -248,15 +256,15 @@ object Parser extends Parsers {
 	}
 	
 	lazy val self_expression: Parser[SelfExp] = {
-		SelfToken ~ operator(".") ~ identifier ^^ { case _ ~ _ ~ identifierExp => SelfExp(SelfMethod(identifierExp)) } |
-		SelfToken ~ operator(".") ~ InitToken ^^^ SelfExp(SelfInit) |
+		SelfToken ~ dot_operator(".") ~ identifier ^^ { case _ ~ _ ~ identifierExp => SelfExp(SelfMethod(identifierExp)) } |
+		SelfToken ~ dot_operator(".") ~ InitToken ^^^ SelfExp(SelfInit) |
 		SelfToken ~ LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ _ ~ list ~ _ => SelfExp(SelfSubscript(list)) } |
 		SelfToken ^^^ SelfExp(SelfSolo)
 	}
 	
 	lazy val superclass_expression: Parser[SuperExp] = {
-		SuperToken ~ operator(".") ~ identifier ^^ { case _ ~ _ ~ identifierExp => SuperExp(SuperMethod(identifierExp)) } |
-		SuperToken ~ operator(".") ~ InitToken ^^^ SuperExp(SuperInit) |
+		SuperToken ~ dot_operator(".") ~ identifier ^^ { case _ ~ _ ~ identifierExp => SuperExp(SuperMethod(identifierExp)) } |
+		SuperToken ~ dot_operator(".") ~ InitToken ^^^ SuperExp(SuperInit) |
 		SuperToken ~ LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ _ ~ list ~ _ => SuperExp(SuperSubscript(list)) }
 	}
 	
@@ -361,8 +369,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val implicit_member_expression: Parser[ImplicitMemberExp] = {
-		operator(".") ~ identifier ~ operator(".") ~ postfix_expression ^^ { case _ ~ id ~ _ ~ exp => ImplicitMemberExp(IdentifierDotPostFixMember(id, exp)) } |
-		operator(".") ~ identifier ^^ { case _ ~ id => ImplicitMemberExp(IdentifierImplicitMember(id)) }
+		dot_operator(".") ~ identifier ~ dot_operator(".") ~ postfix_expression ^^ { case _ ~ id ~ _ ~ exp => ImplicitMemberExp(IdentifierDotPostFixMember(id, exp)) } |
+		dot_operator(".") ~ identifier ^^ { case _ ~ id => ImplicitMemberExp(IdentifierImplicitMember(id)) }
 	}
 	
 	lazy val wildcard_expression: Parser[Exp] = {
@@ -370,7 +378,7 @@ object Parser extends Parsers {
 	}
 	
 	lazy val key_path_expression: Parser[KeyPathExp] = {
-		BackSlashToken ~ opt(typ) ~ operator(".") ~ rep1sep(key_path_component, operator(".")) ^^ 
+		BackSlashToken ~ opt(typ) ~ dot_operator(".") ~ rep1sep(key_path_component, operator(".")) ^^ 
 			{ case _ ~ optType ~ _ ~ keyPathComponents => KeyPathExp(optType, keyPathComponents) }
 	}
 	
@@ -450,8 +458,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val type_identifier: Parser[TypeIdentifier] = {
-		identifier ~ operator(".") ~ type_identifier ^^ { case name ~ _ ~ nestedType => TypeIdentifier(NestedNormalType(name, nestedType)) } |
-		identifier ~ generic_argument_clause ~ operator(".") ~ type_identifier ^^ { case name ~ types ~ _ ~ recursive => TypeIdentifier(NestedGenericType(name, types, recursive)) } |
+		identifier ~ dot_operator(".") ~ type_identifier ^^ { case name ~ _ ~ nestedType => TypeIdentifier(NestedNormalType(name, nestedType)) } |
+		identifier ~ generic_argument_clause ~ dot_operator(".") ~ type_identifier ^^ { case name ~ types ~ _ ~ recursive => TypeIdentifier(NestedGenericType(name, types, recursive)) } |
 		identifier ~ generic_argument_clause ^^ { case name ~ types => TypeIdentifier(GenericType(name, types)) } |
 		identifier ^^ { case name => TypeIdentifier(NormalType(name)) }
 	}
@@ -510,7 +518,7 @@ object Parser extends Parsers {
 	
 	//big parsers down here:
 	lazy val punctuation: Parser[Punctuation] = {
-		operator(".") ^^^ Period |
+		dot_operator(".") ^^^ Period |
 		CommaToken ^^^ Comma |
 		ColonToken ^^^ Colon |
 		SemicolonToken ^^^ Semicolon |
