@@ -121,6 +121,14 @@ object Parser extends Parsers {
 				case None => prefix
 				case Some(WithOperatorInfixExpression(op, exp)) => TrueInfixExp(prefix, op, exp)//1 + 2 as single expression
 				case Some(TypeCastInfixExpression(op)) => CastExp(prefix, op)
+				case Some(AssignmentOpInfixExpression(theTry, exp)) => theTry match {
+					case None => AssignmentExp(prefix, exp)
+					case Some(tryModifier) => AssignmentExp(prefix, TryExp(tryModifier, exp))
+				}
+				case Some(ConditionalOpInfixExpression(conditionalExp, theTry, exp)) => theTry match {
+					case None => ConditionalExp(prefix, conditionalExp, exp)
+					case Some(tryModifier) => ConditionalExp(prefix, conditionalExp, TryExp(tryModifier, exp))
+				}
 			}
 			(theTry, theAwait) match {
 				case (None, None) => combinedExp
@@ -143,8 +151,11 @@ object Parser extends Parsers {
 	}
 	
 	lazy val infix_expression: Parser[InfixExp] = {
-	infix_operator ~ prefix_expression ^^ { case op ~ exp => WithOperatorInfixExpression(op, exp) }
-	//still need type casting operator but i need to do types for that so hold up
+	operator("=") ~ opt(try_operator) ~ prefix_expression ^^ { case _ ~ theTry ~ exp => AssignmentOpInfixExpression(theTry, exp) } |
+	operator("?") ~ expression ~ ColonToken ~ opt(try_operator) ~ prefix_expression ^^ 
+		{ case _ ~ conditionalExp ~ _ ~ theTry ~ exp => ConditionalOpInfixExpression(conditionalExp, theTry, exp)} |
+	infix_operator ~ prefix_expression ^^ { case op ~ exp => WithOperatorInfixExpression(op, exp) } |
+	type_casting_operator ^^ { case op => TypeCastInfixExpression(op) }
 	}
 	
 
@@ -325,9 +336,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val capture_list_item: Parser[CaptureListItem] = {
-		opt(capture_specifier) ~ assignment_exp ^^ { case cp ~ exp => CaptureListItemAssignment(cp, exp) } |
+		opt(capture_specifier) ~ capture_assignment_exp ^^ { case cp ~ exp => CaptureListItemAssignment(cp, exp) } |
 		opt(capture_specifier) ~ identifier ^^ { case cp ~ id => CaptureListItemIdentifier(cp, id) } |
-		//opt(capture_specifier) ~ assignment_exp ^^ { case cp ~ exp => CaptureListItemAssignment(cp, exp) } |
 		opt(capture_specifier) ~ self_expression ^^ { case cp ~ self => CaptureListItemSelf(cp, self) }
 	}
 	
@@ -357,8 +367,8 @@ object Parser extends Parsers {
 		rep(attribute) ~ typ ^^ { case optAttributes ~ theType => FunctionResult(optAttributes, theType) }
 	}
 	
-	lazy val assignment_exp: Parser[AssignmentExp] = {
-		identifier ~ operator("=") ~ expression ^^ { case id ~ _ ~ exp => AssignmentExp(id, exp) }
+	lazy val capture_assignment_exp: Parser[CaptureAssignmentExp] = {
+		identifier ~ operator("=") ~ expression ^^ { case id ~ _ ~ exp => CaptureAssignmentExp(id, exp) }
 	}
 	
 	lazy val parenthesized_expression: Parser[ParenthesizedExp] = {
@@ -419,6 +429,13 @@ object Parser extends Parsers {
 		TryToken ~ operator("?") ^^^ QuestionMarkTryModifier |
 		TryToken ~ operator("!") ^^^ ExclamationTryModifier |
 		TryToken ^^^ NoTryModifier
+	}
+	
+	lazy val type_casting_operator: Parser[TypeCastingOp] = {
+		IsToken ~ typ ^^ { case _ ~ theType => IsType(theType) } |
+		AsToken ~ operator("?") ~ typ ^^ { case _ ~ _ ~ theType => AsQuestionType(theType) } |
+		AsToken ~ operator("!") ~ typ ^^ { case _ ~ _ ~ theType => AsExclamationType(theType) } |
+		AsToken ~ typ ^^ { case _ ~ theType => AsType(theType) }
 	}
 	
 	lazy val prefix_operator: Parser[Operator] = { operator }

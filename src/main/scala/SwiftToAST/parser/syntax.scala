@@ -18,6 +18,8 @@ case class PrefixExp(operator: Op, expression: Exp) extends Exp
 case class PostfixExp(expression: Exp) extends Exp
 case class InOutExp(identifierExp: IdentifierExp) extends Exp
 case class CastExp(exp: Exp, op: TypeCastingOp) extends Exp
+case class AssignmentExp(prefix: Exp, exp: Exp) extends Exp
+case class ConditionalExp(prefix: Exp, conditionalExp: Exp, exp: Exp) extends Exp
 case class TrueInfixExp(exp1: Exp, op: Op, exp2: Exp) extends Exp
 case class GenericVariableExp(exp: IdentifierExp, typs: GenericArgumentClause) extends Exp
 case class IdentifierExp(exp: DifferentIdentifiers) extends Exp
@@ -54,7 +56,7 @@ case class SelectorSetterExp(exp: Exp) extends Exp
 //end of selector exps
 case class KeyPathStringExp(exp: Exp) extends Exp
 
-case class AssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
+case class CaptureAssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
 //
 
 //helpers for exps
@@ -70,13 +72,15 @@ case object ExclamationTryModifier extends TryModifier
 
 sealed trait InfixExp
 case class WithOperatorInfixExpression(op: Operator, exp: Exp) extends InfixExp
+case class AssignmentOpInfixExpression(theTry: Option[TryModifier], exp: Exp) extends InfixExp
+case class ConditionalOpInfixExpression(conditionalExp: Exp, theTry: Option[TryModifier], exp: Exp) extends InfixExp
 case class TypeCastInfixExpression(op: TypeCastingOp) extends InfixExp
 
 sealed trait TypeCastingOp
 case class IsType(typ: Type) extends TypeCastingOp
 case class AsType(typ: Type) extends TypeCastingOp
 case class AsQuestionType(typ: Type) extends TypeCastingOp
-case class AsBangType(typ: Type) extends TypeCastingOp
+case class AsExclamationType(typ: Type) extends TypeCastingOp
 
 case class GenericArgumentClause(typs: List[Type])
 
@@ -105,7 +109,7 @@ case object ThrowsModifier extends ThrowsMod
 case class CaptureList(list: List[CaptureListItem])
 sealed trait CaptureListItem
 case class CaptureListItemIdentifier(specifier: Option[CaptureSpecifier], id: IdentifierExp) extends CaptureListItem
-case class CaptureListItemAssignment(specifier: Option[CaptureSpecifier], assignmentExp: AssignmentExp) extends CaptureListItem
+case class CaptureListItemAssignment(specifier: Option[CaptureSpecifier], assignmentExp: CaptureAssignmentExp) extends CaptureListItem
 case class CaptureListItemSelf(specifier: Option[CaptureSpecifier], self: SelfExp) extends CaptureListItem
 
 sealed trait CaptureSpecifier

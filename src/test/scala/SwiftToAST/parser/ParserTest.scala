@@ -403,7 +403,7 @@ class ParserTest extends FlatSpec {
 	"capture_list_item" should "handle -> identifier = expression" in {
 		val input = Seq(VariableToken("identifier"), OperatorLiteralToken("="), DecimalIntegerLiteralToken("1"))
 		val expected = CaptureListItemAssignment(None, 
-												 AssignmentExp(IdentifierExp(VariableExp(Variable("identifier"))),
+												 CaptureAssignmentExp(IdentifierExp(VariableExp(Variable("identifier"))),
 															   PostfixExp(NumericLiteralExp("1"))))
 		assertResult(expected) { Parser(Parser.capture_list_item, input) }
 	}
@@ -411,7 +411,7 @@ class ParserTest extends FlatSpec {
 	"capture_list_item" should "handle -> capture-specifier identifier = expression" in {
 		val input = Seq(WeakToken, VariableToken("identifier"), OperatorLiteralToken("="), DecimalIntegerLiteralToken("1"))
 		val expected = CaptureListItemAssignment(Some(WeakCaptureSpecifier), 
-												 AssignmentExp(IdentifierExp(VariableExp(Variable("identifier"))),
+												 CaptureAssignmentExp(IdentifierExp(VariableExp(Variable("identifier"))),
 															   PostfixExp(NumericLiteralExp("1"))))
 		assertResult(expected) { Parser(Parser.capture_list_item, input) }
 	}
