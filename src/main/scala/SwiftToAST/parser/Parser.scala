@@ -415,7 +415,16 @@ object Parser extends Parsers {
 	
 	//types
 	lazy val typ: Parser[Type] = {
-		function_type |
+		primary_type ~ opt(trailer) ^^ { case first ~ second => {
+			second match {
+				case None => first
+				case Some(ImplicitlyUnwrappedOptionalTypeThing) => ImplicitlyUnwrappedOptionalType(first)
+				case Some(OptionalTypeThing) => OptionalType(first)
+				//still need for meta type thing
+			}
+		}}
+	}
+/* 		function_type |
 		array_type |
 		dictionary_type |
 		protocol_composition_type |
@@ -427,7 +436,26 @@ object Parser extends Parsers {
 		opaque_type |
 		//metatype_type	//need protocol for this which I haven't done yet
 		AnyToken ^^^ AnyType |
+		SelfBigToken ^^^ SelfType */
+	
+	//non-problematic types
+	lazy val primary_type: Parser[Type] = {
+		function_type |
+		array_type |
+		dictionary_type |
+		protocol_composition_type |
+		type_identifier |
+		in_parens_type |
+		tuple_type |
+		opaque_type |
+		AnyToken ^^^ AnyType |
 		SelfBigToken ^^^ SelfType
+	}
+	
+	lazy val trailer: Parser[TrailorTypeThing] = {
+		operator("!") ^^^ ImplicitlyUnwrappedOptionalTypeThing |
+		operator("?") ^^^ OptionalTypeThing
+		//still need meta type thing
 	}
 	
 	lazy val function_type: Parser[FunctionType] = {
@@ -486,13 +514,13 @@ object Parser extends Parsers {
 		InOutToken ^^^ InOutModifier
 	}
 	
-	lazy val optional_type: Parser[OptionalType] = {
+/* 	lazy val optional_type: Parser[OptionalType] = {
 		typ ~ operator("?") ^^ { case theType ~ _ => OptionalType(theType) }
 	}
 	
 	lazy val implicitly_unwrapped_optional_type: Parser[ImplicitlyUnwrappedOptionalType] = {
 		typ ~ operator("!") ^^ { case theType ~ _ => ImplicitlyUnwrappedOptionalType(theType) }
-	}
+	} */
 	
 	lazy val protocol_composition_type: Parser[ProtocolCompositionType] = {
 		type_IDs ^^ { case typeIDs => ProtocolCompositionType(typeIDs) }

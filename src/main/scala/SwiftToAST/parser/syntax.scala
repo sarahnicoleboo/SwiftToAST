@@ -160,18 +160,24 @@ case class FuncCallArgListKPP(list: List[FunctionCallArgument]) extends KeyPathP
 case class TypeAnnotation(attributes: Option[List[Attribute]], inout: Option[InOutMod], typ: Type)
 
 sealed trait Type
+//WRONG
+//case class FinalFormType(first: Type, second: TrailorType) extends Type
 case class FunctionType(optAttributes: Option[List[Attribute]], argClause: FunctionTypeArgClause, async: Option[AsyncMod], throws: Option[ThrowsMod], typ: Type) extends Type
 case class ArrayType(typ: Type) extends Type
 case class DictionaryType(type1: Type, type2: Type) extends Type
 case class TypeIdentifier(typ: DifferentTypes) extends Type
 case class TupleType(list: List[TupleTypeElement]) extends Type
-case class OptionalType(typ: Type) extends Type
-case class ImplicitlyUnwrappedOptionalType(typ: Type) extends Type
 case class ProtocolCompositionType(typeIDs: List[TypeIdentifier]) extends Type
 case class OpaqueType(typ: Type) extends Type
 case object AnyType extends Type
 case object SelfType extends Type
 case class InParensType(typ: Type) extends Type
+case class OptionalType(typ: Type) extends Type
+case class ImplicitlyUnwrappedOptionalType(typ: Type) extends Type
+
+sealed trait TrailorTypeThing
+case object OptionalTypeThing extends TrailorTypeThing
+case object ImplicitlyUnwrappedOptionalTypeThing extends TrailorTypeThing
 
 //helpers for types
 case class FunctionTypeArgClause(list: List[FunctionTypeArg])
