@@ -90,11 +90,19 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//(selctor_expression) thru primary_expression
+	"primary_expression" should "handle #selector(1)" in {
+		val input = Seq(HashSelectorToken, LeftParenToken, DecimalIntegerLiteralToken("1"), RightParenToken)
+		val expected = SelectorExp(PostfixExp(NumericLiteralExp("1")))
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
+	}
 	
 	
 	//(key_path_string_expression) thru primary expression
-	
-	
+	"primary_expression" should "handle #keyPath(1)" in {
+		val input = Seq(HashKeyPathToken, LeftParenToken, DecimalIntegerLiteralToken("1"), RightParenToken)
+		val expected = KeyPathStringExp(PostfixExp(NumericLiteralExp("1")))
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
+	}
 	
 	
 	//identifier
@@ -597,10 +605,30 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//selector_expression
+	"selector_expression" should "handle #selector(1)" in {
+		val input = Seq(HashSelectorToken, LeftParenToken, DecimalIntegerLiteralToken("1"), RightParenToken)
+		val expected = SelectorExp(PostfixExp(NumericLiteralExp("1")))
+		assertResult(expected) { Parser(Parser.selector_expression, input) }
+	}
 	
+	"selector_expression" should "handle #selector(getter: 1)" in {
+		val input = Seq(HashSelectorToken, LeftParenToken, GetterToken, ColonToken, DecimalIntegerLiteralToken("1"), RightParenToken)
+		val expected = SelectorGetterExp(PostfixExp(NumericLiteralExp("1")))
+		assertResult(expected) { Parser(Parser.selector_expression, input) }
+	}
+	
+	"selector_expression" should "handle #selector(setter: 1)" in {
+		val input = Seq(HashSelectorToken, LeftParenToken, SetterToken, ColonToken, DecimalIntegerLiteralToken("1"), RightParenToken)
+		val expected = SelectorSetterExp(PostfixExp(NumericLiteralExp("1")))
+		assertResult(expected) { Parser(Parser.selector_expression, input) }
+	}
 	
 	//key_path_string_expression
-	
+	"key_path_string_expression" should "handle #keyPath(1)" in {
+		val input = Seq(HashKeyPathToken, LeftParenToken, DecimalIntegerLiteralToken("1"), RightParenToken)
+		val expected = KeyPathStringExp(PostfixExp(NumericLiteralExp("1")))
+		assertResult(expected) { Parser(Parser.key_path_string_expression, input) }
+	}
 	
 	
 	//literal

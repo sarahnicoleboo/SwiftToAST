@@ -45,7 +45,13 @@ case class TupleExp(elementList: List[TupleElement]) extends Exp
 case class ImplicitMemberExp(exps: DifferentImplicitMembers) extends Exp
 case object WildcardExp extends Exp
 case class KeyPathExp(typ: Option[Type], keyPathComponents: List[KeyPathComponent]) extends Exp
-//
+//selector exps:
+case class SelectorExp(exp: Exp) extends Exp
+case class SelectorGetterExp(exp: Exp) extends Exp
+case class SelectorSetterExp(exp: Exp) extends Exp
+//end of selector exps
+case class KeyPathStringExp(exp: Exp) extends Exp
+
 case class AssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
 //
 
@@ -128,7 +134,7 @@ case class PropertyWrapperProjectionExp(name: String) extends DifferentIdentifie
 sealed trait DifferentSelfs
 case object SelfSolo extends DifferentSelfs
 case class SelfMethod(exp: IdentifierExp) extends DifferentSelfs
-case class SelfSubscript(functionCallArgList: List[FunctionCallArgument]) extends DifferentSelfs //questionable
+case class SelfSubscript(functionCallArgList: List[FunctionCallArgument]) extends DifferentSelfs
 case object SelfInit extends DifferentSelfs
 
 sealed trait DifferentSuperClasses

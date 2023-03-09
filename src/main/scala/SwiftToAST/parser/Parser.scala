@@ -160,8 +160,9 @@ object Parser extends Parsers {
 		tuple_expression |
 		implicit_member_expression |
 		wildcard_expression |
-		key_path_expression
-		//still need more
+		key_path_expression |
+		selector_expression |
+		key_path_string_expression
 	}
 	
 	lazy val identifier: Parser[IdentifierExp] = {
@@ -399,6 +400,16 @@ object Parser extends Parsers {
 		LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ list ~ _ => FuncCallArgListKPP(list) }
 	}
 	
+	lazy val selector_expression: Parser[Exp] = {
+		HashSelectorToken ~ LeftParenToken ~ SetterToken ~ ColonToken ~ expression ~ RightParenToken ^^ { case _ ~ _ ~ _ ~ _ ~ exp ~ _ => SelectorSetterExp(exp) } |
+		HashSelectorToken ~ LeftParenToken ~ GetterToken ~ ColonToken ~ expression ~ RightParenToken ^^ { case _ ~ _ ~ _ ~ _ ~ exp ~ _ => SelectorGetterExp(exp) } |
+		HashSelectorToken ~ LeftParenToken ~ expression ~ RightParenToken ^^ { case _ ~ _ ~ exp ~ _ => SelectorExp(exp) }
+	}
+	
+	lazy val key_path_string_expression: Parser[KeyPathStringExp] = {
+		HashKeyPathToken ~ LeftParenToken ~ expression ~ RightParenToken ^^ { case _ ~ _ ~ exp ~ _ => KeyPathStringExp(exp) }
+	}
+	
 	//operators
 	lazy val try_operator: Parser[TryModifier] = {
 		TryToken ~ operator("?") ^^^ QuestionMarkTryModifier |
@@ -516,11 +527,6 @@ object Parser extends Parsers {
 	lazy val opaque_type: Parser[OpaqueType] = {
 		SomeToken ~ typ ^^ { case _ ~ theType => OpaqueType(theType) }
 	}
-	
-	//this is here to be done in future because it relies on protocol which I haven't done yet
-/* 	lazy val metatype_type: Parser[???] = {
-		???
-	} */
 	
 	lazy val in_parens_type: Parser[InParensType] = {
 		LeftParenToken ~ typ ~ RightParenToken ^^ { case _ ~ theType ~ _ => InParensType(theType) }
