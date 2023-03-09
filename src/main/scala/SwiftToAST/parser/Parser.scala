@@ -132,11 +132,12 @@ object Parser extends Parsers {
 	lazy val prefix_expression: Parser[Exp] = {
 		//opt(prefix_operator) ~ postfix_expression ^^ { case optOperator ~ expression => optOperator.map(_ => PrefixExp(optOperator, expression)).getOrElse(expression) }
 		prefix_operator ~ postfix_expression ^^ { case theOperator ~ exp => PrefixExp(theOperator, exp) } |
-		postfix_expression ^^ { case exp => PostfixExp(exp) }
+		postfix_expression ^^ { case exp => PostfixExp(exp) } |
+		in_out_expression ^^ { case exp => PostfixExp(exp) }
 	}
 	
 	lazy val in_out_expression: Parser[Exp] = {
-		???
+		operator("&") ~ identifier ^^ { case _ ~ id => InOutExp(id) }
 	}
 	
 	lazy val infix_expression: Parser[InfixExp] = {
@@ -423,7 +424,8 @@ object Parser extends Parsers {
 	lazy val infix_operator: Parser[Operator] = { operator }
 	
 	lazy val operator: Parser[Operator] = {
-		operator_thing ^^ { case OperatorLiteralToken(value) => Operator(value) }
+		operator_thing ^^ { case OperatorLiteralToken(value) => Operator(value) } |
+		dot_operator_thing ^^ { case DotOperatorLiteralToken(value) => Operator(value) }
 	}
 	
 	//types

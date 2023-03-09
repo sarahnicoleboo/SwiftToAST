@@ -15,6 +15,7 @@ sealed trait Exp
 case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
 case class PrefixExp(operator: Op, expression: Exp) extends Exp
 case class PostfixExp(expression: Exp) extends Exp
+case class InOutExp(identifierExp: IdentifierExp) extends Exp
 case class CastExp(exp: Exp, op: TypeCastingOp) extends Exp
 case class TrueInfixExp(exp1: Exp, op: Op, exp2: Exp) extends Exp
 case class GenericVariableExp(exp: IdentifierExp, typs: GenericArgumentClause) extends Exp

@@ -6,6 +6,21 @@ class ParserTest extends FlatSpec {
 	import SwiftToAST.tokenizer._
 	import SwiftToAST.parser._
 	
+	//in_out_expression
+	"in_out_expression" should "handle &name" in {
+		val input = Seq(OperatorLiteralToken("&"), VariableToken("name"))
+		val expected = InOutExp(IdentifierExp(VariableExp(Variable("name"))))
+		assertResult(expected) { Parser(Parser.in_out_expression, input) }
+		
+	}
+	
+	//postfix_expression
+	//(primary_expression) thru postfix_expression
+	"postfix__expression" should "handle a VariableExp identifier" in {
+		val input = Seq(VariableToken("variableName"))
+		assertResult(IdentifierExp(VariableExp(Variable("variableName")))) { Parser(Parser.postfix_expression, input) }
+	}
+	
 	//primary_expression
 	"primary_expression" should "handle an identifier followed by a list of generic types: name<Int>" in {
 		val input = Seq(VariableToken("name"), OperatorLiteralToken("<"), VariableToken("Int"), OperatorLiteralToken(">"))
@@ -842,6 +857,12 @@ class ParserTest extends FlatSpec {
 	"typ" should "handle Any?.Type" in {
 		val input = Seq(AnyToken, OperatorLiteralToken("?"), DotOperatorLiteralToken("."), TypeToken)
 		val expected = MetatypeTypeType(OptionalType(AnyType))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
+	
+	"typ" should "handle [Any?].Type" in {
+		val input = Seq(LeftBracketToken, AnyToken, OperatorLiteralToken("?"), RightBracketToken, DotOperatorLiteralToken("."), TypeToken)
+		val expected = MetatypeTypeType(ArrayType(OptionalType(AnyType)))
 		assertResult(expected) { Parser(Parser.typ, input) }
 	}
 	
