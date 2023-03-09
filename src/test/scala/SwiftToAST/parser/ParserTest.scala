@@ -849,10 +849,24 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//(optional_type) thru typ
-	
+	"typ" should "handle Any?" in {
+		val input = Seq(AnyToken, OperatorLiteralToken("?"))
+		val expected = OptionalType(AnyType)
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
+
+	"typ" should "handle Int?" in {
+		val input = Seq(VariableToken("Int"), OperatorLiteralToken("?"))
+		val expected = OptionalType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(implicitly_unwrapped_optional_type) thru typ
-	
+	"typ" should "handle Int!" in {
+		val input = Seq(VariableToken("Int"), OperatorLiteralToken("!"))
+		val expected = ImplicitlyUnwrappedOptionalType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(protocol_composition_type) thru typ
 	"typ" should "handle: Int & Bool" in {
@@ -871,7 +885,17 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//(metatype_type) thru typ
+	"typ" should "handle Int.Type" in {
+		val input = Seq(VariableToken("Int"), DotOperatorLiteralToken("."), TypeToken)
+		val expected = MetatypeTypeType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
+	"typ" should "handle Int.Protocol" in {
+		val input = Seq(VariableToken("Int"), DotOperatorLiteralToken("."), ProtocolToken)
+		val expected = MetatypeProtocolType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
 	
 	//(AnyType)
 	"typ" should "handle: Any" in {
@@ -1031,18 +1055,6 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.tuple_type, input) }
 	}
 	
-	//optional_type
-	//PROBLEM left recursion
-/* 	"optional_type" should "handle Int?" in {
-		val input = Seq(VariableToken("Int"), OperatorLiteralToken("?"))
-		val expected = OptionalType(TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))
-		assertResult(expected) { Parser(Parser.optional_type, input) }
-	} */
-	
-	//implicitly_unwrapped_optional_type
-	//also gonna have left recursion
-	
-	
 	//protocol_composition_type
 	"protocol_composition_type" should "handle: Int & Bool" in {
 		val input = Seq(VariableToken("Int"), OperatorLiteralToken("&"), VariableToken("Bool"))
@@ -1059,10 +1071,6 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.opaque_type, input) }
 	}
 	
-	
-	//metatype_type
-	
-	
 	//in_parens_type
 	"in_parens_type" should "handle: (Int)" in {
 		val input = Seq(LeftParenToken, VariableToken("Int"), RightParenToken)
@@ -1070,6 +1078,31 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.in_parens_type, input) }
 	}
 	
+	//weird types testing:
+	//trailer
+	"trailer" should "handle !" in {
+		val input = Seq(OperatorLiteralToken("!"))
+		val expected = ImplicitlyUnwrappedOptionalTypeThing
+		assertResult(expected) { Parser(Parser.trailer, input) }
+	}
+	
+	"trailer" should "handle ?" in {
+		val input = Seq(OperatorLiteralToken("?"))
+		val expected = OptionalTypeThing
+		assertResult(expected) { Parser(Parser.trailer, input) }
+	}
+	
+	"trailer" should "handle .Type" in {
+		val input = Seq(DotOperatorLiteralToken("."), TypeToken)
+		val expected = MetatypeTypeThing
+		assertResult(expected) { Parser(Parser.trailer, input) }
+	}
+	
+	"trailer" should "handle .Protocol" in {
+		val input = Seq(DotOperatorLiteralToken("."), ProtocolToken)
+		val expected = MetatypeProtocolThing
+		assertResult(expected) { Parser(Parser.trailer, input) }
+	}
 	
 	//attribute & attributes
 	"attribute" should "handle @varName" in {

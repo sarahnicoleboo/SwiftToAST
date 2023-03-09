@@ -174,16 +174,19 @@ case object SelfType extends Type
 case class InParensType(typ: Type) extends Type
 case class OptionalType(typ: Type) extends Type
 case class ImplicitlyUnwrappedOptionalType(typ: Type) extends Type
+case class MetatypeTypeType(typ: Type) extends Type
+case class MetatypeProtocolType(typ: Type) extends Type
 
 sealed trait TrailorTypeThing
 case object OptionalTypeThing extends TrailorTypeThing
 case object ImplicitlyUnwrappedOptionalTypeThing extends TrailorTypeThing
+case object MetatypeTypeThing extends TrailorTypeThing
+case object MetatypeProtocolThing extends TrailorTypeThing
 
 //helpers for types
 case class FunctionTypeArgClause(list: List[FunctionTypeArg])
 
 sealed trait FunctionTypeArg
-//i am confused because the below is exactly the same as a type annotation
 case class FunctionTypeArg1(attributesList: Option[List[Attribute]], inout: Option[InOutMod], typ: Type) extends FunctionTypeArg
 case class FunctionTypeArg2(id: IdentifierExp, typeAnnotation: TypeAnnotation) extends FunctionTypeArg
 
