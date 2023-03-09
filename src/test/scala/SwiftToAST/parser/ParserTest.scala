@@ -839,6 +839,12 @@ class ParserTest extends FlatSpec {
 	
 	
 	//typ
+	"typ" should "handle Any?.Type" in {
+		val input = Seq(AnyToken, OperatorLiteralToken("?"), DotOperatorLiteralToken("."), TypeToken)
+		val expected = MetatypeTypeType(OptionalType(AnyType))
+		assertResult(expected) { Parser(Parser.typ, input) }
+	}
+	
 	//(function_type) thru typ
 	"typ" should "handle () -> Int" in {
 		val input = Seq(LeftParenToken, RightParenToken, OperatorLiteralToken("->"), VariableToken("Int"))

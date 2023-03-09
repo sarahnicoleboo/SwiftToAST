@@ -147,6 +147,7 @@ object Parser extends Parsers {
 
 	lazy val postfix_expression: Parser[Exp] = {
 		primary_expression
+		//WHAT THE FUCK SWIFT
 	}
 	
 	lazy val primary_expression: Parser[Exp] = {
@@ -155,7 +156,7 @@ object Parser extends Parsers {
 		literal_expression |
 		self_expression |
 		superclass_expression |
-		closure_expression |	//stopped testing here
+		closure_expression |
 		parenthesized_expression |
 		tuple_expression |
 		implicit_member_expression |
@@ -427,15 +428,17 @@ object Parser extends Parsers {
 	
 	//types
 	lazy val typ: Parser[Type] = {
-		primary_type ~ opt(trailer) ^^ { case first ~ second => {
-			second match {
-				case None => first
-				case Some(ImplicitlyUnwrappedOptionalTypeThing) => ImplicitlyUnwrappedOptionalType(first)
-				case Some(OptionalTypeThing) => OptionalType(first)
-				case Some(MetatypeTypeThing) => MetatypeTypeType(first)
-				case Some(MetatypeProtocolThing) => MetatypeProtocolType(first)
-			}
-		}}
+		primary_type ~ rep(trailer) ^^ { case first ~ second => { type_maker(first, second.reverse) } }
+	}
+	
+	def type_maker(primaryType: Type, list: List[TrailorTypeThing]): Type = {
+		list match {
+			case Nil => primaryType
+			case ImplicitlyUnwrappedOptionalTypeThing :: someOtherStuff => ImplicitlyUnwrappedOptionalType(type_maker(primaryType, someOtherStuff))
+			case OptionalTypeThing :: someOtherStuff => OptionalType(type_maker(primaryType, someOtherStuff))
+			case MetatypeTypeThing :: someOtherStuff => MetatypeTypeType(type_maker(primaryType, someOtherStuff))
+			case MetatypeProtocolThing :: someOtherStuff => MetatypeProtocolType(type_maker(primaryType, someOtherStuff))
+		}
 	}
 	
 	//non-problematic types

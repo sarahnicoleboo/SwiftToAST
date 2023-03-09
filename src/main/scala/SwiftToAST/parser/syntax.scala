@@ -166,8 +166,6 @@ case class FuncCallArgListKPP(list: List[FunctionCallArgument]) extends KeyPathP
 case class TypeAnnotation(attributes: Option[List[Attribute]], inout: Option[InOutMod], typ: Type)
 
 sealed trait Type
-//WRONG
-//case class FinalFormType(first: Type, second: TrailorType) extends Type
 case class FunctionType(optAttributes: Option[List[Attribute]], argClause: FunctionTypeArgClause, async: Option[AsyncMod], throws: Option[ThrowsMod], typ: Type) extends Type
 case class ArrayType(typ: Type) extends Type
 case class DictionaryType(type1: Type, type2: Type) extends Type
