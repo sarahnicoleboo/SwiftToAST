@@ -115,7 +115,7 @@ object Parser extends Parsers {
 		expression ~ opt(SemicolonToken) ^^ { case exp ~ _ => ExpressionStmt(exp) }
 	}
 	
-	lazy val expression: Parser[Exp] = {
+/* 	lazy val expression: Parser[Exp] = {
 		opt(try_operator) ~ opt(AwaitToken) ~ prefix_expression ~ opt(infix_expression) ^^ {case theTry ~ theAwait ~ prefix ~ infix => {
 			val combinedExp = infix match {
 				case None => prefix
@@ -137,6 +137,34 @@ object Parser extends Parsers {
 				case (Some(tryModifier), Some(await)) => TryExp(tryModifier, AwaitExp(combinedExp))
 			}
 		}}
+	} */
+	
+	lazy val expression: Parser[Exp] = {
+		opt(try_operator) ~ opt(AwaitToken) ~ prefix_expression ~ rep(infix_expression) ^^ {case theTry ~ theAwait ~ prefix ~ infix => {
+			val combinedExp = infix_maker(prefix, infix)
+			(theTry, theAwait) match {
+				case (None, None) => combinedExp
+				case (Some(tryModifier), None) => TryExp(tryModifier, combinedExp)
+				case (None, Some(await)) => AwaitExp(combinedExp)
+				case (Some(tryModifier), Some(await)) => TryExp(tryModifier, AwaitExp(combinedExp))
+			}
+		}}
+	}
+	
+	def infix_maker(prefix: Exp, list: List[InfixExp]): Exp = {
+		list match {
+			case Nil => prefix
+			case WithOperatorInfixExpression(op, exp) :: tail => TrueInfixExp(prefix, op, infix_maker(exp, tail))
+			case TypeCastInfixExpression(op) :: tail => CastExp(infix_maker(prefix, tail), op)
+			case AssignmentOpInfixExpression(theTry, exp) :: tail => theTry match {
+				case None => AssignmentExp(prefix, infix_maker(exp, tail))
+				case Some(tryModifier) => AssignmentExp(prefix, infix_maker(TryExp(tryModifier, exp), tail))
+			}
+			case ConditionalOpInfixExpression(conditionalExp, theTry, exp) :: tail => theTry match {
+				case None => ConditionalExp(prefix, conditionalExp, infix_maker(exp, tail))
+				case Some(tryModifier) => ConditionalExp(prefix, conditionalExp, infix_maker(TryExp(tryModifier, exp), tail))
+			}
+		}
 	}
 
 	lazy val prefix_expression: Parser[Exp] = {
