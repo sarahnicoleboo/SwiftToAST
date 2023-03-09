@@ -82,7 +82,12 @@ class ParserTest extends FlatSpec {
 	}
 	
 	//(key_path_expression) thru primary_expression
-	
+	"primary_expression" should "handle \\.name" in {
+		val input = Seq(BackSlashToken, DotOperatorLiteralToken("."), VariableToken("name"))
+		val list: List[KeyPathComponent] = List(IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), None))
+		val expected = KeyPathExp(None, list)
+		assertResult(expected) { Parser(Parser.primary_expression, input) }
+	}
 	
 	//(selctor_expression) thru primary_expression
 	

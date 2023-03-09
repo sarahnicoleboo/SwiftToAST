@@ -159,8 +159,8 @@ object Parser extends Parsers {
 		parenthesized_expression |
 		tuple_expression |
 		implicit_member_expression |
-		wildcard_expression //|
-		//key_path_expression
+		wildcard_expression |
+		key_path_expression
 		//still need more
 	}
 	
