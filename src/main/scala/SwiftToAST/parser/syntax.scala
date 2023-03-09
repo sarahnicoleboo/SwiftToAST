@@ -13,6 +13,7 @@ case class Operator(value: String) extends Op
 //exps
 sealed trait Exp
 case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
+case class AwaitExp(exp: Exp) extends Exp
 case class PrefixExp(operator: Op, expression: Exp) extends Exp
 case class PostfixExp(expression: Exp) extends Exp
 case class InOutExp(identifierExp: IdentifierExp) extends Exp

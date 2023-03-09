@@ -75,7 +75,7 @@ object TokenizerPC extends RegexParsers {
 		"#keyPath(?=[\\s\\W]+)".r ^^ (_ => HashKeyPathToken) | "#colorLiteral(?=[\\s\\W]+)".r ^^ (_ => HashColorLiteralToken) |
 		"#file(?=[\\s\\W]+)".r ^^ (_ => HashFileToken) | "#imageLiteral(?=[\\s\\W]+)".r ^^ (_ => HashImageLiteralToken) |
 		"get(?=[\\s\\W]+)".r ^^ (_ => GetToken) | "set(?=[\\s\\W]+)".r ^^ (_ => SetToken) |
-		"async(?=[\\s\\W]+)".r ^^ (_ => AsyncToken)
+		"async(?=[\\s\\W]+)".r ^^ (_ => AsyncToken) | "await(?=[\\s\\W]+)".r ^^ (_ => AwaitToken)
 	}
 
 	//example:

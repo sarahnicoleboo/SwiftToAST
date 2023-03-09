@@ -116,15 +116,17 @@ object Parser extends Parsers {
 	}
 	
 	lazy val expression: Parser[Exp] = {
-		opt(try_operator) ~ prefix_expression ~ opt(infix_expression) ^^ {case theTry ~ prefix ~ infix => {
+		opt(try_operator) ~ opt(AwaitToken) ~ prefix_expression ~ opt(infix_expression) ^^ {case theTry ~ theAwait ~ prefix ~ infix => {
 			val combinedExp = infix match {
 				case None => prefix
 				case Some(WithOperatorInfixExpression(op, exp)) => TrueInfixExp(prefix, op, exp)//1 + 2 as single expression
 				case Some(TypeCastInfixExpression(op)) => CastExp(prefix, op)
 			}
-			theTry match {
-				case None => combinedExp
-				case Some(tryModifier) => TryExp(tryModifier, combinedExp)
+			(theTry, theAwait) match {
+				case (None, None) => combinedExp
+				case (Some(tryModifier), None) => TryExp(tryModifier, combinedExp)
+				case (None, Some(await)) => AwaitExp(combinedExp)
+				case (Some(tryModifier), Some(await)) => TryExp(tryModifier, AwaitExp(combinedExp))
 			}
 		}}
 	}
