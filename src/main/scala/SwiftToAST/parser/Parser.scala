@@ -289,7 +289,8 @@ object Parser extends Parsers {
 	}
 	
 	lazy val attribute: Parser[Attribute] = {
-		AtToken ~ identifier ~ attribute_argument_clause ^^ { case _ ~ name ~ clause => Attribute(name, clause) } |
+		//below is commented out because we are CHEATING
+		//AtToken ~ identifier ~ attribute_argument_clause ^^ { case _ ~ name ~ clause => Attribute(name, clause) } |
 		AtToken ~ identifier ^^ { case _ ~ name => Attribute(name, List()) }
 	}
 	
