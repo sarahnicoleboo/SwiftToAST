@@ -6,6 +6,25 @@ class ParserTest extends FlatSpec {
 	import SwiftToAST.tokenizer._
 	import SwiftToAST.parser._
 	
+	//expression
+	"expression" should "handle 5 + 1" in {
+		val input = Seq(DecimalIntegerLiteralToken("5"), OperatorLiteralToken("+"), DecimalIntegerLiteralToken("1"))
+		val prefix = PostfixExp(NumericLiteralExp("5"))
+		val op = Operator("+")
+		val exp = PostfixExp(NumericLiteralExp("1"))
+		val expected = TrueInfixExp(prefix, op, exp)
+		assertResult(expected) { Parser(Parser.expression, input) }
+	}
+	
+	"expression" should "handle 5 + 1 - 2" in {
+		val input = Seq(DecimalIntegerLiteralToken("5"), OperatorLiteralToken("+"), DecimalIntegerLiteralToken("1"), OperatorLiteralToken("-"), DecimalIntegerLiteralToken("2"))
+		val prefix = PostfixExp(NumericLiteralExp("5"))
+		val op = Operator("+")
+		val exp = TrueInfixExp(PostfixExp(NumericLiteralExp("1")), Operator("-"), PostfixExp(NumericLiteralExp("2")))
+		val expected = TrueInfixExp(prefix, op, exp)
+		assertResult(expected) { Parser(Parser.expression, input) }
+	}
+	
 	//in_out_expression
 	"in_out_expression" should "handle &name" in {
 		val input = Seq(OperatorLiteralToken("&"), VariableToken("name"))
