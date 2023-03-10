@@ -487,11 +487,16 @@ object Parser extends Parsers {
 	
 	//patterns
 	lazy val pattern: Parser[Pattern] = {
-		wildcard_pattern
+		wildcard_pattern |
+		identifier_pattern
 	}
 	
 	lazy val wildcard_pattern: Parser[WildcardPattern] = {
 		UnderscoreToken ~ opt(type_annotation) ^^ { case _ ~ optTypeAnnotation => WildcardPattern(optTypeAnnotation) }
+	}
+	
+	lazy val identifier_pattern: Parser[IdentifierPattern] = {
+		identifier ~ opt(type_annotation) ^^ { case id ~ optTypeAnnotation => IdentifierPattern(id, optTypeAnnotation) }
 	}
 	//end of patterns and any direct helpers
 	

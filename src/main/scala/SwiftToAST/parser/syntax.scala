@@ -235,6 +235,7 @@ case class NestedPath(id: IdentifierExp, path: ImportPath) extends ImportPath
 //patterns
 sealed trait Pattern
 case class WildcardPattern(typeAnnotation: Option[TypeAnnotation]) extends Pattern
+case class IdentifierPattern(id: IdentifierExp, typeAnnotation: Option[TypeAnnotation]) extends Pattern
 //end patterns
 
 //helpers for patterns

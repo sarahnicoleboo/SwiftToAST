@@ -963,6 +963,13 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.pattern, input) }
 	}
 	
+	//(identifier_pattern) thru pattern
+	"pattern" should "handle name" in {
+		val input = Seq(VariableToken("name"))
+		val expected = IdentifierPattern(IdentifierExp(VariableExp(Variable("name"))), None)
+		assertResult(expected) { Parser(Parser.pattern, input) }
+	}
+	
 	//wildcard_pattern
 	"wildcard_pattern" should "handle _ " in {
 		val input = Seq(UnderscoreToken)
@@ -974,6 +981,19 @@ class ParserTest extends FlatSpec {
 		val input = Seq(UnderscoreToken, ColonToken, VariableToken("Int"))
 		val expected = WildcardPattern(Some(TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))))
 		assertResult(expected) { Parser(Parser.wildcard_pattern, input) }
+	}
+	
+	"identifier_pattern" should "handle name" in {
+		val input = Seq(VariableToken("name"))
+		val expected = IdentifierPattern(IdentifierExp(VariableExp(Variable("name"))), None)
+		assertResult(expected) { Parser(Parser.identifier_pattern, input) }
+	}
+	
+	"identifier_pattern" should "handle name: String" in {
+		val input = Seq(VariableToken("name"), ColonToken, VariableToken("String"))
+		val typeAnnotation = TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))
+		val expected = IdentifierPattern(IdentifierExp(VariableExp(Variable("name"))), Some(typeAnnotation))
+		assertResult(expected) { Parser(Parser.identifier_pattern, input) }
 	}
 	//end testing for patterns
 	
