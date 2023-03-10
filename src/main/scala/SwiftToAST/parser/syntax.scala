@@ -232,6 +232,15 @@ case class RegularPath(id: IdentifierExp) extends ImportPath
 case class NestedPath(id: IdentifierExp, path: ImportPath) extends ImportPath
 //end helpers for declarations
 
+//patterns
+sealed trait Pattern
+case class WildcardPattern(typeAnnotation: Option[TypeAnnotation]) extends Pattern
+//end patterns
+
+//helpers for patterns
+
+//end helpers for patterns
+
 //statements
 sealed trait Stmt
 case class ExpressionStmt(exp: Exp) extends Stmt

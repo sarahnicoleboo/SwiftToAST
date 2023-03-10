@@ -460,7 +460,8 @@ object Parser extends Parsers {
 	
 	//declarations
 	lazy val declaration: Parser[Declaration] = {
-		import_declaration
+		import_declaration //|
+		//constant_declaration
 	}
 	
 	lazy val import_declaration: Parser[ImportDeclaration] = {
@@ -483,6 +484,16 @@ object Parser extends Parsers {
 		identifier ^^ { case id => RegularPath(id) }
 	}
 	//end of declarations and their direct helpers
+	
+	//patterns
+	lazy val pattern: Parser[Pattern] = {
+		wildcard_pattern
+	}
+	
+	lazy val wildcard_pattern: Parser[WildcardPattern] = {
+		UnderscoreToken ~ opt(type_annotation) ^^ { case _ ~ optTypeAnnotation => WildcardPattern(optTypeAnnotation) }
+	}
+	//end of patterns and any direct helpers
 	
 	//operators
 	lazy val try_operator: Parser[TryModifier] = {

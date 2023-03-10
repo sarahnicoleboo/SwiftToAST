@@ -873,6 +873,16 @@ class ParserTest extends FlatSpec {
 	//end testing for expressions
 	
 	//testing for declarations
+	//declaration
+	//(import_declaration) thru declaration
+	"declaration" should "handle import name" in {
+		val input = Seq(ImportToken, VariableToken("name"))
+		val expected = ImportDeclaration(None, None, RegularPath(IdentifierExp(VariableExp(Variable("name")))))
+		assertResult(expected) { Parser(Parser.declaration, input) }
+	}
+	//end of declaration
+	
+	//import_declaration
 	"import_declaration" should "handle import name" in {
 		val input = Seq(ImportToken, VariableToken("name"))
 		val expected = ImportDeclaration(None, None, RegularPath(IdentifierExp(VariableExp(Variable("name")))))
@@ -943,6 +953,29 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.import_path, input) }
 	}
 	//end testing for declarations
+	
+	//testing for patterns
+	//pattern
+	//(wildcard_pattern) thru pattern
+	"pattern" should "handle _ " in {
+		val input = Seq(UnderscoreToken)
+		val expected = WildcardPattern(None)
+		assertResult(expected) { Parser(Parser.pattern, input) }
+	}
+	
+	//wildcard_pattern
+	"wildcard_pattern" should "handle _ " in {
+		val input = Seq(UnderscoreToken)
+		val expected = WildcardPattern(None)
+		assertResult(expected) { Parser(Parser.wildcard_pattern, input) }
+	}
+	
+	"wildcard_pattern" should "handle _ : Int" in {
+		val input = Seq(UnderscoreToken, ColonToken, VariableToken("Int"))
+		val expected = WildcardPattern(Some(TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("Int"))))))))
+		assertResult(expected) { Parser(Parser.wildcard_pattern, input) }
+	}
+	//end testing for patterns
 	
 	//testing for types
 	//typ
