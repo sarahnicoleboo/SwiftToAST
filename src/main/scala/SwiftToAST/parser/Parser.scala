@@ -488,7 +488,8 @@ object Parser extends Parsers {
 	//patterns
 	lazy val pattern: Parser[Pattern] = {
 		wildcard_pattern |
-		identifier_pattern
+		identifier_pattern |
+		value_binding_pattern
 	}
 	
 	lazy val wildcard_pattern: Parser[WildcardPattern] = {
@@ -497,6 +498,11 @@ object Parser extends Parsers {
 	
 	lazy val identifier_pattern: Parser[IdentifierPattern] = {
 		identifier ~ opt(type_annotation) ^^ { case id ~ optTypeAnnotation => IdentifierPattern(id, optTypeAnnotation) }
+	}
+	
+	lazy val value_binding_pattern: Parser[ValueBindingPattern] = {
+		VarToken ~ pattern ^^ { case _ ~ thePattern => ValueBindingPattern(VarModifier, thePattern) } |
+		LetToken ~ pattern ^^ { case _ ~ thePattern => ValueBindingPattern(LetModifier, thePattern) }
 	}
 	//end of patterns and any direct helpers
 	

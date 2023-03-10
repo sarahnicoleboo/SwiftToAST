@@ -236,10 +236,13 @@ case class NestedPath(id: IdentifierExp, path: ImportPath) extends ImportPath
 sealed trait Pattern
 case class WildcardPattern(typeAnnotation: Option[TypeAnnotation]) extends Pattern
 case class IdentifierPattern(id: IdentifierExp, typeAnnotation: Option[TypeAnnotation]) extends Pattern
+case class ValueBindingPattern(modifier: MutableModifier, pattern: Pattern) extends Pattern
 //end patterns
 
 //helpers for patterns
-
+sealed trait MutableModifier
+case object VarModifier extends MutableModifier
+case object LetModifier extends MutableModifier
 //end helpers for patterns
 
 //statements

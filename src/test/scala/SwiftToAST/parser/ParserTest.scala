@@ -970,6 +970,13 @@ class ParserTest extends FlatSpec {
 		assertResult(expected) { Parser(Parser.pattern, input) }
 	}
 	
+	//(value_binding_pattern) thru pattern
+	"pattern" should "handle var _" in {
+		val input = Seq(VarToken, UnderscoreToken)
+		val expected = ValueBindingPattern(VarModifier, WildcardPattern(None))
+		assertResult(expected) { Parser(Parser.pattern, input) }
+	}
+	
 	//wildcard_pattern
 	"wildcard_pattern" should "handle _ " in {
 		val input = Seq(UnderscoreToken)
@@ -994,6 +1001,18 @@ class ParserTest extends FlatSpec {
 		val typeAnnotation = TypeAnnotation(None, None, TypeIdentifier(NormalType(IdentifierExp(VariableExp(Variable("String"))))))
 		val expected = IdentifierPattern(IdentifierExp(VariableExp(Variable("name"))), Some(typeAnnotation))
 		assertResult(expected) { Parser(Parser.identifier_pattern, input) }
+	}
+	
+	"value_binding_pattern" should "handle var _" in {
+		val input = Seq(VarToken, UnderscoreToken)
+		val expected = ValueBindingPattern(VarModifier, WildcardPattern(None))
+		assertResult(expected) { Parser(Parser.value_binding_pattern, input) }
+	}
+	
+	"value_binding_pattern" should "handle let _" in {
+		val input = Seq(LetToken, UnderscoreToken)
+		val expected = ValueBindingPattern(LetModifier, WildcardPattern(None))
+		assertResult(expected) { Parser(Parser.value_binding_pattern, input) }
 	}
 	//end testing for patterns
 	
