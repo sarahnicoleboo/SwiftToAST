@@ -55,9 +55,8 @@ case class SelectorGetterExp(exp: Exp) extends Exp
 case class SelectorSetterExp(exp: Exp) extends Exp
 //end of selector exps
 case class KeyPathStringExp(exp: Exp) extends Exp
-
 case class CaptureAssignmentExp(id: IdentifierExp, exp: Exp) extends Exp
-//
+//end exps
 
 //helpers for exps
 //also hacky but works i guess
@@ -167,10 +166,9 @@ case object QuestionKPP extends KeyPathPostfix
 case object ExclamationKPP extends KeyPathPostfix
 case object SelfKPP extends KeyPathPostfix
 case class FuncCallArgListKPP(list: List[FunctionCallArgument]) extends KeyPathPostfix
+//end helpers for exps
 
 //types
-case class TypeAnnotation(attributes: Option[List[Attribute]], inout: Option[InOutMod], typ: Type)
-
 sealed trait Type
 case class FunctionType(optAttributes: Option[List[Attribute]], argClause: FunctionTypeArgClause, async: Option[AsyncMod], throws: Option[ThrowsMod], typ: Type) extends Type
 case class ArrayType(typ: Type) extends Type
@@ -186,14 +184,16 @@ case class OptionalType(typ: Type) extends Type
 case class ImplicitlyUnwrappedOptionalType(typ: Type) extends Type
 case class MetatypeTypeType(typ: Type) extends Type
 case class MetatypeProtocolType(typ: Type) extends Type
+//end types
 
+//helpers for types
 sealed trait TrailorTypeThing
 case object OptionalTypeThing extends TrailorTypeThing
 case object ImplicitlyUnwrappedOptionalTypeThing extends TrailorTypeThing
 case object MetatypeTypeThing extends TrailorTypeThing
 case object MetatypeProtocolThing extends TrailorTypeThing
 
-//helpers for types
+case class TypeAnnotation(attributes: Option[List[Attribute]], inout: Option[InOutMod], typ: Type)
 case class FunctionTypeArgClause(list: List[FunctionTypeArg])
 
 sealed trait FunctionTypeArg
@@ -209,12 +209,38 @@ case class NestedGenericType(typeName: IdentifierExp, genericTypes: GenericArgum
 sealed trait TupleTypeElement
 case class TupleTypeElementNameAnnotation(id: IdentifierExp, typeAnnotation: TypeAnnotation) extends TupleTypeElement
 case class TupleTypeElementType(typ: Type) extends TupleTypeElement
+//end helpers for types
+
+//declarations
+sealed trait Declaration
+case class ImportDeclaration(attributes: Option[List[Attribute]], kind: Option[ImportKind], path: ImportPath) extends Declaration
+//end declarations
+
+//helpers for declarations
+sealed trait ImportKind
+case object TypeAliasKind extends ImportKind
+case object StructKind extends ImportKind
+case object ClassKind extends ImportKind
+case object EnumKind extends ImportKind
+case object ProtocolKind extends ImportKind
+case object LetKind extends ImportKind
+case object VarKind extends ImportKind
+case object FuncKind extends ImportKind
+
+sealed trait ImportPath
+case class RegularPath(id: IdentifierExp) extends ImportPath
+case class NestedPath(id: IdentifierExp, path: ImportPath) extends ImportPath
+//end helpers for declarations
 
 //statements
 sealed trait Stmt
 case class ExpressionStmt(exp: Exp) extends Stmt
+case class DeclarationStmt(decl: Declaration) extends Stmt
+//end statements
 
-case object TestStmt extends Stmt
+//helpers for statements
+
+//end helpers for statements
 
 //random shit down here
 //punctuation

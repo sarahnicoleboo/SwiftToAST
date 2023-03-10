@@ -870,8 +870,81 @@ class ParserTest extends FlatSpec {
 		val input = Seq(NilToken)
 		assertResult(NilExp) { Parser(Parser.nil_literal, input) }
 	}
+	//end testing for expressions
 	
+	//testing for declarations
+	"import_declaration" should "handle import name" in {
+		val input = Seq(ImportToken, VariableToken("name"))
+		val expected = ImportDeclaration(None, None, RegularPath(IdentifierExp(VariableExp(Variable("name")))))
+		assertResult(expected) { Parser(Parser.import_declaration, input) }
+	}
 	
+	"import_declaration" should "handle @attributeName import name" in {
+		val input = Seq(AtToken, VariableToken("attributeName"), ImportToken, VariableToken("name"))
+		val theAttributes = List(Attribute(IdentifierExp(VariableExp(Variable("attributeName"))), List()))
+		val expected = ImportDeclaration(Some(theAttributes), None, RegularPath(IdentifierExp(VariableExp(Variable("name")))))
+		assertResult(expected) { Parser(Parser.import_declaration, input) }
+	}
+	
+	"import_declaration" should "handle import typealias name" in {
+		val input = Seq(ImportToken, TypeAliasToken, VariableToken("name"))
+		val expected = ImportDeclaration(None, Some(TypeAliasKind), RegularPath(IdentifierExp(VariableExp(Variable("name")))))
+		assertResult(expected) { Parser(Parser.import_declaration, input) }
+	}
+	
+	"import_declaration" should "handle @attributeName import typealias name" in {
+		val input = Seq(AtToken, VariableToken("attributeName"), ImportToken, TypeAliasToken, VariableToken("name"))
+		val theAttributes = List(Attribute(IdentifierExp(VariableExp(Variable("attributeName"))), List()))
+		val expected = ImportDeclaration(Some(theAttributes), Some(TypeAliasKind), RegularPath(IdentifierExp(VariableExp(Variable("name")))))
+		assertResult(expected) { Parser(Parser.import_declaration, input) }
+	}
+	
+	"import_kind" should "handle typealias" in {
+		assertResult(TypeAliasKind) { Parser(Parser.import_kind, Seq(TypeAliasToken)) }
+	}
+	
+	"import_kind" should "handle struct" in {
+		assertResult(StructKind) { Parser(Parser.import_kind, Seq(StructToken)) }
+	}
+	
+	"import_kind" should "handle class" in {
+		assertResult(ClassKind) { Parser(Parser.import_kind, Seq(ClassToken)) }
+	}
+	
+	"import_kind" should "handle enum" in {
+		assertResult(EnumKind) { Parser(Parser.import_kind, Seq(EnumToken)) }
+	}
+	
+	"import_kind" should "handle protocol" in {
+		assertResult(ProtocolKind) { Parser(Parser.import_kind, Seq(ProtocolToken)) }
+	}
+	
+	"import_kind" should "handle let" in {
+		assertResult(LetKind) { Parser(Parser.import_kind, Seq(LetToken)) }
+	}
+	
+	"import_kind" should "handle var" in {
+		assertResult(VarKind) { Parser(Parser.import_kind, Seq(VarToken)) }
+	}
+	
+	"import_kind" should "handle func" in {
+		assertResult(FuncKind) { Parser(Parser.import_kind, Seq(FuncToken)) }
+	}
+	
+	"import_path" should "handle name" in {
+		val input = Seq(VariableToken("name"))
+		val expected = RegularPath(IdentifierExp(VariableExp(Variable("name"))))
+		assertResult(expected) { Parser(Parser.import_path, input) }
+	}
+	
+	"import_path" should "handle name.place" in {
+		val input = Seq(VariableToken("name"), DotOperatorLiteralToken("."), VariableToken("place"))
+		val expected = NestedPath(IdentifierExp(VariableExp(Variable("name"))), RegularPath(IdentifierExp(VariableExp(Variable("place")))))
+		assertResult(expected) { Parser(Parser.import_path, input) }
+	}
+	//end testing for declarations
+	
+	//testing for types
 	//typ
 	"typ" should "handle Any?.Type" in {
 		val input = Seq(AnyToken, OperatorLiteralToken("?"), DotOperatorLiteralToken("."), TypeToken)

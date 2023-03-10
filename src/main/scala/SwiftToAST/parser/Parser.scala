@@ -108,11 +108,16 @@ object Parser extends Parsers {
 	}
 	
 	lazy val statement: Parser[Stmt] = {
-		expression_stmt
+		expression_stmt |
+		declaration_stmt
 	}
 	
 	lazy val expression_stmt: Parser[Stmt] = {
 		expression ~ opt(SemicolonToken) ^^ { case exp ~ _ => ExpressionStmt(exp) }
+	}
+	
+	lazy val declaration_stmt: Parser[DeclarationStmt] = {
+		declaration ~ opt(SemicolonToken) ^^ { case decl ~ _ => DeclarationStmt(decl) }
 	}
 	
 /* 	lazy val expression: Parser[Exp] = {
@@ -451,6 +456,33 @@ object Parser extends Parsers {
 	lazy val key_path_string_expression: Parser[KeyPathStringExp] = {
 		HashKeyPathToken ~ LeftParenToken ~ expression ~ RightParenToken ^^ { case _ ~ _ ~ exp ~ _ => KeyPathStringExp(exp) }
 	}
+	//end of expressions and their direct helpers
+	
+	//declarations
+	lazy val declaration: Parser[Declaration] = {
+		import_declaration
+	}
+	
+	lazy val import_declaration: Parser[ImportDeclaration] = {
+		opt(attributes) ~ ImportToken ~ opt(import_kind) ~ import_path ^^ { case optAttributes ~ _ ~ kind ~ path => ImportDeclaration(optAttributes, kind, path) }
+	}
+	
+	lazy val import_kind: Parser[ImportKind] = {
+		TypeAliasToken ^^^ TypeAliasKind |
+		StructToken ^^^ StructKind |
+		ClassToken ^^^ ClassKind |
+		EnumToken ^^^ EnumKind |
+		ProtocolToken ^^^ ProtocolKind |
+		LetToken ^^^ LetKind |
+		VarToken ^^^ VarKind |
+		FuncToken ^^^ FuncKind
+	}
+	
+	lazy val import_path: Parser[ImportPath] = {
+		identifier ~ dot_operator(".") ~ import_path ^^ { case id ~ _ ~ path => NestedPath(id, path) } |
+		identifier ^^ { case id => RegularPath(id) }
+	}
+	//end of declarations and their direct helpers
 	
 	//operators
 	lazy val try_operator: Parser[TryModifier] = {
@@ -474,6 +506,7 @@ object Parser extends Parsers {
 		operator_thing ^^ { case OperatorLiteralToken(value) => Operator(value) } |
 		dot_operator_thing ^^ { case DotOperatorLiteralToken(value) => Operator(value) }
 	}
+	//end of operators
 	
 	//types
 	lazy val typ: Parser[Type] = {
@@ -527,7 +560,6 @@ object Parser extends Parsers {
 	lazy val function_type_arg: Parser[FunctionTypeArg] = {
 		identifier ~ type_annotation ^^ { case id ~ typeAnnotation => FunctionTypeArg2(id, typeAnnotation) } |
 		opt(attributes) ~ opt(in_out_modifier) ~ typ ^^ { case optAttributes ~ optInOut ~ theType => FunctionTypeArg1(optAttributes, optInOut, theType) } //|
-		//identifier ~ type_annotation ^^ { case id ~ typeAnnotation => FunctionTypeArg2(id, typeAnnotation) }
 	}
 	
 	lazy val array_type: Parser[ArrayType] = {
@@ -583,6 +615,7 @@ object Parser extends Parsers {
 	lazy val in_parens_type: Parser[InParensType] = {
 		LeftParenToken ~ typ ~ RightParenToken ^^ { case _ ~ theType ~ _ => InParensType(theType) }
 	}
+	//end of types and any direct helpers
 	
 	//big parsers down here:
 	lazy val punctuation: Parser[Punctuation] = {
