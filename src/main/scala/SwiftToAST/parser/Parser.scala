@@ -92,7 +92,7 @@ object Parser extends Parsers {
 		val reader = new TokenReader(tokens)
 		parser(reader) match {
 			case NoSuccess(message, next) => throw new ParserException(message)
-			case Success(result, next) => result
+			case Success(result, next) => { if (next.atEnd) result else throw new ParserException("didn't consume all tokens") }
 		}
 	}
 	
@@ -175,8 +175,8 @@ object Parser extends Parsers {
 	lazy val prefix_expression: Parser[Exp] = {
 		//opt(prefix_operator) ~ postfix_expression ^^ { case optOperator ~ expression => optOperator.map(_ => PrefixExp(optOperator, expression)).getOrElse(expression) }
 		prefix_operator ~ postfix_expression ^^ { case theOperator ~ exp => PrefixExp(theOperator, exp) } |
-		postfix_expression ^^ { case exp => PostfixExp(exp) } |
-		in_out_expression ^^ { case exp => PostfixExp(exp) }
+		postfix_expression |
+		in_out_expression
 	}
 	
 	lazy val in_out_expression: Parser[Exp] = {
@@ -193,8 +193,43 @@ object Parser extends Parsers {
 	
 
 	lazy val postfix_expression: Parser[Exp] = {
-		primary_expression
-		//WHAT THE FUCK SWIFT
+		primary_expression ~ rep(after_postfix_exp) ^^ { case exp ~ after => postfix_maker(exp, after.reverse) }
+	}
+	
+	lazy val after_postfix_exp: Parser[AfterPostfix] = {
+		operator("!") ^^^ AfterPostfixForcedValue |
+		operator("?") ^^^ AfterPostfixOptionalChaining |
+		after_postfix_function_call ^^ { case call => AfterPostfixFunctionCall(call) } |
+		function_call_argument_list ^^ { case list =>  AfterPostfixSubscript(list) } |
+		postfix_operator ^^ { case op => AfterPostfixOperator(op) }
+	}
+	
+	lazy val after_postfix_function_call: Parser[PostfixFunctionCall] = {
+		opt(function_call_argument_clause) ~ trailing_closure ^^ { case optList ~ trailing => ComplexFunctionCall(optList, trailing) } |
+		function_call_argument_clause ^^ { case list => SimpleFunctionCall(list) }
+	}
+	
+	lazy val function_call_argument_clause: Parser[List[FunctionCallArgument]] = {
+		LeftParenToken ~ repsep(function_call_argument, CommaToken) ~ RightParenToken ^^ { case _ ~ list ~ _ => list }
+	}
+	
+	lazy val trailing_closure: Parser[TrailingClosure] = {
+		closure_expression ~ rep(labeled_trailing_closure) ^^ { case exp ~ trailingList => TrailingClosure(exp, trailingList) }
+	}
+	
+	lazy val labeled_trailing_closure: Parser[LabeledTrailingClosure] = {
+		identifier ~ ColonToken ~ closure_expression ^^ { case id ~ _ ~ exp => LabeledTrailingClosure(id, exp) }
+	}
+	
+	def postfix_maker(exp: Exp, list: List[AfterPostfix]): Exp = {
+		list match {
+			case Nil => exp
+			case AfterPostfixOperator(op) :: tail => PostfixWithOpExp(postfix_maker(exp, tail), op)
+			case AfterPostfixForcedValue :: tail => PostfixForcedValueExp(postfix_maker(exp, tail))
+			case AfterPostfixOptionalChaining :: tail => PostfixOptionalChainingExp(postfix_maker(exp, tail))
+			case AfterPostfixFunctionCall(call) :: tail => PostfixFunctionCallExp(postfix_maker(exp, tail), call)
+			case AfterPostfixSubscript(list) :: tail => PostfixSubscriptExp(postfix_maker(exp, tail), list)
+		}
 	}
 	
 	lazy val primary_expression: Parser[Exp] = {
@@ -307,18 +342,18 @@ object Parser extends Parsers {
 	lazy val self_expression: Parser[SelfExp] = {
 		SelfToken ~ dot_operator(".") ~ identifier ^^ { case _ ~ _ ~ identifierExp => SelfExp(SelfMethod(identifierExp)) } |
 		SelfToken ~ dot_operator(".") ~ InitToken ^^^ SelfExp(SelfInit) |
-		SelfToken ~ LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ _ ~ list ~ _ => SelfExp(SelfSubscript(list)) } |
+		SelfToken ~ function_call_argument_list ^^ { case _ ~ list => SelfExp(SelfSubscript(list)) } |
 		SelfToken ^^^ SelfExp(SelfSolo)
 	}
 	
 	lazy val superclass_expression: Parser[SuperExp] = {
 		SuperToken ~ dot_operator(".") ~ identifier ^^ { case _ ~ _ ~ identifierExp => SuperExp(SuperMethod(identifierExp)) } |
 		SuperToken ~ dot_operator(".") ~ InitToken ^^^ SuperExp(SuperInit) |
-		SuperToken ~ LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ _ ~ list ~ _ => SuperExp(SuperSubscript(list)) }
+		SuperToken ~ function_call_argument_list ^^ { case _ ~ list => SuperExp(SuperSubscript(list)) }
 	}
 	
 	lazy val function_call_argument_list: Parser[List[FunctionCallArgument]] = {
-		rep1sep(function_call_argument, CommaToken)
+		LeftBracketToken ~ rep1sep(function_call_argument, CommaToken) ~ RightBracketToken ^^ { case _ ~ list ~ _ => list }
 	}
 	
 	lazy val function_call_argument: Parser[FunctionCallArgument] = {
@@ -444,7 +479,7 @@ object Parser extends Parsers {
 		operator("?") ^^^ QuestionKPP |
 		operator("!") ^^^ ExclamationKPP |
 		SelfToken ^^^ SelfKPP |
-		LeftBracketToken ~ function_call_argument_list ~ RightBracketToken ^^ { case _ ~ list ~ _ => FuncCallArgListKPP(list) }
+		function_call_argument_list ^^ { case list => FuncCallArgListKPP(list) }
 	}
 	
 	lazy val selector_expression: Parser[Exp] = {
@@ -489,7 +524,8 @@ object Parser extends Parsers {
 	lazy val pattern: Parser[Pattern] = {
 		wildcard_pattern |
 		identifier_pattern |
-		value_binding_pattern
+		value_binding_pattern //|
+		//tuple_pattern
 	}
 	
 	lazy val wildcard_pattern: Parser[WildcardPattern] = {
@@ -504,6 +540,10 @@ object Parser extends Parsers {
 		VarToken ~ pattern ^^ { case _ ~ thePattern => ValueBindingPattern(VarModifier, thePattern) } |
 		LetToken ~ pattern ^^ { case _ ~ thePattern => ValueBindingPattern(LetModifier, thePattern) }
 	}
+	
+/* 	lazy val tuple_pattern: Parser[TuplePattern] = {
+		//LeftParenToken ~ repsep(tuple_pattern_element, CommaToken) ~ RightParenToken ^^ { case _ ~ list ~ _ => TuplePattern(list) }
+	} */
 	//end of patterns and any direct helpers
 	
 	//operators
@@ -523,6 +563,8 @@ object Parser extends Parsers {
 	lazy val prefix_operator: Parser[Operator] = { operator }
 	
 	lazy val infix_operator: Parser[Operator] = { operator }
+	
+	lazy val postfix_operator: Parser[Operator] = { operator }
 	
 	lazy val operator: Parser[Operator] = {
 		operator_thing ^^ { case OperatorLiteralToken(value) => Operator(value) } |

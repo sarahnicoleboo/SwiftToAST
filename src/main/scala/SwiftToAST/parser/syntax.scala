@@ -15,7 +15,12 @@ sealed trait Exp
 case class TryExp(modifier: TryModifier, exp: Exp) extends Exp
 case class AwaitExp(exp: Exp) extends Exp
 case class PrefixExp(operator: Op, expression: Exp) extends Exp
-case class PostfixExp(expression: Exp) extends Exp
+case class PostfixWithOpExp(exp: Exp, op: Op) extends Exp
+case class PostfixForcedValueExp(exp: Exp) extends Exp
+case class PostfixOptionalChainingExp(exp: Exp) extends Exp
+case class PostfixFunctionCallExp(exp: Exp, after: PostfixFunctionCall) extends Exp
+case class PostfixSubscriptExp(exp: Exp, list: List[FunctionCallArgument]) extends Exp
+//hereigo
 case class InOutExp(identifierExp: IdentifierExp) extends Exp
 case class CastExp(exp: Exp, op: TypeCastingOp) extends Exp
 case class AssignmentExp(prefix: Exp, exp: Exp) extends Exp
@@ -166,6 +171,21 @@ case object QuestionKPP extends KeyPathPostfix
 case object ExclamationKPP extends KeyPathPostfix
 case object SelfKPP extends KeyPathPostfix
 case class FuncCallArgListKPP(list: List[FunctionCallArgument]) extends KeyPathPostfix
+
+sealed trait AfterPostfix
+case class AfterPostfixOperator(op: Operator) extends AfterPostfix
+case object AfterPostfixForcedValue extends AfterPostfix
+case object AfterPostfixOptionalChaining extends AfterPostfix
+case class AfterPostfixFunctionCall(call: PostfixFunctionCall) extends AfterPostfix
+case class AfterPostfixSubscript(list: List[FunctionCallArgument]) extends AfterPostfix
+//hereigo
+
+sealed trait PostfixFunctionCall
+case class SimpleFunctionCall(list: List[FunctionCallArgument]) extends PostfixFunctionCall
+case class ComplexFunctionCall(list: Option[List[FunctionCallArgument]], trailing: TrailingClosure) extends PostfixFunctionCall
+
+case class TrailingClosure(exp: ClosureExp, list: List[LabeledTrailingClosure])
+case class LabeledTrailingClosure(id: IdentifierExp, exp: ClosureExp) 
 //end helpers for exps
 
 //types
@@ -237,12 +257,17 @@ sealed trait Pattern
 case class WildcardPattern(typeAnnotation: Option[TypeAnnotation]) extends Pattern
 case class IdentifierPattern(id: IdentifierExp, typeAnnotation: Option[TypeAnnotation]) extends Pattern
 case class ValueBindingPattern(modifier: MutableModifier, pattern: Pattern) extends Pattern
+case class TuplePattern(list: List[TuplePatternElement], typeAnnotation: Option[TypeAnnotation]) extends Pattern
 //end patterns
 
 //helpers for patterns
 sealed trait MutableModifier
 case object VarModifier extends MutableModifier
 case object LetModifier extends MutableModifier
+
+sealed trait TuplePatternElement
+case class PatternElement(pattern: Pattern) extends TuplePatternElement
+case class IdentifierPatternElement(id: IdentifierExp, pattern: Pattern) extends TuplePatternElement
 //end helpers for patterns
 
 //statements

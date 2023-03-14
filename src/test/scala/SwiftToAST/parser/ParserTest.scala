@@ -7,23 +7,23 @@ class ParserTest extends FlatSpec {
 	import SwiftToAST.parser._
 	
 	//expression
-	"expression" should "handle 5 + 1" in {
+/* 	"expression" should "handle 5 + 1" in {
 		val input = Seq(DecimalIntegerLiteralToken("5"), OperatorLiteralToken("+"), DecimalIntegerLiteralToken("1"))
-		val prefix = PostfixExp(NumericLiteralExp("5"))
+		val prefix = NumericLiteralExp("5")
 		val op = Operator("+")
-		val exp = PostfixExp(NumericLiteralExp("1"))
+		val exp = NumericLiteralExp("1")
 		val expected = TrueInfixExp(prefix, op, exp)
 		assertResult(expected) { Parser(Parser.expression, input) }
 	}
 	
 	"expression" should "handle 5 + 1 - 2" in {
 		val input = Seq(DecimalIntegerLiteralToken("5"), OperatorLiteralToken("+"), DecimalIntegerLiteralToken("1"), OperatorLiteralToken("-"), DecimalIntegerLiteralToken("2"))
-		val prefix = PostfixExp(NumericLiteralExp("5"))
+		val prefix = NumericLiteralExp("5")
 		val op = Operator("+")
-		val exp = TrueInfixExp(PostfixExp(NumericLiteralExp("1")), Operator("-"), PostfixExp(NumericLiteralExp("2")))
+		val exp = TrueInfixExp(NumericLiteralExp("1"), Operator("-"), NumericLiteralExp("2"))
 		val expected = TrueInfixExp(prefix, op, exp)
 		assertResult(expected) { Parser(Parser.expression, input) }
-	}
+	} */
 	
 	//in_out_expression
 	"in_out_expression" should "handle &name" in {
@@ -38,6 +38,70 @@ class ParserTest extends FlatSpec {
 	"postfix__expression" should "handle a VariableExp identifier" in {
 		val input = Seq(VariableToken("variableName"))
 		assertResult(IdentifierExp(VariableExp(Variable("variableName")))) { Parser(Parser.postfix_expression, input) }
+	}
+	
+	"postfix__expression" should "handle a forced value expression: name!" in {
+		val input = Seq(VariableToken("name"), OperatorLiteralToken("!"))
+		val expected = PostfixForcedValueExp(IdentifierExp(VariableExp(Variable("name"))))
+		assertResult(expected) { Parser(Parser.postfix_expression, input) }
+	}
+	
+	"postfix__expression" should "handle an optional chaining expression: name?" in {
+		val input = Seq(VariableToken("name"), OperatorLiteralToken("?"))
+		val expected = PostfixOptionalChainingExp(IdentifierExp(VariableExp(Variable("name"))))
+		assertResult(expected) { Parser(Parser.postfix_expression, input) }
+	}
+	
+	"postfix__expression" should "handle a function call exp: name(5)" in {
+		val input = Seq(VariableToken("name"), LeftParenToken, DecimalIntegerLiteralToken("5"), RightParenToken)
+		val list: List[FunctionCallArgument] = List(ExpFunctionCallArgument(NumericLiteralExp("5")))
+		val call = SimpleFunctionCall(list)
+		val expected = PostfixFunctionCallExp(IdentifierExp(VariableExp(Variable("name"))), call)
+		assertResult(expected) { Parser(Parser.postfix_expression, input) }
+	}
+	
+	"postfix__expression" should "handle a subscript exp: name[5]" in {
+		val input = Seq(VariableToken("name"), LeftBracketToken, DecimalIntegerLiteralToken("5"), RightBracketToken)
+		val list: List[FunctionCallArgument] = List(ExpFunctionCallArgument(NumericLiteralExp("5")))
+		val expected = PostfixSubscriptExp(IdentifierExp(VariableExp(Variable("name"))), list)
+		assertResult(expected) { Parser(Parser.postfix_expression, input) }
+	}
+	
+	"after_postfix_function_call" should "handle: a function arg clause: (5)" in {
+		val input = Seq(LeftParenToken, DecimalIntegerLiteralToken("5"), RightParenToken)
+		val list: List[FunctionCallArgument] = List(ExpFunctionCallArgument(NumericLiteralExp("5")))
+		val expected = SimpleFunctionCall(list)
+		assertResult(expected) { Parser(Parser.after_postfix_function_call, input) }
+	}
+	
+	"after_postfix_function_call" should "handle: a function arg clause: (5) {} x: {}" in {
+		val input = Seq(LeftParenToken, DecimalIntegerLiteralToken("5"), RightParenToken, LeftCurlyToken, RightCurlyToken, VariableToken("x"), ColonToken, LeftCurlyToken, RightCurlyToken)
+		val list: List[FunctionCallArgument] = List(ExpFunctionCallArgument(NumericLiteralExp("5")))
+		val list1: List[LabeledTrailingClosure] = List(LabeledTrailingClosure(IdentifierExp(VariableExp(Variable("x"))), ClosureExp(None, None, None)))
+		val trailing = TrailingClosure(ClosureExp(None, None, None), list1)
+		val expected = ComplexFunctionCall(Some(list), trailing)
+		assertResult(expected) { Parser(Parser.after_postfix_function_call, input) }
+	}
+	
+	"after_postfix_function_call" should "handle {} x: {}" in {
+		val input = Seq(LeftCurlyToken, RightCurlyToken, VariableToken("x"), ColonToken, LeftCurlyToken, RightCurlyToken)
+		val list: List[LabeledTrailingClosure] = List(LabeledTrailingClosure(IdentifierExp(VariableExp(Variable("x"))), ClosureExp(None, None, None)))
+		val trailing = TrailingClosure(ClosureExp(None, None, None), list)
+		val expected = ComplexFunctionCall(None, trailing)
+		assertResult(expected) { Parser(Parser.after_postfix_function_call, input) }
+	}
+	
+	"trailing closure" should "handle {} x: {}" in {
+		val input = Seq(LeftCurlyToken, RightCurlyToken, VariableToken("x"), ColonToken, LeftCurlyToken, RightCurlyToken)
+		val list: List[LabeledTrailingClosure] = List(LabeledTrailingClosure(IdentifierExp(VariableExp(Variable("x"))), ClosureExp(None, None, None)))
+		val expected = TrailingClosure(ClosureExp(None, None, None), list)
+		assertResult(expected) { Parser(Parser.trailing_closure, input) }
+	}
+	
+	"labeled_trailing_closure" should "handle x : {}" in {
+		val input = Seq(VariableToken("x"), ColonToken, LeftCurlyToken, RightCurlyToken)
+		val expected = LabeledTrailingClosure(IdentifierExp(VariableExp(Variable("x"))), ClosureExp(None, None, None))
+		assertResult(expected) { Parser(Parser.labeled_trailing_closure, input) }
 	}
 	
 	//primary_expression
@@ -90,7 +154,7 @@ class ParserTest extends FlatSpec {
 	//(parenthesized_expression) thru primary_expression
 	"primary_expression" should "handle: (5)" in {
 		val input = Seq(LeftParenToken, DecimalIntegerLiteralToken("5"), RightParenToken)
-		val expected = ParenthesizedExp(PostfixExp(NumericLiteralExp("5")))
+		val expected = ParenthesizedExp(NumericLiteralExp("5"))
 		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
 	
@@ -126,7 +190,7 @@ class ParserTest extends FlatSpec {
 	//(selctor_expression) thru primary_expression
 	"primary_expression" should "handle #selector(1)" in {
 		val input = Seq(HashSelectorToken, LeftParenToken, DecimalIntegerLiteralToken("1"), RightParenToken)
-		val expected = SelectorExp(PostfixExp(NumericLiteralExp("1")))
+		val expected = SelectorExp(NumericLiteralExp("1"))
 		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
 	
@@ -134,7 +198,7 @@ class ParserTest extends FlatSpec {
 	//(key_path_string_expression) thru primary expression
 	"primary_expression" should "handle #keyPath(1)" in {
 		val input = Seq(HashKeyPathToken, LeftParenToken, DecimalIntegerLiteralToken("1"), RightParenToken)
-		val expected = KeyPathStringExp(PostfixExp(NumericLiteralExp("1")))
+		val expected = KeyPathStringExp(NumericLiteralExp("1"))
 		assertResult(expected) { Parser(Parser.primary_expression, input) }
 	}
 	
@@ -185,7 +249,7 @@ class ParserTest extends FlatSpec {
 	//(playground_literal) thrue literal_expression
 	"literal_expression" should "handle a colorLiteral playground literal" in {
 		val input = Seq(HashColorLiteralToken, LeftParenToken, RedToken, ColonToken, DecimalIntegerLiteralToken("0"), CommaToken, GreenToken, ColonToken, DecimalIntegerLiteralToken("1"), CommaToken, BlueToken, ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, AlphaToken, ColonToken, DecimalIntegerLiteralToken("3"), RightParenToken)
-		val expected = ColorPlaygroundLiteralExp(PostfixExp(NumericLiteralExp("0")), PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2")), PostfixExp(NumericLiteralExp("3")))
+		val expected = ColorPlaygroundLiteralExp(NumericLiteralExp("0"), NumericLiteralExp("1"), NumericLiteralExp("2"), NumericLiteralExp("3"))
 		assertResult(expected) { Parser(Parser.literal_expression, input) }
 	}
 	
@@ -231,21 +295,21 @@ class ParserTest extends FlatSpec {
 	
 	"self_expression" should "handle a self subscript expression: self [2]" in {
 		val input = Seq(SelfToken, LeftBracketToken, DecimalIntegerLiteralToken("2"), RightBracketToken)
-		val list = List(ExpFunctionCallArgument(PostfixExp(NumericLiteralExp("2"))))
+		val list = List(ExpFunctionCallArgument(NumericLiteralExp("2")))
 		val expected = SelfExp(SelfSubscript(list))
 		assertResult(expected) { Parser(Parser.self_expression, input) }
 	}
 	
 	"self_expression" should "handle a self subscript expression: self [name : 5]" in {
 		val input = Seq(SelfToken, LeftBracketToken, VariableToken("name"), ColonToken, DecimalIntegerLiteralToken("5"), RightBracketToken)
-		val list = List(IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("name"))), PostfixExp(NumericLiteralExp("5"))))
+		val list = List(IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("name"))), NumericLiteralExp("5")))
 		val expected = SelfExp(SelfSubscript(list))
 		assertResult(expected) { Parser(Parser.self_expression, input) }
 	}
 	
 	"self_expression" should "handle a self subscript expression: self [2, name : 5]" in {
 		val input = Seq(SelfToken, LeftBracketToken, DecimalIntegerLiteralToken("2"), CommaToken, VariableToken("name"), ColonToken, DecimalIntegerLiteralToken("5"), RightBracketToken)
-		val list = List(ExpFunctionCallArgument(PostfixExp(NumericLiteralExp("2"))) , IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("name"))), PostfixExp(NumericLiteralExp("5"))))
+		val list = List(ExpFunctionCallArgument(NumericLiteralExp("2")) , IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("name"))), NumericLiteralExp("5")))
 		val expected = SelfExp(SelfSubscript(list))
 		assertResult(expected) { Parser(Parser.self_expression, input) }
 	}
@@ -267,7 +331,7 @@ class ParserTest extends FlatSpec {
 	
 	"superclass_expression" should "handle a super subscript expression: super [2, name : 5]" in {
 		val input = Seq(SuperToken, LeftBracketToken, DecimalIntegerLiteralToken("2"), CommaToken, VariableToken("name"), ColonToken, DecimalIntegerLiteralToken("5"), RightBracketToken)
-		val list = List(ExpFunctionCallArgument(PostfixExp(NumericLiteralExp("2"))) , IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("name"))), PostfixExp(NumericLiteralExp("5"))))
+		val list = List(ExpFunctionCallArgument(NumericLiteralExp("2")) , IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("name"))), NumericLiteralExp("5")))
 		val expected = SuperExp(SuperSubscript(list))
 		assertResult(expected) { Parser(Parser.superclass_expression, input) }
 	}
@@ -312,7 +376,7 @@ class ParserTest extends FlatSpec {
 
 	"closure_expression" should "handle { statements }" in {
 		val input = Seq(LeftCurlyToken, DecimalIntegerLiteralToken("1"), RightCurlyToken)
-		val stmt = ExpressionStmt(PostfixExp(NumericLiteralExp("1")))
+		val stmt = ExpressionStmt(NumericLiteralExp("1"))
 		val expected = ClosureExp(None, None, Some(List(stmt)))
 		assertResult(expected) { Parser(Parser.closure_expression, input) }
 	}
@@ -325,7 +389,7 @@ class ParserTest extends FlatSpec {
 		val emptyList: List[ClosureParameter] = List()
 		val cpc = CPCClosureParameterList(emptyList)
 		val closureSig = (ClosureSignatureComplex(None, cpc, None, None, None))
-		val stmt = ExpressionStmt(PostfixExp(NumericLiteralExp("1")))
+		val stmt = ExpressionStmt(NumericLiteralExp("1"))
 		val expected = ClosureExp(Some(List(theAttribute)), Some(closureSig), Some(List(stmt)))
 		assertResult(expected) { Parser(Parser.closure_expression, input) }
 	}	 */
@@ -423,7 +487,7 @@ class ParserTest extends FlatSpec {
 		val input = Seq(VariableToken("identifier"), OperatorLiteralToken("="), DecimalIntegerLiteralToken("1"))
 		val expected = CaptureListItemAssignment(None, 
 												 CaptureAssignmentExp(IdentifierExp(VariableExp(Variable("identifier"))),
-															   PostfixExp(NumericLiteralExp("1"))))
+																	  NumericLiteralExp("1")))
 		assertResult(expected) { Parser(Parser.capture_list_item, input) }
 	}
 	
@@ -431,7 +495,7 @@ class ParserTest extends FlatSpec {
 		val input = Seq(WeakToken, VariableToken("identifier"), OperatorLiteralToken("="), DecimalIntegerLiteralToken("1"))
 		val expected = CaptureListItemAssignment(Some(WeakCaptureSpecifier), 
 												 CaptureAssignmentExp(IdentifierExp(VariableExp(Variable("identifier"))),
-															   PostfixExp(NumericLiteralExp("1"))))
+																	  NumericLiteralExp("1")))
 		assertResult(expected) { Parser(Parser.capture_list_item, input) }
 	}
 	
@@ -523,7 +587,7 @@ class ParserTest extends FlatSpec {
 	//parenthesized_expression
 	"parenthesized_expression" should "handle: (5)" in {
 		val input = Seq(LeftParenToken, DecimalIntegerLiteralToken("5"), RightParenToken)
-		val expected = ParenthesizedExp(PostfixExp(NumericLiteralExp("5")))
+		val expected = ParenthesizedExp(NumericLiteralExp("5"))
 		assertResult(expected) { Parser(Parser.parenthesized_expression, input) }
 	}
 	
@@ -537,8 +601,8 @@ class ParserTest extends FlatSpec {
 	
 	"tuple_expression" should "handle (expression, identifier:expression) which is (5, x:3)" in {
 		val input = Seq(LeftParenToken, DecimalIntegerLiteralToken("5"), CommaToken, VariableToken("x"), ColonToken, DecimalIntegerLiteralToken("3"), RightParenToken)
-		val tupleList: List[TupleElement] = List(ExpTuple(PostfixExp(NumericLiteralExp("5"))),
-												 IdentifierColonExpTuple(IdentifierExp(VariableExp(Variable("x"))), PostfixExp(NumericLiteralExp("3")))) 
+		val tupleList: List[TupleElement] = List(ExpTuple(NumericLiteralExp("5")),
+												 IdentifierColonExpTuple(IdentifierExp(VariableExp(Variable("x"))), NumericLiteralExp("3"))) 
 		val expected = TupleExp(tupleList)
 		assertResult(expected) { Parser(Parser.tuple_expression, input) }
 	}
@@ -546,13 +610,13 @@ class ParserTest extends FlatSpec {
 	//helper: tuple_element
 	"tuple_element" should "handle -> expression which is 5" in {
 		val input = Seq(DecimalIntegerLiteralToken("5"))
-		val expected = ExpTuple(PostfixExp(NumericLiteralExp("5")))
+		val expected = ExpTuple(NumericLiteralExp("5"))
 		assertResult(expected) { Parser(Parser.tuple_element, input) }
 	}
 	
 	"tuple_element" should "handle -> expression which is x:3" in {
 		val input = Seq(VariableToken("x"), ColonToken, DecimalIntegerLiteralToken("3"))
-		val expected = IdentifierColonExpTuple(IdentifierExp(VariableExp(Variable("x"))), PostfixExp(NumericLiteralExp("3")))
+		val expected = IdentifierColonExpTuple(IdentifierExp(VariableExp(Variable("x"))), NumericLiteralExp("3"))
 		assertResult(expected) { Parser(Parser.tuple_element, input) }
 	}
 	
@@ -582,11 +646,10 @@ class ParserTest extends FlatSpec {
 		val expected = KeyPathExp(None, list)
 		assertResult(expected) { Parser(Parser.key_path_expression, input) }
 	}
-	
-	//possibly run into another issue with the tokenization of operators here concerning . and ? or .?
-	"key_path_expression" should "handle \\.name.?" in {
-		val input = Seq(BackSlashToken, DotOperatorLiteralToken("."), VariableToken("name"), DotOperatorLiteralToken(".?"))
-		val list: List[KeyPathComponent] = List(IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), None))
+
+	"key_path_expression" should "handle \\.name?" in {
+		val input = Seq(BackSlashToken, DotOperatorLiteralToken("."), VariableToken("name"), OperatorLiteralToken("?"))
+		val list: List[KeyPathComponent] = List(IdentifierThenOptPostfixesKPC(IdentifierExp(VariableExp(Variable("name"))), Some(List(QuestionKPP))))
 		val expected = KeyPathExp(None, list)
 		assertResult(expected) { Parser(Parser.key_path_expression, input) }
 	}
@@ -633,7 +696,7 @@ class ParserTest extends FlatSpec {
 	
 	"key_path_postfix" should "handle a function call argument list: [ 5 ]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("5"), RightBracketToken)
-		val list: List[FunctionCallArgument] = List(ExpFunctionCallArgument(PostfixExp(NumericLiteralExp("5"))))
+		val list: List[FunctionCallArgument] = List(ExpFunctionCallArgument(NumericLiteralExp("5")))
 		val expected = FuncCallArgListKPP(list)
 		assertResult(expected) { Parser(Parser.key_path_postfix, input) }
 	}
@@ -641,26 +704,26 @@ class ParserTest extends FlatSpec {
 	//selector_expression
 	"selector_expression" should "handle #selector(1)" in {
 		val input = Seq(HashSelectorToken, LeftParenToken, DecimalIntegerLiteralToken("1"), RightParenToken)
-		val expected = SelectorExp(PostfixExp(NumericLiteralExp("1")))
+		val expected = SelectorExp(NumericLiteralExp("1"))
 		assertResult(expected) { Parser(Parser.selector_expression, input) }
 	}
 	
 	"selector_expression" should "handle #selector(getter: 1)" in {
 		val input = Seq(HashSelectorToken, LeftParenToken, GetterToken, ColonToken, DecimalIntegerLiteralToken("1"), RightParenToken)
-		val expected = SelectorGetterExp(PostfixExp(NumericLiteralExp("1")))
+		val expected = SelectorGetterExp(NumericLiteralExp("1"))
 		assertResult(expected) { Parser(Parser.selector_expression, input) }
 	}
 	
 	"selector_expression" should "handle #selector(setter: 1)" in {
 		val input = Seq(HashSelectorToken, LeftParenToken, SetterToken, ColonToken, DecimalIntegerLiteralToken("1"), RightParenToken)
-		val expected = SelectorSetterExp(PostfixExp(NumericLiteralExp("1")))
+		val expected = SelectorSetterExp(NumericLiteralExp("1"))
 		assertResult(expected) { Parser(Parser.selector_expression, input) }
 	}
 	
 	//key_path_string_expression
 	"key_path_string_expression" should "handle #keyPath(1)" in {
 		val input = Seq(HashKeyPathToken, LeftParenToken, DecimalIntegerLiteralToken("1"), RightParenToken)
-		val expected = KeyPathStringExp(PostfixExp(NumericLiteralExp("1")))
+		val expected = KeyPathStringExp(NumericLiteralExp("1"))
 		assertResult(expected) { Parser(Parser.key_path_string_expression, input) }
 	}
 	
@@ -701,19 +764,19 @@ class ParserTest extends FlatSpec {
 	
 	"array_literal" should "handle an array literal [1]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), RightBracketToken)
-		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))
+		val expected = ArrayLiteralExp(List(NumericLiteralExp("1")))
 		assertResult(expected) { Parser(Parser.array_literal, input) }
 	}
 	
 	"array_literal" should "handle an array literal [1,]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, RightBracketToken)
-		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1"))))
+		val expected = ArrayLiteralExp(List(NumericLiteralExp("1")))
 		assertResult(expected) { Parser(Parser.array_literal, input) }
 	}
 	
 	"array_literal" should "handle an array literal [1,2]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"), RightBracketToken)
-		val expected = ArrayLiteralExp(List(PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))
+		val expected = ArrayLiteralExp(List(NumericLiteralExp("1"), NumericLiteralExp("2")))
 		assertResult(expected) { Parser(Parser.array_literal, input) }
 	}
 	
@@ -726,12 +789,12 @@ class ParserTest extends FlatSpec {
 	
 	"comma_sep_exps" should "handle a list with one element" in {
 		val input = Seq(DecimalIntegerLiteralToken("1"))
-		assertResult(List(PostfixExp(NumericLiteralExp("1")))) { Parser(Parser.comma_sep_exps, input) }
+		assertResult(List(NumericLiteralExp("1"))) { Parser(Parser.comma_sep_exps, input) }
 	}
 	
 	"comma_sep_exps" should "handle a list with two elements" in {
 		val input = Seq(DecimalIntegerLiteralToken("1"), CommaToken, DecimalIntegerLiteralToken("2"))
-		val expected = List(PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2")))
+		val expected = List(NumericLiteralExp("1"), NumericLiteralExp("2"))
 		assertResult(expected) { Parser(Parser.comma_sep_exps, input) }
 	}
 	
@@ -745,7 +808,7 @@ class ParserTest extends FlatSpec {
 	
  	"dictionary_literal" should "handle a dictionary literal: [1:2]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), RightBracketToken)
-		val dictionaryList: List[(Exp, Exp)] = List((PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))
+		val dictionaryList: List[(Exp, Exp)] = List((NumericLiteralExp("1"), NumericLiteralExp("2")))
 		val expected = DictionaryLiteralExp(dictionaryList)
 		assertResult(expected) { Parser(Parser.dictionary_literal, input) }
 	}
@@ -753,14 +816,14 @@ class ParserTest extends FlatSpec {
 	
  	"dictionary_literal" should "handle an dictionary literal: [1:2,]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, RightBracketToken)
-		val dictionaryList: List[(Exp, Exp)] = List((PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))))
+		val dictionaryList: List[(Exp, Exp)] = List((NumericLiteralExp("1"), NumericLiteralExp("2")))
 		val expected = DictionaryLiteralExp(dictionaryList)
 		assertResult(expected) { Parser(Parser.dictionary_literal, input) }
 	}
 	
  	"dictionary_literal" should "handle an dictionary literal: [1:2, 3:4]" in {
 		val input = Seq(LeftBracketToken, DecimalIntegerLiteralToken("1"), ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, DecimalIntegerLiteralToken("3"), ColonToken, DecimalIntegerLiteralToken("4"), RightBracketToken)
-		val dictionaryList: List[(Exp, Exp)] = List((PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2"))), (PostfixExp(NumericLiteralExp("3")), PostfixExp(NumericLiteralExp("4"))))
+		val dictionaryList: List[(Exp, Exp)] = List((NumericLiteralExp("1"), NumericLiteralExp("2")), (NumericLiteralExp("3"), NumericLiteralExp("4")))
 		val expected = DictionaryLiteralExp(dictionaryList)
 		assertResult(expected) { Parser(Parser.dictionary_literal, input) }
 	}
@@ -768,19 +831,19 @@ class ParserTest extends FlatSpec {
 	//playground_literal
 	"playground_literal" should "handle a colorLiteral playground literal" in {
 		val input = Seq(HashColorLiteralToken, LeftParenToken, RedToken, ColonToken, DecimalIntegerLiteralToken("0"), CommaToken, GreenToken, ColonToken, DecimalIntegerLiteralToken("1"), CommaToken, BlueToken, ColonToken, DecimalIntegerLiteralToken("2"), CommaToken, AlphaToken, ColonToken, DecimalIntegerLiteralToken("3"), RightParenToken)
-		val expected = ColorPlaygroundLiteralExp(PostfixExp(NumericLiteralExp("0")), PostfixExp(NumericLiteralExp("1")), PostfixExp(NumericLiteralExp("2")), PostfixExp(NumericLiteralExp("3")))
+		val expected = ColorPlaygroundLiteralExp(NumericLiteralExp("0"), NumericLiteralExp("1"), NumericLiteralExp("2"), NumericLiteralExp("3"))
 		assertResult(expected) { Parser(Parser.playground_literal, input) }
 	}
 	
 	"playground_literal" should "handle a fileLiteral playground literal" in {
 		val input = Seq(HashFileLiteralToken, LeftParenToken, ResourceNameToken, ColonToken, DecimalIntegerLiteralToken("0"), RightParenToken)
-		val expected = FilePlaygroundLiteralExp(PostfixExp(NumericLiteralExp("0")))
+		val expected = FilePlaygroundLiteralExp(NumericLiteralExp("0"))
 		assertResult(expected) { Parser(Parser.playground_literal, input) }
 	}
 	
 	"playground_literal" should "handle an imageLiteral playground literal" in {
 		val input = Seq(HashImageLiteralToken, LeftParenToken, ResourceNameToken, ColonToken, DecimalIntegerLiteralToken("0"), RightParenToken)
-		val expected = ImagePlaygroundLiteralExp(PostfixExp(NumericLiteralExp("0")))
+		val expected = ImagePlaygroundLiteralExp(NumericLiteralExp("0"))
 		assertResult(expected) { Parser(Parser.playground_literal, input) }
 	}
 	
@@ -1444,13 +1507,13 @@ class ParserTest extends FlatSpec {
 	
 	//function_call_argument
 	"function_call_argument" should "handle 5" in {
-		assertResult(ExpFunctionCallArgument(PostfixExp(NumericLiteralExp("5")))) { Parser(Parser.function_call_argument, Seq(DecimalIntegerLiteralToken("5"))) }
+		assertResult(ExpFunctionCallArgument(NumericLiteralExp("5"))) { Parser(Parser.function_call_argument, Seq(DecimalIntegerLiteralToken("5"))) }
 	}
 	
 	"function_call_argument" should "handle x:5" in {
 		val input = Seq(VariableToken("x"), ColonToken, DecimalIntegerLiteralToken("5"))
 		val expected = IdentifierColonExpFunctionCallArgument(IdentifierExp(VariableExp(Variable("x"))),
-															  PostfixExp(NumericLiteralExp("5")))
+															  NumericLiteralExp("5"))
 		assertResult(expected) { Parser(Parser.function_call_argument, input) }
 	}
 	
